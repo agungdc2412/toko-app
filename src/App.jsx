@@ -159,7 +159,6 @@ const LoginScreen = ({ onLogin }) => {
               type="text" 
               required
               className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
-              placeholder="Contoh: owner, admin, atau kasir"
               value={username}
               onChange={e => setUsername(e.target.value)}
             />
@@ -184,7 +183,7 @@ const LoginScreen = ({ onLogin }) => {
           </button>
         </form>
         <div className="bg-slate-50 p-4 text-center text-xs text-slate-400">
-          
+         Hubungi <b>Owner</b> untuk membuat username & password
         </div>
       </div>
     </div>
