@@ -184,7 +184,7 @@ const LoginScreen = ({ onLogin }) => {
           </button>
         </form>
         <div className="bg-slate-50 p-4 text-center text-xs text-slate-400">
-          Default Owner: username <b>owner</b> / password <b>123</b>
+          
         </div>
       </div>
     </div>
