@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fiberstar Asset Management</title>
+  <title>Collect Data Asset</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
   <style>
@@ -643,8 +643,13 @@
   async function openScanner(callback) {
     scannerCallback = callback;
     document.getElementById('scannerOverlay').classList.add('active');
-    document.getElementById('scannerResultBar').classList.remove('show');
-    document.getElementById('scannerResultBar').textContent = '';
+    const bar = document.getElementById('scannerResultBar');
+    bar.classList.remove('show');
+    bar.textContent = '';
+    bar.style.background = '';
+    bar.style.borderColor = '';
+    bar.style.color = '';
+    document.querySelector('.scanner-hint').textContent = 'Arahkan kamera ke barcode atau QR code perangkat';
     await _initScanner();
   }
 
@@ -677,8 +682,6 @@
         if (backCam && !deviceId) deviceId = backCam.deviceId;
         if (deviceId) sel.value = deviceId;
       }
-
-      codeReader = new ZXing.BrowserMultiFormatReader();
 
       const hints = new Map();
       hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
@@ -722,11 +725,21 @@
         }
       });
     } catch (err) {
-      closeScanner();
-      let msg = 'Gagal membuka kamera.';
-      if (err.name === 'NotAllowedError') msg = '🚫 Izin kamera ditolak. Aktifkan di pengaturan browser.';
-      if (err.name === 'NotFoundError')   msg = 'Kamera tidak ditemukan di perangkat ini.';
-      showToast(msg);
+      let msg = '⚠️ Gagal membuka kamera.';
+      if (err.name === 'NotAllowedError') msg = '🚫 Izin kamera ditolak. Buka pengaturan browser → izinkan akses kamera → coba lagi.';
+      if (err.name === 'NotFoundError')   msg = '📷 Kamera tidak ditemukan di perangkat ini.';
+      if (err.name === 'NotReadableError') msg = '⚠️ Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain lalu coba lagi.';
+      if (err.name === 'OverconstrainedError') msg = '⚠️ Kamera yang dipilih tidak tersedia. Coba pilih kamera lain.';
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        msg = '🔒 Akses kamera memerlukan HTTPS. Buka aplikasi ini melalui HTTPS, bukan file:// atau http://.';
+      }
+      const bar = document.getElementById('scannerResultBar');
+      bar.style.background = 'var(--fs-red-light)';
+      bar.style.borderColor = 'var(--fs-red)';
+      bar.style.color = 'var(--fs-red)';
+      bar.textContent = msg;
+      bar.classList.add('show');
+      document.querySelector('.scanner-hint').textContent = 'Tutup modal lalu periksa izin kamera di browser Anda.';
     }
   }
 
@@ -952,12 +965,12 @@
             <div class="form-group">
               <label class="form-label">Serial Number</label>
               <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="S/N"
+                <input type="text" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="S/N"
                   value="${escHtml(d.serialNumber)}" oninput="updateDevice('${d.id}','serialNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan Serial Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','serialNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </button>
-                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); document.querySelector('#dc_${d.id} .sn-input').value=t; })">
+                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); var inp=document.querySelector('#dc_${d.id} .sn-input'); if(inp) inp.value=t; })">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
                 </button>
               </div>
@@ -965,12 +978,12 @@
             <div class="form-group">
               <label class="form-label">Part Number</label>
               <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="P/N"
+                <input type="text" class="form-input pn-input" style="flex:1;min-width:0;" placeholder="P/N"
                   value="${escHtml(d.partNumber)}" oninput="updateDevice('${d.id}','partNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan Part Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','partNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </button>
-                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); document.querySelector('#dc_${d.id} .pn-input').value=t; })">
+                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); var inp=document.querySelector('#dc_${d.id} .pn-input'); if(inp) inp.value=t; })">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
                 </button>
               </div>
