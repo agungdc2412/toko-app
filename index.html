@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Data Asset Management</title>
+  <title>Fiberstar Asset Management</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #111; min-height: 100vh; }
@@ -72,6 +73,58 @@
     .delete-device-btn { font-size: 12px; color: var(--fs-red); background: none; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 6px 14px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
     .delete-device-btn:hover { background: var(--fs-red-light); border-color: var(--fs-red); }
 
+    .dup-device-btn { font-size: 12px; color: var(--fs-teal); background: none; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 6px 14px; cursor: pointer; font-family: inherit; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+    .dup-device-btn:hover { background: var(--fs-green-light); border-color: var(--fs-teal); }
+    .dup-device-btn svg { width: 13px; height: 13px; }
+
+    /* ── Signature Modal ─────────────────────────────── */
+    .sig-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 1001; align-items: center; justify-content: center;
+    }
+    .sig-overlay.active { display: flex; }
+    .sig-modal {
+      background: var(--bg-primary); border-radius: var(--radius-lg); overflow: hidden;
+      width: min(480px, 96vw); box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+    }
+    .sig-header {
+      padding: 14px 18px; background: var(--fs-blue);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .sig-header-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .sig-header-title svg { width: 18px; height: 18px; }
+    .sig-close { width: 30px; height: 30px; background: rgba(255,255,255,0.15); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .sig-close:hover { background: rgba(255,255,255,0.3); }
+    .sig-body { padding: 16px 18px; }
+    .sig-canvas-wrap {
+      border: 2px dashed var(--border); border-radius: var(--radius-md);
+      background: #fafafa; position: relative; touch-action: none; cursor: crosshair;
+      margin-bottom: 10px; overflow: hidden;
+    }
+    .sig-canvas-wrap.has-sig { border-color: var(--fs-blue-mid); border-style: solid; }
+    #sigCanvas { display: block; width: 100%; height: 180px; }
+    .sig-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px;
+      color: var(--text-secondary); font-size: 12px; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .sig-placeholder svg { width: 28px; height: 28px; opacity: 0.4; }
+    .sig-placeholder.hidden { opacity: 0; }
+    .sig-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+    .sig-btn-clear { flex: 1; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius-md); background: none; font-family: inherit; font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .sig-btn-clear:hover { background: var(--fs-red-light); border-color: var(--fs-red); color: var(--fs-red); }
+    .sig-btn-save { flex: 2; padding: 8px; border: none; border-radius: var(--radius-md); background: var(--fs-blue); font-family: inherit; font-size: 13px; font-weight: 600; color: white; cursor: pointer; transition: background 0.15s; }
+    .sig-btn-save:hover { background: #0F4D8A; }
+    .sig-preview-wrap { margin-top: 6px; }
+    .sig-preview-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; }
+    .sig-preview-img { max-height: 60px; border: 1px solid var(--border); border-radius: 6px; padding: 4px; background: white; display: block; }
+    /* Signature badge in Form Checked */
+    .sig-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 12px; border-radius: 20px; background: var(--fs-green-light); color: var(--fs-green); font-weight: 500; cursor: pointer; border: 1px solid rgba(59,109,17,0.2); transition: all 0.15s; }
+    .sig-badge:hover { background: #C0DD97; }
+    .sig-badge.empty { background: var(--fs-blue-light); color: var(--fs-blue); border-color: rgba(24,95,165,0.2); }
+    .sig-badge svg { width: 14px; height: 14px; }
+
     .add-device-btn { width: 100%; padding: 13px; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: none; font-family: inherit; font-size: 14px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; margin-bottom: 1.25rem; }
     .add-device-btn:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
 
@@ -96,6 +149,126 @@
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     .file-input { display: none; }
+
+    /* ── Speech-to-Text ─────────────────────────────── */
+    .stt-wrap { display: flex; gap: 6px; align-items: center; }
+    .stt-wrap .form-input { flex: 1; min-width: 0; }
+    .stt-btn {
+      flex-shrink: 0; width: 36px; height: 38px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--bg-primary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; color: var(--text-secondary); padding: 0;
+    }
+    .stt-btn:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
+    .stt-btn.listening {
+      background: var(--fs-red-light); border-color: var(--fs-red);
+      color: var(--fs-red); animation: stt-pulse 1s infinite;
+    }
+    .stt-btn svg { width: 16px; height: 16px; }
+    @keyframes stt-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(163,45,45,0.35); }
+      50%       { box-shadow: 0 0 0 6px rgba(163,45,45,0); }
+    }
+    .stt-unsupported {
+      display: none; font-size: 11px; color: var(--fs-amber);
+      background: var(--fs-amber-light); border: 1px solid rgba(186,117,23,0.3);
+      border-radius: var(--radius-md); padding: 6px 12px; margin-bottom: 10px;
+    }
+    .stt-unsupported.show { display: block; }
+
+    /* ── Barcode / QR Scanner ────────────────────────── */
+    .scan-btn {
+      flex-shrink: 0; width: 36px; height: 38px;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--bg-primary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; color: var(--text-secondary); padding: 0;
+    }
+    .scan-btn:hover { background: var(--fs-green-light); border-color: var(--fs-green); color: var(--fs-green); }
+    .scan-btn.scanning { background: var(--fs-green-light); border-color: var(--fs-green); color: var(--fs-green); animation: scan-pulse 1s infinite; }
+    .scan-btn svg { width: 16px; height: 16px; }
+    @keyframes scan-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59,109,17,0.35); }
+      50%       { box-shadow: 0 0 0 6px rgba(59,109,17,0); }
+    }
+
+    /* Scanner modal */
+    .scanner-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82);
+      z-index: 1000; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .scanner-overlay.active { display: flex; }
+    .scanner-modal {
+      background: #111; border-radius: 16px; overflow: hidden;
+      width: min(420px, 94vw); box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+      display: flex; flex-direction: column;
+    }
+    .scanner-header {
+      padding: 14px 18px; background: #1a1a1a;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .scanner-header-title { font-size: 14px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .scanner-header-title svg { width: 18px; height: 18px; color: var(--fs-green); }
+    .scanner-close {
+      width: 30px; height: 30px; background: #333; border: none; border-radius: 50%;
+      color: #aaa; cursor: pointer; font-size: 16px; display: flex;
+      align-items: center; justify-content: center; transition: background 0.15s;
+    }
+    .scanner-close:hover { background: #555; color: #fff; }
+    .scanner-viewport {
+      position: relative; width: 100%; background: #000;
+      aspect-ratio: 4/3; overflow: hidden;
+    }
+    #scannerVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .scanner-frame {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scanner-frame-box {
+      width: 65%; aspect-ratio: 1;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 12px; position: relative;
+    }
+    /* Corner brackets */
+    .scanner-frame-box::before, .scanner-frame-box::after,
+    .scanner-frame-inner::before, .scanner-frame-inner::after {
+      content: ''; position: absolute; width: 22px; height: 22px;
+      border-color: #4ADE80; border-style: solid; border-width: 0;
+    }
+    .scanner-frame-box::before  { top: -2px; left: -2px;  border-top-width: 3px; border-left-width: 3px;  border-radius: 10px 0 0 0; }
+    .scanner-frame-box::after   { top: -2px; right: -2px; border-top-width: 3px; border-right-width: 3px; border-radius: 0 10px 0 0; }
+    .scanner-frame-inner::before { bottom: -2px; left: -2px;  border-bottom-width: 3px; border-left-width: 3px;  border-radius: 0 0 0 10px; }
+    .scanner-frame-inner::after  { bottom: -2px; right: -2px; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 10px 0; }
+    .scanner-frame-inner { position: absolute; inset: 0; }
+    /* Scan line */
+    .scan-line {
+      position: absolute; left: 8%; right: 8%; height: 2px;
+      background: linear-gradient(90deg, transparent, #4ADE80, transparent);
+      animation: scan-line-move 2s ease-in-out infinite; top: 10%;
+    }
+    @keyframes scan-line-move {
+      0%   { top: 10%; opacity: 1; }
+      50%  { top: 85%; opacity: 1; }
+      100% { top: 10%; opacity: 1; }
+    }
+    .scanner-footer {
+      padding: 12px 18px; background: #1a1a1a;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .scanner-hint { font-size: 12px; color: #aaa; text-align: center; }
+    .scanner-result-bar {
+      display: none; background: var(--fs-green-light); border: 1px solid var(--fs-green);
+      border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--fs-green);
+      font-weight: 500; text-align: center; word-break: break-all;
+    }
+    .scanner-result-bar.show { display: block; }
+    .scanner-cam-select {
+      background: #2a2a2a; border: 1px solid #444; border-radius: 8px;
+      color: #ccc; font-size: 12px; padding: 6px 10px; font-family: inherit;
+      width: 100%; cursor: pointer;
+    }
+    .scanner-cam-select:focus { outline: none; border-color: #4ADE80; }
 
     /* Coordinate field */
     .coord-input-row { display: flex; gap: 6px; align-items: center; }
@@ -148,12 +321,17 @@
       <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     </div>
     <div>
-      <div class="app-title">Asset Management</div>
-      <div class="app-subtitle">Collect Data Site</div>
+      <div class="app-title">Collect Data Asset</div>
+      <div class="app-subtitle">Network Asset Management</div>
     </div>
     <div style="margin-left:auto;">
       <span class="status-badge status-pending" id="formStatus">&#9679; Draft</span>
     </div>
+  </div>
+
+  <!-- STT unsupported banner -->
+  <div class="stt-unsupported" id="sttUnsupported">
+    ⚠️ Speech-to-Text tidak tersedia di browser ini. Gunakan <b>Chrome</b> atau <b>Edge</b> untuk menggunakan fitur 🎤.
   </div>
 
   <!-- Form Checked -->
@@ -166,11 +344,21 @@
       </div>
       <div class="form-group">
         <label class="form-label">Site Name</label>
-        <input type="text" class="form-input" placeholder="e.g. Apt Basura" id="fSiteName">
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Jakarta Pusat NOC" id="fSiteName">
+          <button class="stt-btn" title="Ucapkan Site Name" onclick="startSTT('fSiteName', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Site ID</label>
-        <input type="text" class="form-input" placeholder="e.g. CKG014" id="fSiteId">
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. JKT-NOC-001" id="fSiteId">
+          <button class="stt-btn" title="Ucapkan Site ID" onclick="startSTT('fSiteId', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Type Site</label>
@@ -181,7 +369,12 @@
       </div>
       <div class="form-group">
         <label class="form-label">PIC Name</label>
-        <input type="text" class="form-input" placeholder="Nama PIC" id="fPicName">
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="Nama PIC" id="fPicName">
+          <button class="stt-btn" title="Ucapkan Nama PIC" onclick="startSTT('fPicName', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Division</label>
@@ -212,7 +405,26 @@
       <!-- Floor Location -->
       <div class="form-group">
         <label class="form-label">Floor Location</label>
-        <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
+          <button class="stt-btn" title="Ucapkan Floor Location" onclick="startSTT('fFloorLocation', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tanda Tangan PIC -->
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label class="form-label">Tanda Tangan PIC</label>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button class="sig-badge empty" id="sigBadge" onclick="openSignature()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+            Tambah Tanda Tangan
+          </button>
+          <div id="sigThumbWrap" style="display:none;">
+            <img id="sigThumb" style="height:44px;border:1px solid var(--border);border-radius:6px;padding:3px;background:#fff;cursor:pointer;" onclick="openSignature()" title="Klik untuk ubah tanda tangan">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -248,7 +460,7 @@
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
         </svg>
-        Kirim Email ke Int-Asset.Management@fiberstar.co.id
+        Kirim Email ke Asset Management
       </button>
       <button class="action-btn btn-pdf" onclick="generatePDF()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -278,11 +490,71 @@
       </button>
     </div>
     <div class="zip-info">
-      &#128230; File ZIP berisi: <b>data.csv</b> + folder per device dengan semua foto (rack, full, zoom, label) + <b>README.txt</b>.<br>
+      &#128230; File ZIP berisi: <b>data.csv</b> + folder per device dengan semua foto (rack, full device, type, serial number) + <b>README.txt</b>.<br>
       Setelah download, attach file ZIP ke email atau drag &amp; drop ke Teams channel.
+   Jika mengalamai kendala atau butuh panduan bisa mengubungi PIC Asset Tagging
+   Agung / 081217400905
+   
     </div>
   </div>
 
+</div>
+
+<!-- Tanda Tangan Modal -->
+<div class="sig-overlay" id="sigOverlay">
+  <div class="sig-modal">
+    <div class="sig-header">
+      <div class="sig-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        Tanda Tangan Digital PIC
+      </div>
+      <button class="sig-close" onclick="closeSig()">&#x2715;</button>
+    </div>
+    <div class="sig-body">
+      <div class="sig-canvas-wrap" id="sigCanvasWrap">
+        <canvas id="sigCanvas"></canvas>
+        <div class="sig-placeholder" id="sigPlaceholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          <span>Tanda tangan di sini menggunakan jari atau mouse</span>
+        </div>
+      </div>
+      <div class="sig-actions">
+        <button class="sig-btn-clear" onclick="clearSig()">&#x2715; Hapus</button>
+        <button class="sig-btn-save" onclick="saveSig()">&#10003; Simpan Tanda Tangan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Barcode / QR Scanner Modal -->
+<div class="scanner-overlay" id="scannerOverlay">
+  <div class="scanner-modal">
+    <div class="scanner-header">
+      <div class="scanner-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
+          <rect x="3" y="16" width="5" height="5" rx="1"/>
+          <path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/>
+        </svg>
+        Scan Barcode / QR Code
+      </div>
+      <button class="scanner-close" onclick="closeScanner()">&#x2715;</button>
+    </div>
+    <div class="scanner-viewport">
+      <video id="scannerVideo" autoplay muted playsinline></video>
+      <div class="scanner-frame">
+        <div class="scanner-frame-box">
+          <div class="scanner-frame-inner"></div>
+          <div class="scan-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scanner-footer">
+      <div class="scanner-result-bar" id="scannerResultBar"></div>
+      <div class="scanner-hint">Arahkan kamera ke barcode atau QR code perangkat</div>
+      <select class="scanner-cam-select" id="scannerCamSelect" onchange="switchCamera(this.value)"></select>
+    </div>
+  </div>
 </div>
 
 <input type="file" accept="image/*" capture="environment" class="file-input" id="globalFileInput">
@@ -290,10 +562,190 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ── Speech-to-Text Engine ─────────────────────────────
+  const STT_SUPPORTED = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+  let activeSTTBtn = null;
+  let activeRecognition = null;
+
+  if (!STT_SUPPORTED) {
+    document.getElementById('sttUnsupported').classList.add('show');
+  }
+
+  // STT untuk field statis (Form Checked)
+  function startSTT(inputId, btn) {
+    if (!STT_SUPPORTED) { showToast('Speech-to-Text tidak didukung. Gunakan Chrome/Edge.'); return; }
+    const input = document.getElementById(inputId);
+    _runSTT(btn, (text) => {
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+    });
+  }
+
+  // STT untuk field dinamis di device card
+  function startSTTInline(btn, callback) {
+    if (!STT_SUPPORTED) { showToast('Speech-to-Text tidak didukung. Gunakan Chrome/Edge.'); return; }
+    _runSTT(btn, callback);
+  }
+
+  function _runSTT(btn, onResult) {
+    // Jika ada sesi aktif, hentikan dulu
+    if (activeRecognition) {
+      activeRecognition.stop();
+      if (activeSTTBtn) activeSTTBtn.classList.remove('listening');
+      const wasSame = (activeSTTBtn === btn);
+      activeSTTBtn = null;
+      activeRecognition = null;
+      if (wasSame) return; // toggle off jika tombol sama
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new SpeechRecognition();
+    rec.lang = 'id-ID';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+    rec.continuous = false;
+
+    btn.classList.add('listening');
+    activeSTTBtn = btn;
+    activeRecognition = rec;
+
+    rec.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      onResult(transcript);
+      showToast('\uD83C\uDF99\uFE0F Direkam: "' + transcript + '"', 3000);
+    };
+    rec.onerror = (e) => {
+      let msg = 'Gagal merekam suara.';
+      if (e.error === 'not-allowed') msg = '\uD83D\uDEAB Izin mikrofon ditolak. Aktifkan di pengaturan browser.';
+      if (e.error === 'no-speech')   msg = 'Tidak ada suara terdeteksi. Coba bicara lebih dekat.';
+      if (e.error === 'network')     msg = 'Gagal: periksa koneksi internet.';
+      showToast(msg);
+    };
+    rec.onend = () => {
+      btn.classList.remove('listening');
+      if (activeSTTBtn === btn) { activeSTTBtn = null; activeRecognition = null; }
+    };
+
+    rec.start();
+  }
+
   let devices = [];
   let deviceCounter = 0;
   let currentPhotoTarget = null;
   let sitePhotos = []; // { url, ext }
+
+  // ── Barcode / QR Scanner Engine ───────────────────────
+  let scannerCallback = null;
+  let codeReader = null;
+  let scannerStream = null;
+  let availableCameras = [];
+
+  async function openScanner(callback) {
+    scannerCallback = callback;
+    document.getElementById('scannerOverlay').classList.add('active');
+    document.getElementById('scannerResultBar').classList.remove('show');
+    document.getElementById('scannerResultBar').textContent = '';
+    await _initScanner();
+  }
+
+  async function _initScanner(deviceId) {
+    try {
+      // Stop existing stream
+      if (scannerStream) {
+        scannerStream.getTracks().forEach(t => t.stop());
+        scannerStream = null;
+      }
+      if (codeReader) {
+        codeReader.reset();
+      }
+
+      // Get camera list
+      if (availableCameras.length === 0) {
+        const devices2 = await ZXing.BrowserCodeReader.listVideoInputDevices();
+        availableCameras = devices2;
+        const sel = document.getElementById('scannerCamSelect');
+        sel.innerHTML = '';
+        devices2.forEach((d, i) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          // Prefer label; fallback to Back/Front heuristic
+          opt.textContent = d.label || (i === 0 ? 'Kamera Belakang' : 'Kamera Depan');
+          sel.appendChild(opt);
+        });
+        // Default: prefer back camera
+        const backCam = devices2.find(d => /back|rear|environment/i.test(d.label));
+        if (backCam && !deviceId) deviceId = backCam.deviceId;
+        if (deviceId) sel.value = deviceId;
+      }
+
+      codeReader = new ZXing.BrowserMultiFormatReader();
+
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.DATA_MATRIX,
+        ZXing.BarcodeFormat.PDF_417,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+      ]);
+      codeReader = new ZXing.BrowserMultiFormatReader(hints);
+
+      const constraints = deviceId
+        ? { video: { deviceId: { exact: deviceId } } }
+        : { video: { facingMode: 'environment' } };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      scannerStream = stream;
+      const video = document.getElementById('scannerVideo');
+      video.srcObject = stream;
+
+      codeReader.decodeFromStream(stream, video, (result, err) => {
+        if (result) {
+          const text = result.getText();
+          // Flash result bar
+          const bar = document.getElementById('scannerResultBar');
+          bar.textContent = '✓ ' + text;
+          bar.classList.add('show');
+          // Vibrate if supported
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+          // Deliver result then close
+          setTimeout(() => {
+            if (scannerCallback) scannerCallback(text);
+            closeScanner();
+            showToast('📷 Scan berhasil: "' + text + '"', 3500);
+          }, 600);
+        }
+      });
+    } catch (err) {
+      closeScanner();
+      let msg = 'Gagal membuka kamera.';
+      if (err.name === 'NotAllowedError') msg = '🚫 Izin kamera ditolak. Aktifkan di pengaturan browser.';
+      if (err.name === 'NotFoundError')   msg = 'Kamera tidak ditemukan di perangkat ini.';
+      showToast(msg);
+    }
+  }
+
+  function switchCamera(deviceId) {
+    if (deviceId) _initScanner(deviceId);
+  }
+
+  function closeScanner() {
+    document.getElementById('scannerOverlay').classList.remove('active');
+    if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+    if (codeReader) { codeReader.reset(); codeReader = null; }
+    availableCameras = [];
+    scannerCallback = null;
+  }
+
+  // Close on overlay click
+  document.getElementById('scannerOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeScanner();
+  });
 
   function showToast(msg, dur = 4000) {
     const t = document.getElementById('toast');
@@ -403,6 +855,32 @@
     showToast('Device dihapus');
   }
 
+  function duplicateDevice(id) {
+    const src = devices.find(x => x.id === id);
+    if (!src) return;
+    deviceCounter++;
+    const newId = 'dev_' + deviceCounter;
+    // Deep copy photos
+    const newDev = {
+      id: newId,
+      deviceName:   src.deviceName,
+      serialNumber: src.serialNumber,
+      partNumber:   src.partNumber,
+      photos: { full: src.photos.full, zoom: src.photos.zoom, label: src.photos.label },
+      exts:   { full: src.exts.full,   zoom: src.exts.zoom,   label: src.exts.label },
+      collapsed: false
+    };
+    // Insert right after the source device
+    const idx = devices.findIndex(x => x.id === id);
+    devices.splice(idx + 1, 0, newDev);
+    renderDevices();
+    setTimeout(() => {
+      const el = document.getElementById('dc_' + newId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+    showToast('Device berhasil diduplikat ✓');
+  }
+
   function toggleDevice(id) {
     const d = devices.find(x => x.id === id);
     if (d) { d.collapsed = !d.collapsed; renderDevices(); }
@@ -437,9 +915,14 @@
         <div class="device-card-body">
           <div class="form-group" style="margin-bottom:14px;">
             <label class="form-label">Device Full Name</label>
-            <input type="text" class="form-input" placeholder="e.g. Cisco Catalyst 9200L-48P-4X"
-              value="${escHtml(d.deviceName)}"
-              oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i})">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="e.g. Cisco Catalyst 9200L-48P-4X"
+                value="${escHtml(d.deviceName)}"
+                oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i})">
+              <button class="stt-btn" title="Ucapkan Device Name" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','deviceName',t); updateDeviceTitle('${d.id}',t,${i}); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+              </button>
+            </div>
           </div>
 
           <div class="form-label" style="margin-bottom:6px;">Foto Device</div>
@@ -450,11 +933,11 @@
             </button>
             <button class="photo-btn ${d.photos.zoom ? 'has-photo' : ''}" onclick="triggerPhoto('${d.id}','zoom')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-              Foto Type ${d.photos.zoom ? '&#10003;' : ''}
+              Foto Type Device ${d.photos.zoom ? '&#10003;' : ''}
             </button>
             <button class="photo-btn ${d.photos.label ? 'has-photo' : ''}" onclick="triggerPhoto('${d.id}','label')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-              Foto SN ${d.photos.label ? '&#10003;' : ''}
+              Foto Serial Number ${d.photos.label ? '&#10003;' : ''}
             </button>
           </div>
 
@@ -468,17 +951,37 @@
           <div class="form-grid" style="margin-bottom:14px;">
             <div class="form-group">
               <label class="form-label">Serial Number</label>
-              <input type="text" class="form-input" placeholder="S/N"
-                value="${escHtml(d.serialNumber)}" oninput="updateDevice('${d.id}','serialNumber',this.value)">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="S/N"
+                  value="${escHtml(d.serialNumber)}" oninput="updateDevice('${d.id}','serialNumber',this.value)">
+                <button class="stt-btn" title="Ucapkan Serial Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','serialNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); document.querySelector('#dc_${d.id} .sn-input').value=t; })">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
+                </button>
+              </div>
             </div>
             <div class="form-group">
               <label class="form-label">Part Number</label>
-              <input type="text" class="form-input" placeholder="P/N"
-                value="${escHtml(d.partNumber)}" oninput="updateDevice('${d.id}','partNumber',this.value)">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="P/N"
+                  value="${escHtml(d.partNumber)}" oninput="updateDevice('${d.id}','partNumber',this.value)">
+                <button class="stt-btn" title="Ucapkan Part Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','partNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                </button>
+                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); document.querySelector('#dc_${d.id} .pn-input').value=t; })">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <div style="display:flex;justify-content:flex-end;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Duplikat
+            </button>
             <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus Device</button>
           </div>
         </div>` : ''}
@@ -529,6 +1032,7 @@
       coordLat:      document.getElementById('fCoordLat').value,
       coordLng:      document.getElementById('fCoordLng').value,
       floorLocation: document.getElementById('fFloorLocation').value,
+      signature:     sigDataUrl,
       devices,
       sitePhotos
     };
@@ -586,6 +1090,7 @@
     </div>
     <table><thead><tr><th>#</th><th>Device Name</th><th>Serial Number</th><th>Part Number</th></tr></thead>
     <tbody>${rows}</tbody></table>
+    ${f.signature ? `<div style="margin-top:28px;border-top:1px solid #eee;padding-top:16px;"><p style="font-size:12px;color:#666;margin-bottom:6px;">Tanda Tangan PIC:</p><img src="${f.signature}" style="height:70px;border:1px solid #eee;border-radius:6px;padding:4px;"></div>` : ''}
     <script>window.print();<\/script></body></html>`);
   }
 
@@ -647,6 +1152,11 @@
         });
       }
 
+      // Signature
+      if (f.signature) {
+        root.file('ttd_pic.png', f.signature.split(',')[1], { base64: true });
+      }
+
       // Photos per device
       let totalDevicePhotos = 0;
       const photoSummary = [];
@@ -694,6 +1204,7 @@
         `${folderName}/\n` +
         `  data.csv              <- Data semua device\n` +
         `  Site_Photos/          <- Foto view site & rack (${totalSitePhotos} foto)\n` +
+        (f.signature ? `  ttd_pic.png           <- Tanda tangan digital PIC\n` : '') +
         `${photoSummary.join('\n')}\n\n` +
         `Cara penggunaan:\n` +
         `1. Buka data.csv di Excel / Google Sheets\n` +
@@ -739,9 +1250,109 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  // ── Tanda Tangan Digital ───────────────────────────────
+  let sigDataUrl = null;
+  let sigDrawing = false;
+  let sigCtx = null;
+  let sigCanvas = null;
+
+  function openSignature() {
+    document.getElementById('sigOverlay').classList.add('active');
+    // Init canvas
+    sigCanvas = document.getElementById('sigCanvas');
+    const wrap = document.getElementById('sigCanvasWrap');
+    sigCanvas.width  = wrap.clientWidth  || 440;
+    sigCanvas.height = 180;
+    sigCtx = sigCanvas.getContext('2d');
+    sigCtx.strokeStyle = '#111';
+    sigCtx.lineWidth = 2.5;
+    sigCtx.lineCap = 'round';
+    sigCtx.lineJoin = 'round';
+
+    // Restore existing signature if any
+    if (sigDataUrl) {
+      const img = new Image();
+      img.onload = () => sigCtx.drawImage(img, 0, 0);
+      img.src = sigDataUrl;
+      document.getElementById('sigPlaceholder').classList.add('hidden');
+      document.getElementById('sigCanvasWrap').classList.add('has-sig');
+    } else {
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      document.getElementById('sigPlaceholder').classList.remove('hidden');
+      document.getElementById('sigCanvasWrap').classList.remove('has-sig');
+    }
+
+    _bindSigEvents();
+  }
+
+  function _bindSigEvents() {
+    const c = sigCanvas;
+    const getPos = (e) => {
+      const r = c.getBoundingClientRect();
+      const src = e.touches ? e.touches[0] : e;
+      return { x: (src.clientX - r.left) * (c.width / r.width), y: (src.clientY - r.top) * (c.height / r.height) };
+    };
+    const start = (e) => {
+      e.preventDefault();
+      sigDrawing = true;
+      const p = getPos(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(p.x, p.y);
+      document.getElementById('sigPlaceholder').classList.add('hidden');
+      document.getElementById('sigCanvasWrap').classList.add('has-sig');
+    };
+    const move = (e) => {
+      if (!sigDrawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      sigCtx.lineTo(p.x, p.y);
+      sigCtx.stroke();
+    };
+    const end = () => { sigDrawing = false; };
+
+    c.onmousedown  = start; c.onmousemove  = move; c.onmouseup   = end; c.onmouseleave = end;
+    c.ontouchstart = start; c.ontouchmove  = move; c.ontouchend  = end;
+  }
+
+  function clearSig() {
+    if (!sigCtx) return;
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    document.getElementById('sigPlaceholder').classList.remove('hidden');
+    document.getElementById('sigCanvasWrap').classList.remove('has-sig');
+  }
+
+  function saveSig() {
+    if (!sigCanvas) return;
+    // Check if canvas is empty
+    const pixels = sigCtx.getImageData(0, 0, sigCanvas.width, sigCanvas.height).data;
+    const hasContent = pixels.some((v, i) => i % 4 === 3 && v > 0);
+    if (!hasContent) { showToast('Tanda tangan masih kosong. Silakan tanda tangan terlebih dahulu.'); return; }
+
+    sigDataUrl = sigCanvas.toDataURL('image/png');
+    // Update badge
+    const badge = document.getElementById('sigBadge');
+    badge.classList.remove('empty');
+    badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Tanda Tangan Tersimpan`;
+    // Show thumb
+    document.getElementById('sigThumb').src = sigDataUrl;
+    document.getElementById('sigThumbWrap').style.display = 'block';
+    closeSig();
+    showToast('Tanda tangan berhasil disimpan ✓');
+  }
+
+  function closeSig() {
+    document.getElementById('sigOverlay').classList.remove('active');
+    sigDrawing = false;
+  }
+
+  document.getElementById('sigOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSig();
+  });
+
   // ── Init ───────────────────────
   renderDevices();
   renderSitePhotos();
+  if (!STT_SUPPORTED) document.getElementById('sttUnsupported').classList.add('show');
 </script>
 </body>
 </html>
