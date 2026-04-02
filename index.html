@@ -6,6 +6,7 @@
   <title>Fiberstar Asset Management</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #111; min-height: 100vh; }
@@ -127,6 +128,76 @@
 
     .add-device-btn { width: 100%; padding: 13px; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: none; font-family: inherit; font-size: 14px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; margin-bottom: 1.25rem; }
     .add-device-btn:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
+
+    /* ── Status Device Pills ─────────────────────────── */
+    .status-pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .status-pill {
+      padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 500;
+      border: 1.5px solid var(--border); background: var(--bg-primary);
+      cursor: pointer; font-family: inherit; transition: all 0.15s; color: var(--text-secondary);
+    }
+    .status-pill:hover { border-color: var(--fs-blue-mid); color: var(--fs-blue); background: var(--fs-blue-light); }
+    .status-pill.active-sel  { background: var(--fs-green-light);  color: var(--fs-green);  border-color: var(--fs-green); }
+    .status-pill.damage-sel  { background: var(--fs-red-light);    color: var(--fs-red);    border-color: var(--fs-red); }
+    .status-pill.spare-sel   { background: var(--fs-amber-light);  color: var(--fs-amber);  border-color: var(--fs-amber); }
+
+    /* ── Device Type Badge ───────────────────────────── */
+    .type-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .type-badge.single { background: var(--fs-blue-light); color: var(--fs-blue); }
+    .type-badge.module { background: var(--fs-purple-light); color: var(--fs-purple); }
+
+    /* ── Add Device Popup ────────────────────────────── */
+    .add-type-popup-wrap { position: relative; margin-bottom: 1.25rem; }
+    .add-type-popup {
+      display: none; position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%); background: var(--bg-primary);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 10px; z-index: 100;
+      min-width: 280px;
+    }
+    .add-type-popup.open { display: flex; gap: 8px; }
+    .add-type-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 14px 10px; border-radius: var(--radius-md); border: 1.5px solid var(--border);
+      background: var(--bg-primary); cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .add-type-btn:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); }
+    .add-type-btn svg { width: 22px; height: 22px; color: var(--fs-blue); }
+    .add-type-btn .atb-label { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .add-type-btn .atb-sub   { font-size: 11px; color: var(--text-secondary); text-align: center; }
+    .add-type-btn.module-btn { border-color: rgba(55,48,163,0.25); }
+    .add-type-btn.module-btn:hover { background: var(--fs-purple-light); border-color: var(--fs-purple); }
+    .add-type-btn.module-btn svg { color: var(--fs-purple); }
+
+    /* ── Sub-Module items ────────────────────────────── */
+    .submodule-list { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .submodule-item {
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      margin-bottom: 8px; overflow: hidden; background: var(--bg-secondary);
+    }
+    .submodule-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; cursor: pointer; user-select: none;
+    }
+    .submodule-title { font-size: 13px; font-weight: 500; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .submodule-num { width: 20px; height: 20px; border-radius: 50%; background: var(--fs-purple); color: white; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .submodule-body { padding: 12px; background: var(--bg-primary); border-top: 1px solid var(--border); }
+    .add-submodule-btn {
+      width: 100%; padding: 9px; border: 1px dashed rgba(55,48,163,0.3); border-radius: var(--radius-md);
+      background: none; font-family: inherit; font-size: 13px; color: var(--fs-purple);
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.15s; margin-top: 8px;
+    }
+    .add-submodule-btn:hover { background: var(--fs-purple-light); border-color: var(--fs-purple); }
+    .del-submodule-btn { font-size: 11px; color: var(--fs-red); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: inherit; }
+    .del-submodule-btn:hover { background: var(--fs-red-light); }
+
+    /* ── Photo 4-col group for Module ────────────────── */
+    .photo-btn-group-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
+    .photo-btn-group-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
 
     .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s; }
@@ -310,9 +381,37 @@
     .add-site-photo-btn svg { width: 22px; height: 22px; }
     .site-photo-count { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
     .site-photo-count b { color: var(--fs-blue); }
+
+    /* ── Offline Banner ─────────────────────────────── */
+    .offline-banner {
+      display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+      background: var(--fs-amber); color: white; text-align: center;
+      padding: 8px 16px; font-size: 13px; font-weight: 500;
+    }
+    .offline-banner.show { display: block; }
+    .offline-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: white; margin-right: 6px; animation: blink 1.2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    /* ── GPS Map Preview ────────────────────────────── */
+    .map-preview-wrap {
+      margin-top: 10px; border-radius: var(--radius-md); overflow: hidden;
+      border: 1px solid var(--border); display: none;
+    }
+    .map-preview-wrap.show { display: block; }
+    .map-preview-header {
+      background: var(--fs-blue); color: white; padding: 7px 12px;
+      font-size: 12px; font-weight: 500; display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .map-preview-header a { color: rgba(255,255,255,0.85); font-size: 11px; text-decoration: none; }
+    .map-preview-header a:hover { color: white; text-decoration: underline; }
+    #mapIframe { width: 100%; height: 220px; border: none; display: block; }
   </style>
 </head>
 <body>
+<div class="offline-banner" id="offlineBanner">
+  <span class="offline-dot"></span>⚠️ Anda sedang offline. Data form tersimpan otomatis. Fitur kamera & scan tetap bisa digunakan.
+</div>
 <div class="app">
 
   <!-- Header -->
@@ -334,13 +433,21 @@
     ⚠️ Speech-to-Text tidak tersedia di browser ini. Gunakan <b>Chrome</b> atau <b>Edge</b> untuk menggunakan fitur 🎤.
   </div>
 
-  <!-- Form Checked -->
+  <!-- Form Site Information -->
   <div class="section-card">
-    <div class="section-title"><span class="section-title-dot"></span>Form Checked</div>
+    <div class="section-title"><span class="section-title-dot"></span>Form Site Information</div>
     <div class="form-grid">
       <div class="form-group">
         <label class="form-label">Date</label>
         <input type="date" class="form-input" id="fDate">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status Site</label>
+        <select class="form-select" id="fStatusSite">
+          <option value="">— Pilih Status —</option>
+          <option value="New">New</option>
+          <option value="Existing">Existing</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Site Name</label>
@@ -400,6 +507,14 @@
           </button>
         </div>
         <div class="coord-status" id="coordStatus"></div>
+        <!-- GPS Map Preview -->
+        <div class="map-preview-wrap" id="mapPreviewWrap">
+          <div class="map-preview-header">
+            <span>📍 Lokasi di Peta</span>
+            <a id="mapGoogleLink" href="#" target="_blank" rel="noopener">Buka di Google Maps ↗</a>
+          </div>
+          <iframe id="mapIframe" title="Peta Lokasi" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
       </div>
 
       <!-- Floor Location -->
@@ -439,16 +554,31 @@
     <div class="site-photo-count" id="sitePhotoCount"></div>
   </div>
 
-  <!-- Form Device -->
+  <!-- Form Collect Data Asset -->
   <div class="section-card">
-    <div class="section-title"><span class="section-title-dot"></span>Form Device</div>
+    <div class="section-title"><span class="section-title-dot"></span>Form Collect Data Asset</div>
     <div id="deviceList"></div>
-    <button class="add-device-btn" onclick="addDevice()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-      </svg>
-      Tambah Device
-    </button>
+    <!-- Add Device Button with Popup -->
+    <div class="add-type-popup-wrap" id="addTypeWrap">
+      <div class="add-type-popup" id="addTypePopup">
+        <button class="add-type-btn" onclick="addDevice('single');closeAddPopup()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span class="atb-label">Single Device</span>
+          <span class="atb-sub">1 perangkat tunggal</span>
+        </button>
+        <button class="add-type-btn module-btn" onclick="addDevice('module');closeAddPopup()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/></svg>
+          <span class="atb-label">Module Device</span>
+          <span class="atb-sub">Perangkat dengan sub-modul</span>
+        </button>
+      </div>
+      <button class="add-device-btn" id="btnAddDevice" onclick="toggleAddPopup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        Tambah Asset
+      </button>
+    </div>
   </div>
 
   <!-- Action Bar -->
@@ -476,7 +606,7 @@
           <polyline points="14 2 14 8 20 8"/>
           <line x1="10" y1="12" x2="14" y2="16"/><line x1="14" y1="12" x2="10" y2="16"/>
         </svg>
-        Generate Excel (.csv)
+        Generate Excel (.xlsx)
       </button>
 
       <!-- ZIP Button -->
@@ -490,11 +620,9 @@
       </button>
     </div>
     <div class="zip-info">
-      &#128230; File ZIP berisi: <b>data.csv</b> + folder per device dengan semua foto (rack, full device, type, serial number) + <b>README.txt</b>.<br>
-      Setelah download, attach file ZIP ke email atau drag &amp; drop ke Teams channel.
-   Jika mengalamai kendala atau butuh panduan bisa mengubungi PIC Asset Tagging
-   Agung / 081217400905
-   
+      &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.pdf</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
+      Setelah download, attach file ZIP ke email atau drag &amp; drop ke Teams channel.<br>
+      Jika mengalami kendala atau butuh panduan bisa menghubungi PIC Asset Tagging Agung / 081217400905
     </div>
   </div>
 
@@ -863,7 +991,7 @@
     setTimeout(() => t.classList.remove('show'), dur);
   }
 
-  // ── Capture Location ───────────────────────────────────
+  // ── Capture Location + Map Preview ────────────────────
   function captureLocation() {
     if (!navigator.geolocation) {
       setCoordStatus('Geolocation tidak didukung browser ini.', 'err');
@@ -881,6 +1009,8 @@
         setCoordStatus('✓ Lokasi berhasil didapat (akurasi ±' + Math.round(pos.coords.accuracy) + 'm)', 'ok');
         btn.disabled = false;
         showToast('Koordinat: ' + lat + ', ' + lng);
+        _showMapPreview(lat, lng);
+        _autoSave();
       },
       (err) => {
         let msg = 'Gagal mendapatkan lokasi.';
@@ -892,6 +1022,17 @@
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
+  }
+
+  function _showMapPreview(lat, lng) {
+    const wrap = document.getElementById('mapPreviewWrap');
+    const iframe = document.getElementById('mapIframe');
+    const link = document.getElementById('mapGoogleLink');
+    // Gunakan OpenStreetMap embed (tidak perlu API key, works offline jika cache)
+    iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${+lng-0.005},${+lat-0.005},${+lng+0.005},${+lat+0.005}&layer=mapnik&marker=${lat},${lng}`;
+    link.href = `https://www.google.com/maps?q=${lat},${lng}`;
+    link.textContent = `${lat}, ${lng} — Buka di Google Maps ↗`;
+    wrap.classList.add('show');
   }
   function setCoordStatus(msg, type) {
     const el = document.getElementById('coordStatus');
@@ -944,14 +1085,33 @@
     this.value = '';
   });
 
-  function addDevice() {
+  // ── Add Device Popup ───────────────────────────────────
+  function toggleAddPopup() {
+    const popup = document.getElementById('addTypePopup');
+    popup.classList.toggle('open');
+    // Close on outside click
+    if (popup.classList.contains('open')) {
+      setTimeout(() => document.addEventListener('click', _closePopupOutside, { once: true }), 0);
+    }
+  }
+  function _closePopupOutside(e) {
+    const wrap = document.getElementById('addTypeWrap');
+    if (wrap && !wrap.contains(e.target)) closeAddPopup();
+  }
+  function closeAddPopup() {
+    document.getElementById('addTypePopup').classList.remove('open');
+  }
+
+  function addDevice(type = 'single') {
     deviceCounter++;
     const id = 'dev_' + deviceCounter;
     devices.push({
-      id,
+      id, type,
       deviceName: '', serialNumber: '', partNumber: '',
-      photos: { full: null, zoom: null, label: null },
-      exts:   { full: null, zoom: null, label: null },
+      statusDevice: '',
+      photos: { full: null, zoom: null, label: null, pn: null },
+      exts:   { full: null, zoom: null, label: null, pn: null },
+      subModules: [],
       collapsed: false
     });
     renderDevices();
@@ -961,7 +1121,7 @@
   function removeDevice(id) {
     devices = devices.filter(d => d.id !== id);
     renderDevices();
-    showToast('Device dihapus');
+    showToast('Asset dihapus');
   }
 
   function duplicateDevice(id) {
@@ -969,17 +1129,14 @@
     if (!src) return;
     deviceCounter++;
     const newId = 'dev_' + deviceCounter;
-    // Deep copy photos
-    const newDev = {
-      id: newId,
-      deviceName:   src.deviceName,
-      serialNumber: src.serialNumber,
-      partNumber:   src.partNumber,
-      photos: { full: src.photos.full, zoom: src.photos.zoom, label: src.photos.label },
-      exts:   { full: src.exts.full,   zoom: src.exts.zoom,   label: src.exts.label },
-      collapsed: false
-    };
-    // Insert right after the source device
+    const newDev = JSON.parse(JSON.stringify(src));
+    newDev.id = newId;
+    newDev.collapsed = false;
+    // Give submodules new IDs
+    newDev.subModules = (src.subModules || []).map((sm, si) => ({
+      ...sm,
+      id: newId + '_sm_' + si,
+    }));
     const idx = devices.findIndex(x => x.id === id);
     devices.splice(idx + 1, 0, newDev);
     renderDevices();
@@ -987,7 +1144,7 @@
       const el = document.getElementById('dc_' + newId);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 50);
-    showToast('Device berhasil diduplikat ✓');
+    showToast('Asset berhasil diduplikat ✓');
   }
 
   function toggleDevice(id) {
@@ -1000,102 +1157,303 @@
     if (d) d[field] = val;
   }
 
+  function setDeviceStatus(id, status) {
+    const d = devices.find(x => x.id === id);
+    if (!d) return;
+    d.statusDevice = d.statusDevice === status ? '' : status;
+    renderDevices();
+  }
+
   function updateDeviceTitle(id, val, i) {
     const el = document.querySelector('#dc_' + id + ' .device-card-title span:last-child');
-    if (el) el.textContent = val || ('Device ' + (i + 1));
+    if (el) el.textContent = val || ('Asset ' + (i + 1));
+  }
+
+  // ── Sub-Module Functions ──────────────────────────────
+  function addSubModule(devId) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    const smId = devId + '_sm_' + Date.now();
+    d.subModules = d.subModules || [];
+    d.subModules.push({
+      id: smId, moduleName: '',
+      photos: { sn: null, pn: null },
+      exts:   { sn: null, pn: null },
+      collapsed: false
+    });
+    renderDevices();
+    setTimeout(() => { const el = document.getElementById('sm_' + smId); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 50);
+  }
+
+  function removeSubModule(devId, smId) {
+    const d = devices.find(x => x.id === devId);
+    if (d) { d.subModules = d.subModules.filter(s => s.id !== smId); renderDevices(); }
+  }
+
+  function toggleSubModule(devId, smId) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    const sm = d.subModules.find(s => s.id === smId);
+    if (sm) { sm.collapsed = !sm.collapsed; renderDevices(); }
+  }
+
+  function updateSubModule(devId, smId, field, val) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    const sm = d.subModules.find(s => s.id === smId);
+    if (sm) sm[field] = val;
+  }
+
+  function clearSubPhoto(devId, smId, type) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    const sm = d.subModules.find(s => s.id === smId);
+    if (sm) { sm.photos[type] = null; sm.exts[type] = null; renderDevices(); }
+  }
+
+  function triggerSubPhoto(devId, smId, type) {
+    currentPhotoTarget = { devId, smId, type };
+    const inp = document.getElementById('globalFileInput');
+    inp.value = '';
+    inp.click();
+  }
+
+  // ── SVG Icons helpers ─────────────────────────────────
+  const _icoMic   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
+  const _icoScan  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>`;
+  const _icoCam   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/></svg>`;
+  const _icoZoom  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`;
+  const _icoTag   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>`;
+  const _icoPn    = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`;
+  const _icoDup   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+
+  function _photoThumb(url, devId, type, label) {
+    return url
+      ? `<div class="photo-thumb" title="${label}"><img src="${url}"><div class="photo-del" onclick="clearPhoto('${devId}','${type}')">&#x2715;</div></div>`
+      : '';
+  }
+
+  function _snField(devId, val, cssClass) {
+    return `<div style="display:flex;gap:6px;align-items:center;">
+      <input type="text" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="S/N" value="${escHtml(val)}"
+        oninput="updateDevice('${devId}','serialNumber',this.value)">
+      <button class="stt-btn" title="Ucapkan S/N" onclick="startSTTInline(this,function(t){updateDevice('${devId}','serialNumber',t);this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
+      <button class="scan-btn" title="Scan S/N" onclick="openScanner(function(t){updateDevice('${devId}','serialNumber',t);var el=document.querySelector('#dc_${devId} .${cssClass}');if(el)el.value=t;})">${_icoScan}</button>
+    </div>`;
+  }
+
+  function _pnField(devId, val, cssClass) {
+    return `<div style="display:flex;gap:6px;align-items:center;">
+      <input type="text" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="P/N" value="${escHtml(val)}"
+        oninput="updateDevice('${devId}','partNumber',this.value)">
+      <button class="stt-btn" title="Ucapkan P/N" onclick="startSTTInline(this,function(t){updateDevice('${devId}','partNumber',t);this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
+      <button class="scan-btn" title="Scan P/N" onclick="openScanner(function(t){updateDevice('${devId}','partNumber',t);var el=document.querySelector('#dc_${devId} .${cssClass}');if(el)el.value=t;})">${_icoScan}</button>
+    </div>`;
+  }
+
+  function _statusPills(devId, current) {
+    const statuses = [
+      { val: 'Active', cls: 'active-sel', label: '✓ Active' },
+      { val: 'Damage', cls: 'damage-sel', label: '✗ Damage' },
+      { val: 'Spare',  cls: 'spare-sel',  label: '◎ Spare'  },
+    ];
+    return `<div class="form-group" style="margin-bottom:14px;">
+      <label class="form-label">Status Device</label>
+      <div class="status-pill-group">
+        ${statuses.map(s => `<button class="status-pill ${current===s.val ? s.cls : ''}" onclick="setDeviceStatus('${devId}','${s.val}')">${s.label}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ── Render Single Device Card body ─────────────────────
+  function _renderSingleBody(d, i) {
+    const anyPhoto = d.photos.full || d.photos.zoom || d.photos.label;
+    return `
+      <div class="device-card-body">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Device Full Name</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="e.g. Cisco Catalyst 9200L-48P-4X"
+              value="${escHtml(d.deviceName)}"
+              oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i})">
+            <button class="stt-btn" title="Ucapkan Device Name"
+              onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
+          </div>
+        </div>
+
+        <div class="form-label" style="margin-bottom:6px;">Foto Device</div>
+        <div class="photo-btn-group">
+          <button class="photo-btn ${d.photos.full?'has-photo':''}" onclick="triggerPhoto('${d.id}','full')">
+            ${_icoCam} Foto Full ${d.photos.full?'&#10003;':''}
+          </button>
+          <button class="photo-btn ${d.photos.zoom?'has-photo':''}" onclick="triggerPhoto('${d.id}','zoom')">
+            ${_icoZoom} Foto Type ${d.photos.zoom?'&#10003;':''}
+          </button>
+          <button class="photo-btn ${d.photos.label?'has-photo':''}" onclick="triggerPhoto('${d.id}','label')">
+            ${_icoTag} Foto S/N ${d.photos.label?'&#10003;':''}
+          </button>
+        </div>
+        ${anyPhoto ? `<div class="photo-thumbs">
+          ${_photoThumb(d.photos.full,'${d.id}','full','Full')}
+          ${_photoThumb(d.photos.zoom,'${d.id}','zoom','Type')}
+          ${_photoThumb(d.photos.label,'${d.id}','label','S/N')}
+        </div>` : ''}
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">Serial Number</label>
+            ${_snField(d.id, d.serialNumber, 'sn-input')}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Part Number</label>
+            ${_pnField(d.id, d.partNumber, 'pn-input')}
+          </div>
+        </div>
+
+        ${_statusPills(d.id, d.statusDevice)}
+
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
+        </div>
+      </div>`;
+  }
+
+  // ── Render Module Device Card body ─────────────────────
+  function _renderModuleBody(d, i) {
+    const anyPhoto = d.photos.full || d.photos.zoom || d.photos.label || d.photos.pn;
+    const subMods  = d.subModules || [];
+    return `
+      <div class="device-card-body">
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Module Device Name</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="e.g. Cisco ASR 9001"
+              value="${escHtml(d.deviceName)}"
+              oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i})">
+            <button class="stt-btn" title="Ucapkan Nama"
+              onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
+          </div>
+        </div>
+
+        <div class="form-label" style="margin-bottom:6px;">Foto Module (4 foto)</div>
+        <div class="photo-btn-group-4">
+          <button class="photo-btn ${d.photos.full?'has-photo':''}" onclick="triggerPhoto('${d.id}','full')">
+            ${_icoCam} Full ${d.photos.full?'&#10003;':''}
+          </button>
+          <button class="photo-btn ${d.photos.zoom?'has-photo':''}" onclick="triggerPhoto('${d.id}','zoom')">
+            ${_icoZoom} Type ${d.photos.zoom?'&#10003;':''}
+          </button>
+          <button class="photo-btn ${d.photos.label?'has-photo':''}" onclick="triggerPhoto('${d.id}','label')">
+            ${_icoTag} S/N ${d.photos.label?'&#10003;':''}
+          </button>
+          <button class="photo-btn ${d.photos.pn?'has-photo':''}" onclick="triggerPhoto('${d.id}','pn')">
+            ${_icoPn} P/N ${d.photos.pn?'&#10003;':''}
+          </button>
+        </div>
+        ${anyPhoto ? `<div class="photo-thumbs">
+          ${_photoThumb(d.photos.full,'${d.id}','full','Full')}
+          ${_photoThumb(d.photos.zoom,'${d.id}','zoom','Type')}
+          ${_photoThumb(d.photos.label,'${d.id}','label','S/N')}
+          ${_photoThumb(d.photos.pn,'${d.id}','pn','P/N')}
+        </div>` : ''}
+
+        <div class="form-grid" style="margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">Serial Number</label>
+            ${_snField(d.id, d.serialNumber, 'sn-input')}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Part Number</label>
+            ${_pnField(d.id, d.partNumber, 'pn-input')}
+          </div>
+        </div>
+
+        ${_statusPills(d.id, d.statusDevice)}
+
+        <!-- Sub-Modules -->
+        <div class="submodule-list">
+          <div class="form-label" style="margin-bottom:8px;">📦 Module</div>
+          ${subMods.map((sm, si) => _renderSubModule(d.id, sm, si)).join('')}
+          <button class="add-submodule-btn" onclick="addSubModule('${d.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Add Module
+          </button>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+          <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
+        </div>
+      </div>`;
+  }
+
+  // ── Render Sub-Module ──────────────────────────────────
+  function _renderSubModule(devId, sm, si) {
+    return `
+      <div class="submodule-item" id="sm_${sm.id}">
+        <div class="submodule-header" onclick="toggleSubModule('${devId}','${sm.id}')">
+          <div class="submodule-title">
+            <span class="submodule-num">${si + 1}</span>
+            <span>${escHtml(sm.moduleName) || 'Module ' + (si + 1)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="del-submodule-btn" onclick="event.stopPropagation();removeSubModule('${devId}','${sm.id}')">✕ Hapus</button>
+            <svg class="chevron ${sm.collapsed?'':'open'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        ${!sm.collapsed ? `
+        <div class="submodule-body">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Module Name</label>
+            <input type="text" class="form-input" placeholder="e.g. Line Card 1" value="${escHtml(sm.moduleName)}"
+              oninput="updateSubModule('${devId}','${sm.id}','moduleName',this.value);
+                       var el=document.querySelector('#sm_${sm.id} .submodule-title span:last-child');
+                       if(el)el.textContent=this.value||'Module ${si+1}';">
+          </div>
+          <div class="form-label" style="margin-bottom:6px;">Foto Module (2 foto)</div>
+          <div class="photo-btn-group-2">
+            <button class="photo-btn ${sm.photos.sn?'has-photo':''}" onclick="triggerSubPhoto('${devId}','${sm.id}','sn')">
+              ${_icoTag} Foto S/N ${sm.photos.sn?'&#10003;':''}
+            </button>
+            <button class="photo-btn ${sm.photos.pn?'has-photo':''}" onclick="triggerSubPhoto('${devId}','${sm.id}','pn')">
+              ${_icoPn} Foto P/N ${sm.photos.pn?'&#10003;':''}
+            </button>
+          </div>
+          ${(sm.photos.sn||sm.photos.pn) ? `<div class="photo-thumbs">
+            ${sm.photos.sn?`<div class="photo-thumb" title="S/N"><img src="${sm.photos.sn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','sn')">&#x2715;</div></div>`:''}
+            ${sm.photos.pn?`<div class="photo-thumb" title="P/N"><img src="${sm.photos.pn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','pn')">&#x2715;</div></div>`:''}
+          </div>` : ''}
+        </div>` : ''}
+      </div>`;
   }
 
   function renderDevices() {
     const list = document.getElementById('deviceList');
     if (devices.length === 0) {
-      list.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;font-size:13px;">Belum ada device. Klik tombol di bawah untuk menambah.</div>';
+      list.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;font-size:13px;">Belum ada asset. Klik tombol "Tambah Asset" untuk menambah.</div>';
       return;
     }
-    list.innerHTML = devices.map((d, i) => `
-      <div class="device-card" id="dc_${d.id}">
-        <div class="device-card-header" onclick="toggleDevice('${d.id}')">
-          <div class="device-card-title">
-            <span class="device-num">${i + 1}</span>
-            <span>${d.deviceName || 'Device ' + (i + 1)}</span>
-          </div>
-          <svg class="chevron ${d.collapsed ? '' : 'open'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        ${!d.collapsed ? `
-        <div class="device-card-body">
-          <div class="form-group" style="margin-bottom:14px;">
-            <label class="form-label">Device Full Name</label>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="e.g. Cisco Catalyst 9200L-48P-4X"
-                value="${escHtml(d.deviceName)}"
-                oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i})">
-              <button class="stt-btn" title="Ucapkan Device Name" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','deviceName',t); updateDeviceTitle('${d.id}',t,${i}); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-              </button>
+    list.innerHTML = devices.map((d, i) => {
+      const typeBadge = d.type === 'module'
+        ? `<span class="type-badge module">Module</span>`
+        : `<span class="type-badge single">Single</span>`;
+      const statusLabel = d.statusDevice
+        ? ` &bull; <span style="font-size:11px;color:${d.statusDevice==='Active'?'var(--fs-green)':d.statusDevice==='Damage'?'var(--fs-red)':'var(--fs-amber)'}">${d.statusDevice}</span>`
+        : '';
+      return `
+        <div class="device-card" id="dc_${d.id}">
+          <div class="device-card-header" onclick="toggleDevice('${d.id}')">
+            <div class="device-card-title">
+              <span class="device-num">${i + 1}</span>
+              ${typeBadge}
+              <span>${escHtml(d.deviceName) || 'Asset ' + (i + 1)}${statusLabel}</span>
             </div>
+            <svg class="chevron ${d.collapsed ? '' : 'open'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-
-          <div class="form-label" style="margin-bottom:6px;">Foto Device</div>
-          <div class="photo-btn-group">
-            <button class="photo-btn ${d.photos.full ? 'has-photo' : ''}" onclick="triggerPhoto('${d.id}','full')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/></svg>
-              Foto Full Device ${d.photos.full ? '&#10003;' : ''}
-            </button>
-            <button class="photo-btn ${d.photos.zoom ? 'has-photo' : ''}" onclick="triggerPhoto('${d.id}','zoom')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-              Foto Type Device ${d.photos.zoom ? '&#10003;' : ''}
-            </button>
-            <button class="photo-btn ${d.photos.label ? 'has-photo' : ''}" onclick="triggerPhoto('${d.id}','label')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-              Foto Serial Number ${d.photos.label ? '&#10003;' : ''}
-            </button>
-          </div>
-
-          ${(d.photos.full || d.photos.zoom || d.photos.label) ? `
-          <div class="photo-thumbs">
-            ${d.photos.full  ? `<div class="photo-thumb" title="Full"><img src="${d.photos.full}"><div class="photo-del" onclick="clearPhoto('${d.id}','full')">&#x2715;</div></div>` : ''}
-            ${d.photos.zoom  ? `<div class="photo-thumb" title="Zoom"><img src="${d.photos.zoom}"><div class="photo-del" onclick="clearPhoto('${d.id}','zoom')">&#x2715;</div></div>` : ''}
-            ${d.photos.label ? `<div class="photo-thumb" title="Label"><img src="${d.photos.label}"><div class="photo-del" onclick="clearPhoto('${d.id}','label')">&#x2715;</div></div>` : ''}
-          </div>` : ''}
-
-          <div class="form-grid" style="margin-bottom:14px;">
-            <div class="form-group">
-              <label class="form-label">Serial Number</label>
-              <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="S/N"
-                  value="${escHtml(d.serialNumber)}" oninput="updateDevice('${d.id}','serialNumber',this.value)">
-                <button class="stt-btn" title="Ucapkan Serial Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','serialNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                </button>
-                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); var el=document.querySelector('#dc_${d.id} .sn-input'); if(el) el.value=t; })">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Part Number</label>
-              <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" class="form-input pn-input" style="flex:1;min-width:0;" placeholder="P/N"
-                  value="${escHtml(d.partNumber)}" oninput="updateDevice('${d.id}','partNumber',this.value)">
-                <button class="stt-btn" title="Ucapkan Part Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','partNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                </button>
-                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); var el=document.querySelector('#dc_${d.id} .pn-input'); if(el) el.value=t; })">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Duplikat
-            </button>
-            <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus Device</button>
-          </div>
-        </div>` : ''}
-      </div>
-    `).join('');
+          ${!d.collapsed ? (d.type === 'module' ? _renderModuleBody(d, i) : _renderSingleBody(d, i)) : ''}
+        </div>`;
+    }).join('');
   }
 
   // ── Photo Handling ─────────────────────────────────────
@@ -1107,7 +1465,7 @@
   }
 
   function triggerPhoto(devId, type) {
-    currentPhotoTarget = { devId, type };
+    currentPhotoTarget = { devId, type, smId: null };
     const inp = document.getElementById('globalFileInput');
     inp.value = '';
     inp.click();
@@ -1115,14 +1473,20 @@
 
   document.getElementById('globalFileInput').addEventListener('change', function () {
     if (!currentPhotoTarget || !this.files[0]) return;
-    const { devId, type } = currentPhotoTarget;
+    const { devId, type, smId } = currentPhotoTarget;
     const file = this.files[0];
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const reader = new FileReader();
     reader.onload = function (ev) {
       const d = devices.find(x => x.id === devId);
       if (!d) return;
-      d.photos[type] = ev.target.result; d.exts[type] = ext;
+      if (smId) {
+        // Sub-module photo
+        const sm = (d.subModules || []).find(s => s.id === smId);
+        if (sm) { sm.photos[type] = ev.target.result; sm.exts[type] = ext; }
+      } else {
+        d.photos[type] = ev.target.result; d.exts[type] = ext;
+      }
       renderDevices();
       showToast('Foto berhasil ditambahkan');
     };
@@ -1133,6 +1497,7 @@
   function getFormData() {
     return {
       date:          document.getElementById('fDate').value,
+      statusSite:    document.getElementById('fStatusSite').value,
       siteName:      document.getElementById('fSiteName').value,
       siteId:        document.getElementById('fSiteId').value,
       typeSite:      document.getElementById('fTypeSite').value,
@@ -1203,27 +1568,152 @@
     <script>window.print();<\/script></body></html>`);
   }
 
-  // ── Generate Excel CSV ─────────────────────────────────
+  // ── Generate Excel XLSX ────────────────────────────────
   function generateExcel() {
     if (!validateForm()) return;
+    if (typeof XLSX === 'undefined') { showToast('⚠️ Library Excel belum termuat. Periksa koneksi internet.'); return; }
     const f = getFormData();
+    _buildXlsx(f);
+    showToast('✅ File Excel (.xlsx) berhasil diunduh!');
+  }
+
+  function _buildXlsx(f) {
+    const wb = XLSX.utils.book_new();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
-    let csv =
-      `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
-      `PIC,${f.picName}\nDivision,${f.division}\n` +
-      `Koordinat,"${coordStr}"\nFloor Location,"${f.floorLocation || '-'}"\n\n` +
-      `No,Device Full Name,Serial Number,Part Number\n`;
+
+    // ── Sheet 1: Site Info ──
+    const siteData = [
+      ['FIBERSTAR ASSET TAGGING REPORT'],
+      [],
+      ['Field', 'Value'],
+      ['Date',           f.date || '-'],
+      ['Status Site',    f.statusSite || '-'],
+      ['Site Name',      f.siteName || '-'],
+      ['Site ID',        f.siteId || '-'],
+      ['Type Site',      f.typeSite || '-'],
+      ['PIC Name',       f.picName || '-'],
+      ['Division',       f.division || '-'],
+      ['Koordinat',      coordStr],
+      ['Floor Location', f.floorLocation || '-'],
+      ['Jumlah Asset',   f.devices.length],
+      ['Jumlah Foto Site', f.sitePhotos.length],
+    ];
+    const wsSite = XLSX.utils.aoa_to_sheet(siteData);
+    wsSite['!cols'] = [{wch:20},{wch:40}];
+    wsSite['A1'].s = { font: { bold: true, sz: 14, color: { rgb: '185FA5' } } };
+    wsSite['A3'].s = { font: { bold: true }, fill: { fgColor: { rgb: 'E6F1FB' } } };
+    wsSite['B3'].s = { font: { bold: true }, fill: { fgColor: { rgb: 'E6F1FB' } } };
+    XLSX.utils.book_append_sheet(wb, wsSite, 'Site Info');
+
+    // ── Sheet 2: Device List ──
+    const devHeaders = ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'];
+    const devRows = [];
     f.devices.forEach((d, i) => {
-      csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`;
+      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
+      devRows.push([
+        i+1, d.type==='module'?'Module':'Single',
+        d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-',
+        d.statusDevice||'-',
+        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
+        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-',
+        smSummary,
+      ]);
     });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `AssetTagging_${f.siteId || 'export'}_${f.date || 'nodate'}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('File Excel berhasil diunduh!');
+    const wsDevices = XLSX.utils.aoa_to_sheet([devHeaders, ...devRows]);
+    wsDevices['!cols'] = [{wch:4},{wch:9},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+    devHeaders.forEach((_, ci) => {
+      const cell = XLSX.utils.encode_cell({r:0, c:ci});
+      if (wsDevices[cell]) wsDevices[cell].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '185FA5' } } };
+    });
+    XLSX.utils.book_append_sheet(wb, wsDevices, 'Asset List');
+
+    const filename = `AssetTagging_${f.siteId || 'export'}_${f.date || 'nodate'}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    return wb;
+  }
+
+  // Helper: generate XLSX as base64 string (untuk ZIP)
+  function _buildXlsxBase64(f) {
+    if (typeof XLSX === 'undefined') return null;
+    const wb = XLSX.utils.book_new();
+    const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+
+    const siteData = [
+      ['FIBERSTAR ASSET TAGGING REPORT'], [],
+      ['Field', 'Value'],
+      ['Date', f.date||'-'], ['Status Site', f.statusSite||'-'],
+      ['Site Name', f.siteName||'-'], ['Site ID', f.siteId||'-'],
+      ['Type Site', f.typeSite||'-'], ['PIC Name', f.picName||'-'],
+      ['Division', f.division||'-'], ['Koordinat', coordStr],
+      ['Floor Location', f.floorLocation||'-'],
+      ['Jumlah Asset', f.devices.length], ['Jumlah Foto Site', f.sitePhotos.length],
+    ];
+    const wsSite = XLSX.utils.aoa_to_sheet(siteData);
+    wsSite['!cols'] = [{wch:20},{wch:40}];
+    XLSX.utils.book_append_sheet(wb, wsSite, 'Site Info');
+
+    const devHeaders = ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'];
+    const devRows = f.devices.map((d,i) => {
+      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ')||'-';
+      return [i+1, d.type==='module'?'Module':'Single',
+        d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-', d.statusDevice||'-',
+        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-', d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-', smSummary];
+    });
+    const wsDevices = XLSX.utils.aoa_to_sheet([devHeaders, ...devRows]);
+    wsDevices['!cols'] = [{wch:4},{wch:9},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, wsDevices, 'Asset List');
+
+    return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+  }
+
+  // Helper: generate PDF HTML string untuk ZIP
+  function _buildPdfHtml(f) {
+    const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const rows = f.devices.map((d, i) => {
+      const smList = (d.subModules||[]).length > 0
+        ? `<br><small style="color:#666">Modules: ${(d.subModules||[]).map(s=>escHtml(s.moduleName)||'(no name)').join(', ')}</small>` : '';
+      return `<tr><td>${i+1}</td><td>${d.type==='module'?'<b>Module</b>':'Single'}</td>
+        <td>${escHtml(d.deviceName)}${smList}</td>
+        <td>${escHtml(d.serialNumber)}</td><td>${escHtml(d.partNumber)}</td>
+        <td style="text-align:center;color:${d.statusDevice==='Active'?'green':d.statusDevice==='Damage'?'red':'#BA7517'}">${d.statusDevice||'-'}</td>
+        <td style="text-align:center">${d.photos.full?'✓':'-'}</td>
+        <td style="text-align:center">${d.photos.zoom?'✓':'-'}</td>
+        <td style="text-align:center">${d.photos.label?'✓':'-'}</td></tr>`;
+    }).join('');
+    const mapLink = (f.coordLat && f.coordLng)
+      ? `<p style="margin-top:6px;font-size:12px;">🗺️ <a href="https://www.google.com/maps?q=${f.coordLat},${f.coordLng}" target="_blank">Lihat di Google Maps</a></p>` : '';
+    const sigSection = f.signature
+      ? `<div style="margin-top:24px;border-top:1px solid #eee;padding-top:14px;"><p style="font-size:11px;color:#666;margin-bottom:4px;">Tanda Tangan PIC:</p><img src="${f.signature}" style="height:64px;border:1px solid #eee;border-radius:4px;padding:3px;"></div>` : '';
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Asset Tagging - ${escHtml(f.siteName)}</title>
+<style>
+body{font-family:Arial,sans-serif;padding:28px;color:#111;font-size:13px;}
+h1{font-size:18px;color:#185FA5;margin-bottom:4px;}
+.sub{font-size:12px;color:#666;margin-bottom:16px;}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:3px 24px;margin-bottom:16px;font-size:12px;}
+.meta .lbl{color:#666;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#185FA5;color:#fff;padding:6px 8px;text-align:left;}
+td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:top;}
+tr:nth-child(even) td{background:#f9f9f9;}
+</style></head><body>
+<h1>Fiberstar Asset Tagging Report</h1>
+<div class="sub">Generated: ${new Date().toLocaleString('id-ID')}</div>
+<div class="meta">
+  <div><span class="lbl">Site Name: </span><b>${escHtml(f.siteName)}</b></div>
+  <div><span class="lbl">Site ID: </span><b>${escHtml(f.siteId)}</b></div>
+  <div><span class="lbl">Type: </span><b>${escHtml(f.typeSite)}</b></div>
+  <div><span class="lbl">Status Site: </span><b>${escHtml(f.statusSite||'-')}</b></div>
+  <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
+  <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
+  <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
+  <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
+  <div><span class="lbl">Floor: </span><b>${escHtml(f.floorLocation||'-')}</b></div>
+</div>
+${mapLink}
+<table><thead><tr><th>#</th><th>Tipe</th><th>Device Name</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>F.Full</th><th>F.Type</th><th>F.S/N</th></tr></thead>
+<tbody>${rows}</tbody></table>
+${sigSection}
+</body></html>`;
   }
 
   // ── Generate ZIP ───────────────────────────────────────
@@ -1240,18 +1730,24 @@
       const root = zip.folder(folderName);
       const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
 
-      // CSV data
-      let csv =
-        `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
-        `PIC,${f.picName}\nDivision,${f.division}\n` +
-        `Koordinat,"${coordStr}"\nFloor Location,"${f.floorLocation || '-'}"\n\n` +
-        `No,Device Full Name,Serial Number,Part Number\n`;
-      f.devices.forEach((d, i) => {
-        csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`;
-      });
-      root.file('data.csv', csv);
+      // ── 1. Excel XLSX ──
+      const xlsxB64 = _buildXlsxBase64(f);
+      if (xlsxB64) {
+        root.file('data.xlsx', xlsxB64, { base64: true });
+      } else {
+        // Fallback CSV jika SheetJS tidak termuat
+        let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
+          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nFloor Location,"${f.floorLocation||'-'}"\n\n` +
+          `No,Device Full Name,Serial Number,Part Number\n`;
+        f.devices.forEach((d, i) => { csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`; });
+        root.file('data.csv', csv);
+      }
 
-      // Site Photos folder
+      // ── 2. PDF (HTML yang bisa di-print) ──
+      const pdfHtml = _buildPdfHtml(f);
+      root.file('laporan.html', pdfHtml);
+
+      // ── 3. Site Photos ──
       let totalSitePhotos = 0;
       if (f.sitePhotos.length > 0) {
         const siteFolder = root.folder('Site_Photos');
@@ -1261,12 +1757,12 @@
         });
       }
 
-      // Signature
+      // ── 4. Signature ──
       if (f.signature) {
         root.file('ttd_pic.png', f.signature.split(',')[1], { base64: true });
       }
 
-      // Photos per device
+      // ── 5. Device Photos ──
       let totalDevicePhotos = 0;
       const photoSummary = [];
       f.devices.forEach((d, i) => {
@@ -1274,80 +1770,52 @@
         const folderLabel = `Device_${String(i+1).padStart(2,'0')}_${safeName}`;
         const devFolder = root.folder(folderLabel);
         const added = [];
-
-        if (d.photos.full) {
-          devFolder.file(`foto_full.${d.exts.full || 'jpg'}`, d.photos.full.split(',')[1], { base64: true });
-          added.push('full'); totalDevicePhotos++;
-        }
-        if (d.photos.zoom) {
-          devFolder.file(`foto_zoom.${d.exts.zoom || 'jpg'}`, d.photos.zoom.split(',')[1], { base64: true });
-          added.push('zoom'); totalDevicePhotos++;
-        }
-        if (d.photos.label) {
-          devFolder.file(`foto_label.${d.exts.label || 'jpg'}`, d.photos.label.split(',')[1], { base64: true });
-          added.push('label'); totalDevicePhotos++;
-        }
+        if (d.photos.full)  { devFolder.file(`foto_full.${d.exts.full||'jpg'}`,   d.photos.full.split(',')[1],  {base64:true}); added.push('full');  totalDevicePhotos++; }
+        if (d.photos.zoom)  { devFolder.file(`foto_type.${d.exts.zoom||'jpg'}`,   d.photos.zoom.split(',')[1],  {base64:true}); added.push('type');  totalDevicePhotos++; }
+        if (d.photos.label) { devFolder.file(`foto_sn.${d.exts.label||'jpg'}`,    d.photos.label.split(',')[1], {base64:true}); added.push('s/n');   totalDevicePhotos++; }
         photoSummary.push(`  ${folderLabel}/  [${added.length > 0 ? added.join(', ') : 'tidak ada foto'}]`);
       });
 
       const totalPhotos = totalSitePhotos + totalDevicePhotos;
 
-      // README
+      // ── 6. README ──
       const readme =
-        `FIBERSTAR ASSET TAGGING\n` +
-        `${'='.repeat(50)}\n\n` +
-        `Site          : ${f.siteName}\n` +
-        `Site ID       : ${f.siteId}\n` +
-        `Type          : ${f.typeSite}\n` +
-        `Tanggal       : ${f.date}\n` +
-        `PIC           : ${f.picName}\n` +
-        `Divisi        : ${f.division}\n` +
-        `Koordinat     : ${coordStr}\n` +
-        `Floor Location: ${f.floorLocation || '-'}\n` +
-        `Devices       : ${f.devices.length}\n` +
-        `Foto Site     : ${totalSitePhotos}\n` +
-        `Foto Device   : ${totalDevicePhotos}\n` +
-        `Total Foto    : ${totalPhotos}\n\n` +
-        `STRUKTUR FOLDER\n` +
-        `${'─'.repeat(50)}\n` +
+        `FIBERSTAR ASSET TAGGING\n${'='.repeat(50)}\n\n` +
+        `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
+        `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
+        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
+        `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
+        `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
         `${folderName}/\n` +
-        `  data.csv              <- Data semua device\n` +
-        `  Site_Photos/          <- Foto view site & rack (${totalSitePhotos} foto)\n` +
-        (f.signature ? `  ttd_pic.png           <- Tanda tangan digital PIC\n` : '') +
+        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Device List)\n` +
+        `  laporan.html           <- Buka di browser → Print/Save as PDF\n` +
+        `  Site_Photos/           <- Foto view site & rack (${totalSitePhotos} foto)\n` +
+        (f.signature ? `  ttd_pic.png            <- Tanda tangan digital PIC\n` : '') +
         `${photoSummary.join('\n')}\n\n` +
         `Cara penggunaan:\n` +
-        `1. Buka data.csv di Excel / Google Sheets\n` +
-        `2. Foto site tersimpan di folder Site_Photos\n` +
-        `3. Foto per device tersimpan di masing-masing folder device\n` +
-        `4. Attach file ZIP ini ke email atau upload ke Teams\n`;
+        `1. Buka data.xlsx di Microsoft Excel / Google Sheets\n` +
+        `2. Buka laporan.html di browser → Ctrl+P untuk print/save PDF\n` +
+        `3. Foto site tersimpan di folder Site_Photos\n` +
+        `4. Foto per device tersimpan di masing-masing folder device\n` +
+        `5. Attach file ZIP ini ke email atau upload ke Teams\n`;
       root.file('README.txt', readme);
 
-      // Generate & download
-      const content = await zip.generateAsync({
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
-      });
+      // ── 7. Generate & download ──
+      const content = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `${folderName}.zip`;
-      a.click();
+      a.href = url; a.download = `${folderName}.zip`; a.click();
       URL.revokeObjectURL(url);
 
-      showToast(`ZIP berhasil! ${f.devices.length} device, ${totalPhotos} foto (${totalSitePhotos} site + ${totalDevicePhotos} device). Silakan attach ke email atau Teams.`, 6000);
+      showToast(`✅ ZIP berhasil! ${f.devices.length} device, ${totalPhotos} foto + data.xlsx + laporan.html`, 6000);
 
     } catch (err) {
       showToast('Gagal membuat ZIP: ' + err.message);
       console.error(err);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Download ZIP &mdash; Semua Foto + Data (Attach ke Email / Teams)`;
     }
   }
@@ -1462,6 +1930,114 @@
   renderDevices();
   renderSitePhotos();
   if (!STT_SUPPORTED) document.getElementById('sttUnsupported').classList.add('show');
+
+  // ── Offline Mode ──────────────────────────────────────
+  function _updateOfflineBanner() {
+    const banner = document.getElementById('offlineBanner');
+    if (!navigator.onLine) banner.classList.add('show');
+    else banner.classList.remove('show');
+  }
+  window.addEventListener('online',  _updateOfflineBanner);
+  window.addEventListener('offline', _updateOfflineBanner);
+  _updateOfflineBanner();
+
+  // ── Auto-Save ke localStorage ─────────────────────────
+  const SAVE_KEY = 'fs_asset_tagging_draft';
+
+  function _autoSave() {
+    try {
+      const f = getFormData();
+      // Simpan data form (tanpa foto — terlalu besar untuk localStorage)
+      const draft = {
+        date: f.date, statusSite: f.statusSite, siteName: f.siteName, siteId: f.siteId,
+        typeSite: f.typeSite, picName: f.picName, division: f.division,
+        coordLat: f.coordLat, coordLng: f.coordLng, floorLocation: f.floorLocation,
+        devices: devices.map(d => ({
+          id: d.id, deviceName: d.deviceName,
+          serialNumber: d.serialNumber, partNumber: d.partNumber,
+          collapsed: d.collapsed,
+          // Simpan foto juga (base64) — hanya jika total < 4MB
+        })),
+        deviceCounter,
+        savedAt: new Date().toISOString()
+      };
+      // Cek ukuran — coba simpan foto jika muat
+      try {
+        const withPhotos = JSON.parse(JSON.stringify(draft));
+        withPhotos.devices = devices.map(d => ({...d}));
+        const str = JSON.stringify(withPhotos);
+        if (str.length < 4 * 1024 * 1024) {
+          localStorage.setItem(SAVE_KEY, str);
+        } else {
+          localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
+        }
+      } catch(e) {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
+      }
+    } catch(e) { /* localStorage tidak tersedia */ }
+  }
+
+  function _restoreDraft() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (!draft.savedAt) return;
+
+      // Restore field form
+      if (draft.date)          document.getElementById('fDate').value = draft.date;
+      if (draft.statusSite)    document.getElementById('fStatusSite').value = draft.statusSite;
+      if (draft.siteName)      document.getElementById('fSiteName').value = draft.siteName;
+      if (draft.siteId)        document.getElementById('fSiteId').value = draft.siteId;
+      if (draft.typeSite)      document.getElementById('fTypeSite').value = draft.typeSite;
+      if (draft.picName)       document.getElementById('fPicName').value = draft.picName;
+      if (draft.division)      document.getElementById('fDivision').value = draft.division;
+      if (draft.coordLat)      document.getElementById('fCoordLat').value = draft.coordLat;
+      if (draft.coordLng)      document.getElementById('fCoordLng').value = draft.coordLng;
+      if (draft.floorLocation) document.getElementById('fFloorLocation').value = draft.floorLocation;
+
+      // Restore devices
+      if (draft.devices && draft.devices.length > 0) {
+        devices = draft.devices.map(d => ({
+          id: d.id,
+          deviceName:   d.deviceName   || '',
+          serialNumber: d.serialNumber || '',
+          partNumber:   d.partNumber   || '',
+          photos: d.photos || { full: null, zoom: null, label: null },
+          exts:   d.exts   || { full: null, zoom: null, label: null },
+          collapsed: d.collapsed || false,
+        }));
+        deviceCounter = draft.deviceCounter || devices.length;
+        renderDevices();
+      }
+
+      // Restore map preview jika ada koordinat
+      if (draft.coordLat && draft.coordLng) {
+        _showMapPreview(draft.coordLat, draft.coordLng);
+        setCoordStatus('✓ Koordinat dipulihkan dari draft tersimpan', 'ok');
+      }
+
+      const savedTime = new Date(draft.savedAt).toLocaleString('id-ID');
+      showToast(`📋 Draft dipulihkan (disimpan: ${savedTime})`, 5000);
+    } catch(e) { /* tidak ada draft atau error */ }
+  }
+
+  // Auto-save setiap perubahan input
+  document.querySelectorAll('#fDate,#fStatusSite,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fFloorLocation').forEach(el => {
+    el.addEventListener('change', _autoSave);
+    el.addEventListener('input',  _autoSave);
+  });
+
+  // Restore draft saat load
+  _restoreDraft();
+
+  // Clear draft setelah berhasil kirim
+  const _origSendEmail = sendEmail;
+  // (auto-save berjalan, draft bisa dihapus manual jika diperlukan)
+  // Tombol clear draft — hidden, bisa dipanggil lewat console: clearDraft()
+  window.clearDraft = function() {
+    try { localStorage.removeItem(SAVE_KEY); showToast('Draft dihapus.'); } catch(e) {}
+  };
 </script>
 </body>
 </html>
