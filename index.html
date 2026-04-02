@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Collect Data Asset</title>
+  <title>Fiberstar Asset Management</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #111; min-height: 100vh; }
@@ -642,47 +642,124 @@
 
   async function openScanner(callback) {
     scannerCallback = callback;
+
+    // --- Cek 1: file:// protocol ---
+    if (location.protocol === 'file:') {
+      showToast('🔒 Kamera tidak bisa diakses via file://. Kirim file ini ke server atau buka via http://localhost.', 7000);
+      return;
+    }
+
+    // --- Cek 2: mediaDevices API tersedia ---
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      // Fallback: minta user upload gambar barcode
+      _fallbackFileInput(callback);
+      return;
+    }
+
+    // --- Cek 3: ZXing library loaded ---
+    if (typeof ZXing === 'undefined') {
+      showToast('⚠️ Library scanner belum termuat. Periksa koneksi internet lalu refresh halaman.', 6000);
+      return;
+    }
+
     document.getElementById('scannerOverlay').classList.add('active');
     const bar = document.getElementById('scannerResultBar');
     bar.classList.remove('show');
     bar.textContent = '';
-    bar.style.background = '';
-    bar.style.borderColor = '';
-    bar.style.color = '';
-    document.querySelector('.scanner-hint').textContent = 'Arahkan kamera ke barcode atau QR code perangkat';
+    bar.style.background = ''; bar.style.borderColor = ''; bar.style.color = '';
+    document.querySelector('.scanner-hint').textContent = 'Membuka kamera...';
     await _initScanner();
   }
 
+  // Fallback: jika kamera tidak bisa dibuka sama sekali, pakai file input
+  function _fallbackFileInput(callback) {
+    showToast('📁 Kamera tidak tersedia. Silakan upload foto barcode/QR sebagai alternatif.', 5000);
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.capture = 'environment';
+    inp.style.display = 'none';
+    document.body.appendChild(inp);
+    inp.onchange = async () => {
+      const file = inp.files[0];
+      if (!file) { document.body.removeChild(inp); return; }
+      try {
+        const img = await createImageBitmap(file);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+          ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.CODE_128,
+          ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.EAN_13,
+          ZXing.BarcodeFormat.EAN_8,  ZXing.BarcodeFormat.DATA_MATRIX,
+        ]);
+        const reader = new ZXing.BrowserMultiFormatReader(hints);
+        const result = await reader.decodeFromCanvas(canvas);
+        if (result && callback) {
+          callback(result.getText());
+          showToast('📷 Scan dari gambar berhasil: "' + result.getText() + '"', 3500);
+        }
+      } catch (e) {
+        showToast('❌ Barcode tidak terbaca dari gambar. Coba foto yang lebih jelas.', 4000);
+      }
+      document.body.removeChild(inp);
+    };
+    inp.click();
+  }
+
   async function _initScanner(deviceId) {
+    const bar  = document.getElementById('scannerResultBar');
+    const hint = document.querySelector('.scanner-hint');
+
+    bar.style.background = ''; bar.style.borderColor = ''; bar.style.color = '';
+    bar.textContent = ''; bar.classList.remove('show');
+    hint.textContent = 'Membuka kamera...';
+
     try {
-      // Stop existing stream
-      if (scannerStream) {
-        scannerStream.getTracks().forEach(t => t.stop());
-        scannerStream = null;
-      }
-      if (codeReader) {
-        codeReader.reset();
+      // Hentikan stream & reader sebelumnya
+      if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+      if (codeReader)    { try { codeReader.reset(); } catch(_){} codeReader = null; }
+
+      // Build constraints — getUserMedia DULU sebelum enumerate
+      let constraints;
+      if (deviceId && deviceId !== '__any__') {
+        constraints = { video: { deviceId: { exact: deviceId } } };
+      } else if (deviceId === '__any__') {
+        constraints = { video: true };
+      } else {
+        constraints = { video: { facingMode: { ideal: 'environment' } } };
       }
 
-      // Get camera list
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      scannerStream = stream;
+
+      // Enumerate kamera SETELAH izin diberikan
       if (availableCameras.length === 0) {
-        const devices2 = await ZXing.BrowserCodeReader.listVideoInputDevices();
-        availableCameras = devices2;
-        const sel = document.getElementById('scannerCamSelect');
-        sel.innerHTML = '';
-        devices2.forEach((d, i) => {
-          const opt = document.createElement('option');
-          opt.value = d.deviceId;
-          // Prefer label; fallback to Back/Front heuristic
-          opt.textContent = d.label || (i === 0 ? 'Kamera Belakang' : 'Kamera Depan');
-          sel.appendChild(opt);
-        });
-        // Default: prefer back camera
-        const backCam = devices2.find(d => /back|rear|environment/i.test(d.label));
-        if (backCam && !deviceId) deviceId = backCam.deviceId;
-        if (deviceId) sel.value = deviceId;
+        try {
+          const allDev = await navigator.mediaDevices.enumerateDevices();
+          const vidDev = allDev.filter(d => d.kind === 'videoinput');
+          availableCameras = vidDev;
+          const sel = document.getElementById('scannerCamSelect');
+          sel.innerHTML = '';
+          vidDev.forEach((d, i) => {
+            const opt = document.createElement('option');
+            opt.value = d.deviceId;
+            opt.textContent = d.label || (i === 0 ? 'Kamera Belakang' : 'Kamera Depan');
+            sel.appendChild(opt);
+          });
+          const activeTrack = stream.getVideoTracks()[0];
+          if (activeTrack) {
+            const sid = activeTrack.getSettings().deviceId;
+            if (sid) sel.value = sid;
+          }
+        } catch (_) { /* enumerate gagal, tidak masalah */ }
       }
 
+      // Pasang stream ke video
+      const video = document.getElementById('scannerVideo');
+      video.srcObject = stream;
+      hint.textContent = 'Arahkan kamera ke barcode atau QR code perangkat';
+
+      // Setup ZXing decoder
       const hints = new Map();
       hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
         ZXing.BarcodeFormat.QR_CODE,
@@ -698,25 +775,14 @@
       ]);
       codeReader = new ZXing.BrowserMultiFormatReader(hints);
 
-      const constraints = deviceId
-        ? { video: { deviceId: { exact: deviceId } } }
-        : { video: { facingMode: 'environment' } };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      scannerStream = stream;
-      const video = document.getElementById('scannerVideo');
-      video.srcObject = stream;
-
-      codeReader.decodeFromStream(stream, video, (result, err) => {
+      codeReader.decodeFromStream(stream, video, (result) => {
         if (result) {
           const text = result.getText();
-          // Flash result bar
-          const bar = document.getElementById('scannerResultBar');
-          bar.textContent = '✓ ' + text;
-          bar.classList.add('show');
-          // Vibrate if supported
+          const b2 = document.getElementById('scannerResultBar');
+          b2.style.background = ''; b2.style.borderColor = ''; b2.style.color = '';
+          b2.textContent = '✓ ' + text;
+          b2.classList.add('show');
           if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          // Deliver result then close
           setTimeout(() => {
             if (scannerCallback) scannerCallback(text);
             closeScanner();
@@ -724,22 +790,49 @@
           }, 600);
         }
       });
+
     } catch (err) {
-      let msg = '⚠️ Gagal membuka kamera.';
-      if (err.name === 'NotAllowedError') msg = '🚫 Izin kamera ditolak. Buka pengaturan browser → izinkan akses kamera → coba lagi.';
-      if (err.name === 'NotFoundError')   msg = '📷 Kamera tidak ditemukan di perangkat ini.';
-      if (err.name === 'NotReadableError') msg = '⚠️ Kamera sedang digunakan aplikasi lain. Tutup aplikasi lain lalu coba lagi.';
-      if (err.name === 'OverconstrainedError') msg = '⚠️ Kamera yang dipilih tidak tersedia. Coba pilih kamera lain.';
-      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-        msg = '🔒 Akses kamera memerlukan HTTPS. Buka aplikasi ini melalui HTTPS, bukan file:// atau http://.';
+      console.error('[Scanner Error]', err.name, err.message);
+      let msg = '⚠️ Gagal membuka kamera: ' + err.name;
+      let showFallback = false;
+
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        msg = '🚫 Izin kamera ditolak. Tap ikon kunci di address bar browser → pilih "Izinkan" untuk Kamera → refresh halaman → coba lagi.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        msg = '📷 Kamera tidak ditemukan di perangkat ini.';
+        showFallback = true;
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        msg = '⚠️ Kamera sedang dipakai aplikasi lain. Tutup kamera di aplikasi lain, lalu coba lagi.';
+      } else if (err.name === 'OverconstrainedError') {
+        hint.textContent = 'Mencoba kamera alternatif...';
+        setTimeout(() => _initScanner('__any__'), 500);
+        return;
+      } else if (err.name === 'TypeError') {
+        msg = '🔒 Browser tidak mengizinkan akses kamera. Pastikan halaman dibuka via HTTPS.';
+        showFallback = true;
       }
-      const bar = document.getElementById('scannerResultBar');
+
       bar.style.background = 'var(--fs-red-light)';
       bar.style.borderColor = 'var(--fs-red)';
-      bar.style.color = 'var(--fs-red)';
+      bar.style.color       = 'var(--fs-red)';
       bar.textContent = msg;
       bar.classList.add('show');
-      document.querySelector('.scanner-hint').textContent = 'Tutup modal lalu periksa izin kamera di browser Anda.';
+
+      if (showFallback) {
+        hint.textContent = 'Atau gunakan tombol di bawah untuk upload foto barcode.';
+        // Tambahkan tombol fallback upload
+        let fb = document.getElementById('scannerFallbackBtn');
+        if (!fb) {
+          fb = document.createElement('button');
+          fb.id = 'scannerFallbackBtn';
+          fb.textContent = '📁 Upload Foto Barcode (Alternatif)';
+          fb.style.cssText = 'width:100%;margin-top:8px;padding:9px;background:var(--fs-blue);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;';
+          fb.onclick = () => { closeScanner(); _fallbackFileInput(scannerCallback); };
+          document.querySelector('.scanner-footer').appendChild(fb);
+        }
+      } else {
+        hint.textContent = 'Tutup modal → periksa izin kamera → coba lagi.';
+      }
     }
   }
 
@@ -750,9 +843,12 @@
   function closeScanner() {
     document.getElementById('scannerOverlay').classList.remove('active');
     if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
-    if (codeReader) { codeReader.reset(); codeReader = null; }
+    if (codeReader) { try { codeReader.reset(); } catch(_){} codeReader = null; }
     availableCameras = [];
     scannerCallback = null;
+    // Bersihkan tombol fallback jika ada
+    const fb = document.getElementById('scannerFallbackBtn');
+    if (fb) fb.remove();
   }
 
   // Close on overlay click
@@ -970,7 +1066,7 @@
                 <button class="stt-btn" title="Ucapkan Serial Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','serialNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </button>
-                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); var inp=document.querySelector('#dc_${d.id} .sn-input'); if(inp) inp.value=t; })">
+                <button class="scan-btn" title="Scan Barcode/QR Serial Number" onclick="openScanner(function(t){ updateDevice('${d.id}','serialNumber',t); var el=document.querySelector('#dc_${d.id} .sn-input'); if(el) el.value=t; })">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
                 </button>
               </div>
@@ -983,7 +1079,7 @@
                 <button class="stt-btn" title="Ucapkan Part Number" onclick="startSTTInline(this, function(t){ updateDevice('${d.id}','partNumber',t); this.previousElementSibling.value=t; }.bind(this.parentElement.querySelector('input')))">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                 </button>
-                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); var inp=document.querySelector('#dc_${d.id} .pn-input'); if(inp) inp.value=t; })">
+                <button class="scan-btn" title="Scan Barcode/QR Part Number" onclick="openScanner(function(t){ updateDevice('${d.id}','partNumber',t); var el=document.querySelector('#dc_${d.id} .pn-input'); if(el) el.value=t; })">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/></svg>
                 </button>
               </div>
