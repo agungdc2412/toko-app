@@ -483,6 +483,25 @@
           </button>
         </div>
       </div>
+
+      <!-- Foto PIC -->
+      <div class="form-group">
+        <label class="form-label">Foto PIC (Dokumentasi)</label>
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">
+          <button class="photo-btn" id="btnFotoPic" onclick="triggerPicPhoto()"
+            style="flex-direction:row;gap:8px;padding:8px 14px;width:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span id="btnFotoPicLabel">Ambil Foto PIC</span>
+          </button>
+          <div id="picPhotoThumb" style="display:none;position:relative;width:68px;height:68px;">
+            <img id="picPhotoImg" style="width:68px;height:68px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
+            <div class="photo-del" onclick="clearPicPhoto()" style="position:absolute;top:3px;right:3px;">&#x2715;</div>
+          </div>
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label">Division</label>
         <select class="form-select" id="fDivision">
@@ -686,6 +705,7 @@
 </div>
 
 <input type="file" accept="image/*" capture="environment" class="file-input" id="globalFileInput">
+<input type="file" accept="image/*" capture="environment" class="file-input" id="picPhotoInput">
 <input type="file" accept="image/*" class="file-input" id="siteFileInput" multiple>
 <div class="toast" id="toast"></div>
 
@@ -761,6 +781,34 @@
   let deviceCounter = 0;
   let currentPhotoTarget = null;
   let sitePhotos = []; // { url, ext }
+  let picPhotoData = null; // { url, ext }
+
+  // ── Foto PIC Handlers ─────────────────────────────────
+  function triggerPicPhoto() {
+    document.getElementById('picPhotoInput').click();
+  }
+  document.getElementById('picPhotoInput').addEventListener('change', function() {
+    if (!this.files[0]) return;
+    const file = this.files[0];
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      picPhotoData = { url: ev.target.result, ext };
+      document.getElementById('picPhotoImg').src = ev.target.result;
+      document.getElementById('picPhotoThumb').style.display = 'block';
+      document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
+      document.getElementById('btnFotoPic').classList.add('has-photo');
+      showToast('Foto PIC berhasil ditambahkan ✓');
+    };
+    reader.readAsDataURL(file);
+    this.value = '';
+  });
+  function clearPicPhoto() {
+    picPhotoData = null;
+    document.getElementById('picPhotoThumb').style.display = 'none';
+    document.getElementById('btnFotoPicLabel').textContent = 'Ambil Foto PIC';
+    document.getElementById('btnFotoPic').classList.remove('has-photo');
+  }
 
   // ── Barcode / QR Scanner Engine ───────────────────────
   let scannerCallback = null;
@@ -1177,6 +1225,7 @@
     d.subModules = d.subModules || [];
     d.subModules.push({
       id: smId, moduleName: '',
+      serialNumber: '', partNumber: '',
       photos: { sn: null, pn: null },
       exts:   { sn: null, pn: null },
       collapsed: false
@@ -1234,20 +1283,26 @@
   }
 
   function _snField(devId, val, cssClass) {
+    const uid = 'sn_' + devId;
     return `<div style="display:flex;gap:6px;align-items:center;">
-      <input type="text" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="S/N" value="${escHtml(val)}"
+      <input type="text" id="${uid}" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="S/N" value="${escHtml(val)}"
         oninput="updateDevice('${devId}','serialNumber',this.value)">
-      <button class="stt-btn" title="Ucapkan S/N" onclick="startSTTInline(this,function(t){updateDevice('${devId}','serialNumber',t);this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
-      <button class="scan-btn" title="Scan S/N" onclick="openScanner(function(t){updateDevice('${devId}','serialNumber',t);var el=document.querySelector('#dc_${devId} .${cssClass}');if(el)el.value=t;})">${_icoScan}</button>
+      <button class="stt-btn" title="Ucapkan S/N"
+        onclick="startSTTInline(this,function(t){updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
+      <button class="scan-btn" title="Scan S/N"
+        onclick="openScanner(function(t){updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
     </div>`;
   }
 
   function _pnField(devId, val, cssClass) {
+    const uid = 'pn_' + devId;
     return `<div style="display:flex;gap:6px;align-items:center;">
-      <input type="text" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="P/N" value="${escHtml(val)}"
+      <input type="text" id="${uid}" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="P/N" value="${escHtml(val)}"
         oninput="updateDevice('${devId}','partNumber',this.value)">
-      <button class="stt-btn" title="Ucapkan P/N" onclick="startSTTInline(this,function(t){updateDevice('${devId}','partNumber',t);this.previousElementSibling.value=t;}.bind(this.parentElement.querySelector('input')))">${_icoMic}</button>
-      <button class="scan-btn" title="Scan P/N" onclick="openScanner(function(t){updateDevice('${devId}','partNumber',t);var el=document.querySelector('#dc_${devId} .${cssClass}');if(el)el.value=t;})">${_icoScan}</button>
+      <button class="stt-btn" title="Ucapkan P/N"
+        onclick="startSTTInline(this,function(t){updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
+      <button class="scan-btn" title="Scan P/N"
+        onclick="openScanner(function(t){updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
     </div>`;
   }
 
@@ -1390,6 +1445,8 @@
 
   // ── Render Sub-Module ──────────────────────────────────
   function _renderSubModule(devId, sm, si) {
+    const snUid = 'sm_sn_' + sm.id;
+    const pnUid = 'sm_pn_' + sm.id;
     return `
       <div class="submodule-item" id="sm_${sm.id}">
         <div class="submodule-header" onclick="toggleSubModule('${devId}','${sm.id}')">
@@ -1404,13 +1461,64 @@
         </div>
         ${!sm.collapsed ? `
         <div class="submodule-body">
+
           <div class="form-group" style="margin-bottom:10px;">
             <label class="form-label">Module Name</label>
-            <input type="text" class="form-input" placeholder="e.g. Line Card 1" value="${escHtml(sm.moduleName)}"
-              oninput="updateSubModule('${devId}','${sm.id}','moduleName',this.value);
-                       var el=document.querySelector('#sm_${sm.id} .submodule-title span:last-child');
-                       if(el)el.textContent=this.value||'Module ${si+1}';">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" class="form-input" style="flex:1;min-width:0;" placeholder="e.g. Line Card 1"
+                value="${escHtml(sm.moduleName)}"
+                oninput="updateSubModule('${devId}','${sm.id}','moduleName',this.value);
+                         var el=document.querySelector('#sm_${sm.id} .submodule-title span:last-child');
+                         if(el)el.textContent=this.value||'Module ${si+1}';">
+              <button class="stt-btn" title="Ucapkan Module Name"
+                onclick="startSTTInline(this,function(t){
+                  updateSubModule('${devId}','${sm.id}','moduleName',t);
+                  var inp=this.parentElement.querySelector('input');if(inp)inp.value=t;
+                  var el=document.querySelector('#sm_${sm.id} .submodule-title span:last-child');
+                  if(el)el.textContent=t||'Module ${si+1}';
+                }.bind(this))">${_icoMic}</button>
+            </div>
           </div>
+
+          <div class="form-grid" style="margin-bottom:10px;">
+            <div class="form-group">
+              <label class="form-label">Serial Number</label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" id="${snUid}" class="form-input" style="flex:1;min-width:0;" placeholder="S/N"
+                  value="${escHtml(sm.serialNumber||'')}"
+                  oninput="updateSubModule('${devId}','${sm.id}','serialNumber',this.value)">
+                <button class="stt-btn" title="Ucapkan S/N"
+                  onclick="startSTTInline(this,function(t){
+                    updateSubModule('${devId}','${sm.id}','serialNumber',t);
+                    var el=document.getElementById('${snUid}');if(el)el.value=t;
+                  })">${_icoMic}</button>
+                <button class="scan-btn" title="Scan S/N"
+                  onclick="openScanner(function(t){
+                    updateSubModule('${devId}','${sm.id}','serialNumber',t);
+                    var el=document.getElementById('${snUid}');if(el)el.value=t;
+                  })">${_icoScan}</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Part Number</label>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input type="text" id="${pnUid}" class="form-input" style="flex:1;min-width:0;" placeholder="P/N"
+                  value="${escHtml(sm.partNumber||'')}"
+                  oninput="updateSubModule('${devId}','${sm.id}','partNumber',this.value)">
+                <button class="stt-btn" title="Ucapkan P/N"
+                  onclick="startSTTInline(this,function(t){
+                    updateSubModule('${devId}','${sm.id}','partNumber',t);
+                    var el=document.getElementById('${pnUid}');if(el)el.value=t;
+                  })">${_icoMic}</button>
+                <button class="scan-btn" title="Scan P/N"
+                  onclick="openScanner(function(t){
+                    updateSubModule('${devId}','${sm.id}','partNumber',t);
+                    var el=document.getElementById('${pnUid}');if(el)el.value=t;
+                  })">${_icoScan}</button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-label" style="margin-bottom:6px;">Foto Module (2 foto)</div>
           <div class="photo-btn-group-2">
             <button class="photo-btn ${sm.photos.sn?'has-photo':''}" onclick="triggerSubPhoto('${devId}','${sm.id}','sn')">
@@ -1424,6 +1532,7 @@
             ${sm.photos.sn?`<div class="photo-thumb" title="S/N"><img src="${sm.photos.sn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','sn')">&#x2715;</div></div>`:''}
             ${sm.photos.pn?`<div class="photo-thumb" title="P/N"><img src="${sm.photos.pn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','pn')">&#x2715;</div></div>`:''}
           </div>` : ''}
+
         </div>` : ''}
       </div>`;
   }
@@ -1502,6 +1611,7 @@
       siteId:        document.getElementById('fSiteId').value,
       typeSite:      document.getElementById('fTypeSite').value,
       picName:       document.getElementById('fPicName').value,
+      picPhoto:      picPhotoData,
       division:      document.getElementById('fDivision').value,
       coordLat:      document.getElementById('fCoordLat').value,
       coordLng:      document.getElementById('fCoordLng').value,
@@ -1757,7 +1867,12 @@ ${sigSection}
         });
       }
 
-      // ── 4. Signature ──
+      // ── 4. Foto PIC ──
+      if (f.picPhoto) {
+        root.file(`foto_pic.${f.picPhoto.ext || 'jpg'}`, f.picPhoto.url.split(',')[1], { base64: true });
+      }
+
+      // ── 5. Signature ──
       if (f.signature) {
         root.file('ttd_pic.png', f.signature.split(',')[1], { base64: true });
       }
@@ -1788,9 +1903,10 @@ ${sigSection}
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
         `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
         `${folderName}/\n` +
-        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Device List)\n` +
+        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Asset List)\n` +
         `  laporan.html           <- Buka di browser → Print/Save as PDF\n` +
         `  Site_Photos/           <- Foto view site & rack (${totalSitePhotos} foto)\n` +
+        (f.picPhoto ? `  foto_pic.${f.picPhoto.ext||'jpg'}          <- Foto dokumentasi PIC\n` : '') +
         (f.signature ? `  ttd_pic.png            <- Tanda tangan digital PIC\n` : '') +
         `${photoSummary.join('\n')}\n\n` +
         `Cara penggunaan:\n` +
