@@ -293,6 +293,67 @@
     .zip-info { font-size: 12px; color: var(--text-secondary); margin-top: 10px; padding: 10px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); line-height: 1.6; }
     .zip-info b { color: var(--fs-purple); }
 
+    /* ── Sync / IndexedDB Panel ──────────────────────── */
+    .sync-panel { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+    .sync-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .sync-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; display: flex; align-items: center; gap: 8px; }
+    .sync-title-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fs-teal); flex-shrink: 0; }
+    .sync-queue-count { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--fs-amber-light); color: var(--fs-amber); display: flex; align-items: center; gap: 5px; }
+    .sync-queue-count.empty { background: var(--fs-green-light); color: var(--fs-green); }
+    .sync-queue-count svg { width: 12px; height: 12px; }
+    .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-save-idb { flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--fs-teal); color: white; border: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-save-idb:hover { background: #085041; }
+    .btn-save-idb:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-save-idb svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .btn-sync-sheets { flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--fs-green); color: white; border: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .btn-sync-sheets:hover { background: #27500A; }
+    .btn-sync-sheets:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-sync-sheets svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .btn-config-sheets { display: flex; align-items: center; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-primary); font-family: inherit; font-size: 12px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .btn-config-sheets:hover { background: var(--bg-secondary); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
+    .btn-config-sheets svg { width: 13px; height: 13px; }
+    .sync-log { margin-top: 10px; font-size: 11px; line-height: 1.7; max-height: 80px; overflow-y: auto; font-family: 'Courier New', monospace; background: var(--bg-secondary); border-radius: var(--radius-md); padding: 8px 12px; border: 1px solid var(--border); display: none; color: var(--text-secondary); }
+    .sync-log.show { display: block; }
+    .log-ok  { color: var(--fs-green); }
+    .log-err { color: var(--fs-red); }
+    .log-info{ color: var(--fs-blue); }
+    .sync-queue-list { margin-top: 10px; display: none; }
+    .sync-queue-list.show { display: block; }
+    .queue-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 6px; font-size: 12px; background: var(--bg-secondary); }
+    .queue-item-info { flex: 1; min-width: 0; }
+    .queue-item-name { font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .queue-item-meta { color: var(--text-secondary); font-size: 11px; }
+    .queue-status { flex-shrink: 0; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+    .queue-status.pending { background: var(--fs-amber-light); color: var(--fs-amber); }
+    .queue-status.synced  { background: var(--fs-green-light); color: var(--fs-green); }
+    .queue-status.error   { background: var(--fs-red-light);   color: var(--fs-red); }
+    .btn-queue-del { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 11px; }
+    .btn-queue-del:hover { background: var(--fs-red-light); color: var(--fs-red); }
+    /* ── Sheets Config Modal ─────────────────────────── */
+    .sheets-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1004; align-items: center; justify-content: center; }
+    .sheets-overlay.active { display: flex; }
+    .sheets-modal { background: var(--bg-primary); border-radius: var(--radius-lg); width: min(480px, 94vw); box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow: hidden; }
+    .sheets-modal-header { padding: 14px 18px; background: var(--fs-green); display: flex; align-items: center; justify-content: space-between; }
+    .sheets-modal-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .sheets-modal-title svg { width: 17px; height: 17px; }
+    .sheets-modal-close { width: 30px; height: 30px; background: rgba(255,255,255,0.15); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+    .sheets-modal-close:hover { background: rgba(255,255,255,0.3); }
+    .sheets-modal-body { padding: 18px; }
+    .sheets-step { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 10px; font-size: 12px; line-height: 1.7; border: 1px solid var(--border); }
+    .sheets-step-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--fs-green); color: white; font-size: 10px; font-weight: 700; margin-right: 6px; }
+    .sheets-step code { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: 'Courier New', monospace; }
+    .sheets-url-input { width: 100%; height: 38px; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0 10px; font-size: 13px; font-family: inherit; background: var(--bg-primary); color: var(--text-primary); margin-top: 8px; }
+    .sheets-url-input:focus { outline: none; border-color: var(--fs-green); box-shadow: 0 0 0 3px rgba(59,109,17,0.12); }
+    .sheets-modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .btn-sheets-cancel { flex: 1; padding: 9px; border: 1px solid var(--border); border-radius: var(--radius-md); background: none; font-family: inherit; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+    .btn-sheets-save { flex: 2; padding: 9px; border: none; border-radius: var(--radius-md); background: var(--fs-green); font-family: inherit; font-size: 13px; font-weight: 600; color: white; cursor: pointer; }
+    .btn-sheets-save:hover { background: #27500A; }
+    .sheets-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+    .sheets-status-dot.ok  { background: var(--fs-green); }
+    .sheets-status-dot.off { background: #aaa; }
+    .sheets-test-result { font-size: 11px; margin-top: 6px; min-height: 16px; }
+
     .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 16px; font-size: 13px; color: var(--text-primary); box-shadow: 0 4px 16px rgba(0,0,0,0.1); z-index: 999; display: none; max-width: 340px; line-height: 1.5; }
     .toast.show { display: block; animation: fadeUp 0.2s ease; }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -1017,6 +1078,40 @@
   </div>
 
   <!-- Action Bar -->
+  <!-- ── Sync & Storage Panel ──────────────────────────── -->
+  <div class="sync-panel" id="syncPanel">
+    <div class="sync-header">
+      <div class="sync-title">
+        <span class="sync-title-dot"></span>
+        Simpan & Sinkronisasi Data
+        <span id="sheetsStatusIndicator" title="Google Sheets belum dikonfigurasi">
+          <span class="sheets-status-dot off" id="sheetsDot"></span>
+          <span id="sheetsStatusText" style="font-size:10px;font-weight:500;">Sheets: belum setup</span>
+        </span>
+      </div>
+      <span class="sync-queue-count empty" id="queueBadge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="queueBadgeText">Antrian: 0</span>
+      </span>
+    </div>
+    <div class="sync-actions">
+      <button class="btn-save-idb" onclick="saveToIDB()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Simpan ke Antrian Lokal
+      </button>
+      <button class="btn-sync-sheets" id="btnSyncSheets" onclick="syncToSheets()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sync ke Google Sheets
+      </button>
+      <button class="btn-config-sheets" onclick="openSheetsConfig()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Konfigurasi Sheets
+      </button>
+    </div>
+    <div class="sync-log" id="syncLog"></div>
+    <div class="sync-queue-list" id="syncQueueList"></div>
+  </div>
+
   <div class="section-card">
     <div class="section-title"><span class="section-title-dot"></span>Aksi</div>
     <div class="action-bar">
@@ -1070,6 +1165,44 @@
     </div>
   </div>
 
+</div>
+
+<!-- Google Sheets Config Modal -->
+<div class="sheets-overlay" id="sheetsOverlay">
+  <div class="sheets-modal">
+    <div class="sheets-modal-header">
+      <div class="sheets-modal-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Konfigurasi Google Sheets
+      </div>
+      <button class="sheets-modal-close" onclick="closeSheetsConfig()">✕</button>
+    </div>
+    <div class="sheets-modal-body">
+      <div class="sheets-step">
+        <span class="sheets-step-num">1</span>
+        Buka <b>script.google.com</b>, buat project baru, paste kode Apps Script yang tersedia (tombol salin di bawah), lalu klik <b>Deploy → New Deployment → Web App</b>. Set <i>Execute as: Me</i>, <i>Who has access: Anyone</i>.
+        <br><br>
+        <button onclick="copyAppsScript()" style="font-size:11px;padding:5px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-primary);cursor:pointer;font-family:inherit;color:var(--fs-blue);">
+          📋 Salin Kode Apps Script
+        </button>
+        <span id="scriptCopied" style="font-size:11px;color:var(--fs-green);margin-left:8px;display:none;">✓ Tersalin!</span>
+      </div>
+      <div class="sheets-step">
+        <span class="sheets-step-num">2</span>
+        Setelah deploy, salin <b>URL Web App</b> (format: <code>https://script.google.com/macros/s/.../exec</code>) dan paste di bawah ini.
+        <input type="text" class="sheets-url-input" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+        <div class="sheets-test-result" id="sheetsTestResult"></div>
+      </div>
+      <div class="sheets-step">
+        <span class="sheets-step-num">3</span>
+        Klik <b>Simpan &amp; Test</b>. App akan mengirim data dummy untuk memverifikasi koneksi. Jika berhasil, tombol <b>Sync ke Google Sheets</b> akan aktif.
+      </div>
+      <div class="sheets-modal-actions">
+        <button class="btn-sheets-cancel" onclick="closeSheetsConfig()">Batal</button>
+        <button class="btn-sheets-save" onclick="saveSheetsConfig()">Simpan &amp; Test Koneksi</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Reset Modal -->
@@ -3396,6 +3529,507 @@ ${sigSection}
 
   // Restore draft saat load
   _restoreDraft();
+
+  // ══════════════════════════════════════════════════════
+  // ── IndexedDB Engine ──────────────────────────────────
+  // ══════════════════════════════════════════════════════
+  const IDB_NAME    = 'FiberstarAssetTagging';
+  const IDB_VERSION = 1;
+  const IDB_STORE   = 'workorders';
+  let _idb = null;
+
+  function _openIDB() {
+    return new Promise((resolve, reject) => {
+      if (_idb) { resolve(_idb); return; }
+      const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          const store = db.createObjectStore(IDB_STORE, { keyPath: 'woId' });
+          store.createIndex('syncStatus', 'syncStatus', { unique: false });
+          store.createIndex('savedAt',    'savedAt',    { unique: false });
+        }
+      };
+      req.onsuccess = (e) => { _idb = e.target.result; resolve(_idb); };
+      req.onerror   = (e) => reject(e.target.error);
+    });
+  }
+
+  async function _idbPut(record) {
+    const db = await _openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put(record);
+      tx.oncomplete = resolve;
+      tx.onerror    = (e) => reject(e.target.error);
+    });
+  }
+
+  async function _idbGetAll() {
+    const db = await _openIDB();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).getAll();
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror   = (e) => reject(e.target.error);
+    });
+  }
+
+  async function _idbDelete(woId) {
+    const db = await _openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(woId);
+      tx.oncomplete = resolve;
+      tx.onerror    = (e) => reject(e.target.error);
+    });
+  }
+
+  async function _idbUpdateStatus(woId, syncStatus, syncedAt) {
+    const db = await _openIDB();
+    return new Promise((resolve, reject) => {
+      const tx  = db.transaction(IDB_STORE, 'readwrite');
+      const req = tx.objectStore(IDB_STORE).get(woId);
+      req.onsuccess = (e) => {
+        const rec = e.target.result;
+        if (rec) {
+          rec.syncStatus = syncStatus;
+          if (syncedAt) rec.syncedAt = syncedAt;
+          tx.objectStore(IDB_STORE).put(rec);
+        }
+      };
+      tx.oncomplete = resolve;
+      tx.onerror    = (e) => reject(e.target.error);
+    });
+  }
+
+  // ── Simpan WO ke IndexedDB ─────────────────────────────
+  async function saveToIDB() {
+    if (!validateForm()) return;
+    const f = getFormData();
+    // Bangun record lengkap termasuk semua foto
+    const record = {
+      woId:            f.woId || ('WO-' + Date.now()),
+      activity:        f.activity,
+      activityLabel:   (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity,
+      date:            f.date,
+      siteName:        f.siteName,
+      siteId:          f.siteId,
+      typeSite:        f.typeSite,
+      picName:         f.picName,
+      division:        f.division,
+      coordLat:        f.coordLat,
+      coordLng:        f.coordLng,
+      floorLocation:   f.floorLocation,
+      addNotes:        f.addNotes,
+      dismantleReason: f.dismantleReason,
+      warehouse:       f.warehouse,
+      replaceReason:   f.replaceReason,
+      // Foto PIC & tanda tangan (sudah terkompresi)
+      picPhoto:        f.picPhoto,
+      signature:       f.signature,
+      // Site photos (sudah terkompresi)
+      sitePhotos:      f.sitePhotos,
+      // Devices lengkap dengan semua foto (sudah terkompresi)
+      devices:         f.devices,
+      syncStatus:      'pending',
+      savedAt:         new Date().toISOString(),
+      syncedAt:        null,
+    };
+
+    try {
+      const btn = document.querySelector('.btn-save-idb');
+      btn.disabled = true;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Menyimpan...`;
+
+      await _idbPut(record);
+      await _refreshQueueUI();
+
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan ke Antrian Lokal`;
+
+      _syncLog(`✓ WO ${record.woId} disimpan ke IndexedDB (${record.devices.length} device)`, 'ok');
+      showToast(`✅ Data WO ${record.woId} berhasil disimpan ke antrian lokal!`, 4000);
+
+      document.getElementById('formStatus').textContent = '✓ Tersimpan';
+      document.getElementById('formStatus').className   = 'status-badge status-done';
+    } catch (err) {
+      console.error('[IDB Save]', err);
+      document.querySelector('.btn-save-idb').disabled = false;
+      document.querySelector('.btn-save-idb').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan ke Antrian Lokal`;
+      _syncLog('✗ Gagal simpan ke IndexedDB: ' + err.message, 'err');
+      showToast('⚠ Gagal menyimpan. ' + err.message, 5000);
+    }
+  }
+
+  // ── Refresh tampilan antrian di panel ──────────────────
+  async function _refreshQueueUI() {
+    try {
+      const all = await _idbGetAll();
+      const pending = all.filter(r => r.syncStatus === 'pending').length;
+      const badge   = document.getElementById('queueBadge');
+      const badgeTx = document.getElementById('queueBadgeText');
+      badge.className = 'sync-queue-count' + (pending === 0 ? ' empty' : '');
+      badgeTx.textContent = pending > 0 ? `Antrian: ${pending} pending` : `Semua tersinkron (${all.length})`;
+
+      const list = document.getElementById('syncQueueList');
+      if (all.length === 0) {
+        list.classList.remove('show');
+        list.innerHTML = '';
+        return;
+      }
+      list.classList.add('show');
+      // Urutkan: pending dulu, lalu terbaru
+      all.sort((a,b) => {
+        if (a.syncStatus === 'pending' && b.syncStatus !== 'pending') return -1;
+        if (a.syncStatus !== 'pending' && b.syncStatus === 'pending') return 1;
+        return new Date(b.savedAt) - new Date(a.savedAt);
+      });
+      list.innerHTML = all.map(r => {
+        const savedFmt = new Date(r.savedAt).toLocaleString('id-ID', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+        const syncFmt  = r.syncedAt ? new Date(r.syncedAt).toLocaleString('id-ID', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : null;
+        const statusCls = r.syncStatus === 'synced' ? 'synced' : r.syncStatus === 'error' ? 'error' : 'pending';
+        const statusTx  = r.syncStatus === 'synced' ? '✓ Synced' : r.syncStatus === 'error' ? '✗ Error' : '⏳ Pending';
+        return `<div class="queue-item">
+          <div class="queue-item-info">
+            <div class="queue-item-name">${escHtml(r.woId)} — ${escHtml(r.siteName || '-')}</div>
+            <div class="queue-item-meta">${r.activityLabel || r.activity} · ${r.devices ? r.devices.length : 0} device · Simpan: ${savedFmt}${syncFmt ? ' · Sync: ' + syncFmt : ''}</div>
+          </div>
+          <span class="queue-status ${statusCls}">${statusTx}</span>
+          <button class="btn-queue-del" onclick="deleteFromQueue('${escHtml(r.woId)}')" title="Hapus dari antrian">🗑</button>
+        </div>`;
+      }).join('');
+    } catch (e) { console.error('[Queue UI]', e); }
+  }
+
+  async function deleteFromQueue(woId) {
+    if (!confirm(`Hapus WO "${woId}" dari antrian lokal?`)) return;
+    try {
+      await _idbDelete(woId);
+      await _refreshQueueUI();
+      _syncLog(`🗑 WO ${woId} dihapus dari antrian`, 'info');
+      showToast('Data dihapus dari antrian.');
+    } catch (e) { showToast('Gagal hapus: ' + e.message); }
+  }
+
+  // ── Sync Log helper ────────────────────────────────────
+  function _syncLog(msg, cls = 'info') {
+    const log = document.getElementById('syncLog');
+    log.classList.add('show');
+    const time = new Date().toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const line = document.createElement('div');
+    line.className = 'log-' + cls;
+    line.textContent = `[${time}] ${msg}`;
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+    // Batasi 50 baris
+    while (log.children.length > 50) log.removeChild(log.firstChild);
+  }
+
+  // ══════════════════════════════════════════════════════
+  // ── Google Sheets Sync Engine ─────────────────────────
+  // ══════════════════════════════════════════════════════
+  const SHEETS_URL_KEY = 'fs_sheets_webhook_url';
+  let _sheetsUrl = '';
+
+  function _loadSheetsConfig() {
+    try {
+      _sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || '';
+      const dot  = document.getElementById('sheetsDot');
+      const txt  = document.getElementById('sheetsStatusText');
+      if (_sheetsUrl) {
+        dot.className  = 'sheets-status-dot ok';
+        txt.textContent = 'Sheets: terhubung';
+      } else {
+        dot.className  = 'sheets-status-dot off';
+        txt.textContent = 'Sheets: belum setup';
+      }
+    } catch(e) {}
+  }
+
+  function openSheetsConfig() {
+    document.getElementById('sheetsUrlInput').value = _sheetsUrl || '';
+    document.getElementById('sheetsTestResult').textContent = '';
+    document.getElementById('sheetsTestResult').style.color = '';
+    document.getElementById('scriptCopied').style.display = 'none';
+    document.getElementById('sheetsOverlay').classList.add('active');
+  }
+
+  function closeSheetsConfig() {
+    document.getElementById('sheetsOverlay').classList.remove('active');
+  }
+
+  document.getElementById('sheetsOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeSheetsConfig();
+  });
+
+  async function saveSheetsConfig() {
+    const url = document.getElementById('sheetsUrlInput').value.trim();
+    if (!url) { alert('URL tidak boleh kosong.'); return; }
+    if (!url.startsWith('https://script.google.com/macros/')) {
+      alert('URL tidak valid. Harus berasal dari script.google.com/macros/...'); return;
+    }
+
+    const resEl = document.getElementById('sheetsTestResult');
+    resEl.style.color = 'var(--fs-amber)';
+    resEl.textContent = '⏳ Menguji koneksi...';
+
+    try {
+      // Test ping ke Apps Script
+      const testPayload = { action: 'ping', app: 'FiberstarAssetTagging', ts: Date.now() };
+      const resp = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(testPayload),
+      });
+      const text = await resp.text();
+      let json;
+      try { json = JSON.parse(text); } catch(_) { json = { status: 'error', msg: text }; }
+
+      if (json.status === 'ok' || json.status === 'pong') {
+        _sheetsUrl = url;
+        localStorage.setItem(SHEETS_URL_KEY, url);
+        resEl.style.color = 'var(--fs-green)';
+        resEl.textContent = '✓ Koneksi berhasil! Google Sheets siap menerima data.';
+        _loadSheetsConfig();
+        setTimeout(closeSheetsConfig, 1800);
+        showToast('✅ Google Sheets berhasil terhubung!', 4000);
+      } else {
+        resEl.style.color = 'var(--fs-red)';
+        resEl.textContent = '✗ Server merespons tapi ada error: ' + (json.msg || text.substring(0, 80));
+      }
+    } catch (err) {
+      resEl.style.color = 'var(--fs-red)';
+      resEl.textContent = '✗ Tidak dapat terhubung: ' + err.message + '. Pastikan URL benar dan akses = Anyone.';
+    }
+  }
+
+  // ── Sync semua pending ke Sheets ──────────────────────
+  async function syncToSheets() {
+    if (!_sheetsUrl) {
+      showToast('⚠ Konfigurasi Google Sheets terlebih dahulu (klik "Konfigurasi Sheets").', 5000);
+      openSheetsConfig();
+      return;
+    }
+    if (!navigator.onLine) {
+      showToast('⚠ Tidak ada koneksi internet. Data tetap tersimpan lokal, sync saat ada signal.', 5000);
+      return;
+    }
+
+    let all;
+    try { all = await _idbGetAll(); } catch(e) { showToast('Gagal baca antrian: ' + e.message); return; }
+
+    const pending = all.filter(r => r.syncStatus === 'pending');
+    if (pending.length === 0) {
+      showToast('Tidak ada data pending. Simpan dulu dengan "Simpan ke Antrian Lokal".', 4000);
+      return;
+    }
+
+    const btn = document.getElementById('btnSyncSheets');
+    btn.disabled = true;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Mensinkronkan ${pending.length} data...`;
+
+    _syncLog(`▶ Memulai sync ${pending.length} WO ke Google Sheets...`, 'info');
+    let successCount = 0, errorCount = 0;
+
+    for (const record of pending) {
+      try {
+        // Kirim data teks saja (tanpa foto base64 — terlalu besar untuk Sheets)
+        // Foto ada di ZIP yang di-download terpisah
+        const payload = {
+          action:          'submit',
+          woId:            record.woId,
+          activity:        record.activityLabel || record.activity,
+          date:            record.date,
+          siteName:        record.siteName,
+          siteId:          record.siteId,
+          typeSite:        record.typeSite,
+          picName:         record.picName,
+          division:        record.division,
+          coordLat:        record.coordLat || '',
+          coordLng:        record.coordLng || '',
+          floorLocation:   record.floorLocation || '',
+          addNotes:        record.addNotes || '',
+          dismantleReason: record.dismantleReason || '',
+          warehouse:       record.warehouse || '',
+          replaceReason:   record.replaceReason || '',
+          deviceCount:     (record.devices || []).length,
+          sitePhotoCount:  (record.sitePhotos || []).length,
+          // Summary device sebagai teks
+          deviceSummary: (record.devices || []).map((d, i) =>
+            `${i+1}. ${d.deviceName || '-'} | S/N: ${d.serialNumber || '-'} | P/N: ${d.partNumber || '-'} | Status: ${d.statusDevice || '-'}`
+          ).join('\n'),
+          savedAt: record.savedAt,
+          syncedAt: new Date().toISOString(),
+        };
+
+        const resp = await fetch(_sheetsUrl, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        const text = await resp.text();
+        let json;
+        try { json = JSON.parse(text); } catch(_) { json = { status: 'error', msg: text }; }
+
+        if (json.status === 'ok') {
+          await _idbUpdateStatus(record.woId, 'synced', payload.syncedAt);
+          successCount++;
+          _syncLog(`✓ ${record.woId} (${record.siteName}) → Sheets`, 'ok');
+        } else {
+          await _idbUpdateStatus(record.woId, 'error', null);
+          errorCount++;
+          _syncLog(`✗ ${record.woId}: ${json.msg || 'Unknown error'}`, 'err');
+        }
+      } catch (err) {
+        await _idbUpdateStatus(record.woId, 'error', null);
+        errorCount++;
+        _syncLog(`✗ ${record.woId}: ${err.message}`, 'err');
+      }
+    }
+
+    await _refreshQueueUI();
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync ke Google Sheets`;
+
+    if (errorCount === 0) {
+      showToast(`✅ ${successCount} WO berhasil disync ke Google Sheets!`, 5000);
+    } else {
+      showToast(`⚠ ${successCount} berhasil, ${errorCount} gagal. Cek log di bawah.`, 6000);
+    }
+  }
+
+  // ── Salin kode Apps Script ke clipboard ───────────────
+  function copyAppsScript() {
+    const code = `// ═══════════════════════════════════════════════════════
+// Fiberstar Asset Tagging — Google Apps Script Backend
+// Cara deploy: Extensions → Apps Script → paste kode ini
+//              Deploy → New Deployment → Web App
+//              Execute as: Me | Who has access: Anyone
+// ═══════════════════════════════════════════════════════
+
+const SHEET_NAME = 'Asset Tagging Log';
+const SPREADSHEET_ID = ''; // Kosongkan = pakai spreadsheet aktif
+
+function getSheet() {
+  const ss = SPREADSHEET_ID
+    ? SpreadsheetApp.openById(SPREADSHEET_ID)
+    : SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    // Header row
+    const headers = [
+      'Timestamp Sync','WO ID','Jenis Kegiatan','Tanggal',
+      'Site Name','Site ID','Type Site','PIC Name','Division',
+      'Latitude','Longitude','Floor Location',
+      'Keterangan','Alasan Dismantle','Warehouse','Alasan Replace',
+      'Jumlah Device','Jumlah Foto Site','Device Summary','Disimpan Pada'
+    ];
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.getRange(1, 1, 1, headers.length)
+      .setBackground('#185FA5').setFontColor('#FFFFFF')
+      .setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    // Handle ping (test koneksi)
+    if (data.action === 'ping') {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'pong', app: 'FiberstarAssetTagging' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    // Handle submit
+    if (data.action === 'submit') {
+      const sheet = getSheet();
+      const row = [
+        new Date().toLocaleString('id-ID'),
+        data.woId || '',
+        data.activity || '',
+        data.date || '',
+        data.siteName || '',
+        data.siteId || '',
+        data.typeSite || '',
+        data.picName || '',
+        data.division || '',
+        data.coordLat || '',
+        data.coordLng || '',
+        data.floorLocation || '',
+        data.addNotes || '',
+        data.dismantleReason || '',
+        data.warehouse || '',
+        data.replaceReason || '',
+        data.deviceCount || 0,
+        data.sitePhotoCount || 0,
+        data.deviceSummary || '',
+        data.savedAt || '',
+      ];
+      sheet.appendRow(row);
+      // Auto-resize kolom pertama kali
+      if (sheet.getLastRow() <= 2) sheet.autoResizeColumns(1, 20);
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'ok', row: sheet.getLastRow() }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', msg: 'Unknown action' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', msg: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: 'pong', app: 'FiberstarAssetTagging', method: 'GET' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+    navigator.clipboard.writeText(code).then(() => {
+      const el = document.getElementById('scriptCopied');
+      el.style.display = 'inline';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const el = document.getElementById('scriptCopied');
+      el.style.display = 'inline';
+      setTimeout(() => { el.style.display = 'none'; }, 3000);
+    });
+  }
+
+  // ── Init: load config + refresh queue UI ──────────────
+  _loadSheetsConfig();
+  _openIDB().then(() => _refreshQueueUI()).catch(e => console.warn('[IDB Init]', e));
+
+  // Auto-refresh queue saat tab kembali aktif
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) _refreshQueueUI();
+  });
+
+  // ── Auto-sync jika online dan ada pending ──────────────
+  window.addEventListener('online', async () => {
+    showToast('🌐 Koneksi kembali. Memeriksa antrian...', 3000);
+    if (!_sheetsUrl) return;
+    const all = await _idbGetAll().catch(() => []);
+    const pending = all.filter(r => r.syncStatus === 'pending');
+    if (pending.length > 0) {
+      _syncLog(`🌐 Online — ${pending.length} data pending ditemukan, memulai auto-sync...`, 'info');
+      setTimeout(syncToSheets, 1500);
+    }
+  });
+
+  window.addEventListener('offline', () => {
+    showToast('📴 Offline. Data tetap tersimpan lokal, sync otomatis saat koneksi kembali.', 5000);
+  });
 
   window.clearDraft = function() {
     try { localStorage.removeItem(SAVE_KEY); showToast('Draft dihapus.'); } catch(e) {}
