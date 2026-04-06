@@ -460,7 +460,99 @@
     .site-photo-count { font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
     .site-photo-count b { color: var(--fs-blue); }
 
-    /* ── Offline Banner ─────────────────────────────── */
+    /* ── Activity Tab Selector ──────────────────────── */
+    .activity-selector {
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.25rem;
+    }
+    .activity-selector-title {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .activity-tabs {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;
+    }
+    .activity-tab {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 12px 8px; border-radius: var(--radius-md); border: 1.5px solid var(--border);
+      background: var(--bg-primary); cursor: pointer; font-family: inherit;
+      transition: all 0.18s; text-align: center;
+    }
+    .activity-tab:hover { border-color: var(--fs-blue-mid); background: var(--fs-blue-light); }
+    .activity-tab svg { width: 22px; height: 22px; color: var(--text-secondary); transition: color 0.18s; }
+    .activity-tab .act-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+    .activity-tab .act-sub   { font-size: 10px; color: var(--text-secondary); line-height: 1.3; }
+    /* Active states per type */
+    .activity-tab.active-new      { border-color: #185FA5; background: #E6F1FB; }
+    .activity-tab.active-new svg  { color: #185FA5; }
+    .activity-tab.active-existing      { border-color: #3B6D11; background: #EAF3DE; }
+    .activity-tab.active-existing svg  { color: #3B6D11; }
+    .activity-tab.active-additional      { border-color: #3730A3; background: #EEF0FE; }
+    .activity-tab.active-additional svg  { color: #3730A3; }
+    .activity-tab.active-dismantle      { border-color: #A32D2D; background: #FCEBEB; }
+    .activity-tab.active-dismantle svg  { color: #A32D2D; }
+    .activity-tab.active-replace      { border-color: #BA7517; background: #FAEEDA; }
+    .activity-tab.active-replace svg  { color: #BA7517; }
+    .activity-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .badge-new        { background: #E6F1FB; color: #185FA5; }
+    .badge-existing   { background: #EAF3DE; color: #3B6D11; }
+    .badge-additional { background: #EEF0FE; color: #3730A3; }
+    .badge-dismantle  { background: #FCEBEB; color: #A32D2D; }
+    .badge-replace    { background: #FAEEDA; color: #BA7517; }
+
+    /* ── Work Order ID ──────────────────────────────── */
+    .wo-id-box {
+      background: linear-gradient(135deg, var(--fs-blue) 0%, #0F4D8A 100%);
+      border-radius: var(--radius-md); padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; margin-bottom: 14px;
+    }
+    .wo-id-left { display: flex; flex-direction: column; gap: 2px; }
+    .wo-id-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; }
+    .wo-id-value { font-size: 18px; font-weight: 700; color: white; letter-spacing: 0.04em; font-family: 'Courier New', monospace; }
+    .wo-id-meta  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+    .wo-id-actions { display: flex; gap: 6px; align-items: center; }
+    .wo-id-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; flex-shrink: 0;
+    }
+    .wo-id-btn:hover { background: rgba(255,255,255,0.28); }
+    .wo-id-btn svg { width: 15px; height: 15px; }
+    .wo-id-copy-toast {
+      font-size: 11px; color: rgba(255,255,255,0.8); opacity: 0;
+      transition: opacity 0.3s; white-space: nowrap;
+    }
+    .wo-id-copy-toast.show { opacity: 1; }
+    .ctx-field { display: none; }
+    .ctx-field.show { display: flex; flex-direction: column; gap: 5px; }
+
+    /* ── Replace device pair card ─────────────────── */
+    .replace-pair {
+      border: 1px solid var(--fs-amber); border-radius: var(--radius-md);
+      overflow: hidden; margin-bottom: 10px; background: #FFFDF7;
+    }
+    .replace-pair-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; background: var(--fs-amber-light); font-size: 12px; font-weight: 600; color: var(--fs-amber);
+    }
+    .replace-old { border-left: 3px solid var(--fs-red); padding: 10px 12px; background: #fff8f8; }
+    .replace-new { border-left: 3px solid var(--fs-green); padding: 10px 12px; }
+    .replace-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .replace-label.old { color: var(--fs-red); }
+    .replace-label.new { color: var(--fs-green); }
+
+    /* ── Dismantle reason badge ───────────────────── */
+    .dismantle-badge {
+      font-size: 11px; padding: 4px 10px; border-radius: 20px;
+      background: var(--fs-red-light); color: var(--fs-red); font-weight: 500;
+    }
     .offline-banner {
       display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
       background: var(--fs-amber); color: white; text-align: center;
@@ -511,21 +603,76 @@
     ⚠️ Speech-to-Text tidak tersedia di browser ini. Gunakan <b>Chrome</b> atau <b>Edge</b> untuk menggunakan fitur 🎤.
   </div>
 
+  <!-- Activity Selector -->
+  <div class="activity-selector">
+    <div class="activity-selector-title">
+      <span class="section-title-dot"></span>
+      Pilih Jenis Kegiatan Collect Data
+    </div>
+    <div class="activity-tabs">
+      <button class="activity-tab" id="tab-new" onclick="setActivity('new')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <span class="act-label">New Site</span>
+        <span class="act-sub">Pendataan Site Baru</span>
+      </button>
+      <button class="activity-tab" id="tab-existing" onclick="setActivity('existing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="act-label">Existing</span>
+        <span class="act-sub">Pendataan Site Lama</span>
+      </button>
+      <button class="activity-tab" id="tab-additional" onclick="setActivity('additional')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M17 17h4m-2-2v4"/></svg>
+        <span class="act-label">Additional</span>
+        <span class="act-sub">Penambahan Device</span>
+      </button>
+      <button class="activity-tab" id="tab-dismantle" onclick="setActivity('dismantle')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        <span class="act-label">Dismantle</span>
+        <span class="act-sub">Pengurangan Device</span>
+      </button>
+      <button class="activity-tab" id="tab-replace" onclick="setActivity('replace')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        <span class="act-label">Replace</span>
+        <span class="act-sub">Pergantian Device</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Form Site Information -->
-  <div class="section-card">
-    <div class="section-title"><span class="section-title-dot"></span>Form Site Information</div>
+  <div class="section-card" id="sectionSiteInfo">
+    <div class="section-title">
+      <span class="section-title-dot"></span>Form Site Information
+      <span id="activityBadge" style="margin-left:auto;"></span>
+    </div>
+
+    <!-- Work Order ID Box -->
+    <div class="wo-id-box" id="woIdBox" style="display:none;">
+      <div class="wo-id-left">
+        <span class="wo-id-label">Work Order ID</span>
+        <span class="wo-id-value" id="woIdValue">—</span>
+        <span class="wo-id-meta" id="woIdMeta">Pilih jenis kegiatan untuk generate ID</span>
+      </div>
+      <div class="wo-id-actions">
+        <span class="wo-id-copy-toast" id="woCopyToast">Tersalin!</span>
+        <button class="wo-id-btn" title="Salin ID" onclick="copyWoId()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </button>
+        <button class="wo-id-btn" title="Generate ulang ID baru" onclick="regenWoId()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-4.37"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="form-grid">
       <div class="form-group">
         <label class="form-label">Date</label>
         <input type="date" class="form-input" id="fDate">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Status Site</label>
-        <select class="form-select" id="fStatusSite">
-          <option value="">— Pilih Status —</option>
-          <option value="New">New</option>
-          <option value="Existing">Existing</option>
-        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Site Name</label>
@@ -561,8 +708,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Foto PIC -->
       <div class="form-group">
         <label class="form-label">Foto PIC (Dokumentasi)</label>
         <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;">
@@ -588,8 +733,8 @@
         </select>
       </div>
 
-      <!-- Coordinate Site -->
-      <div class="form-group" style="grid-column: 1 / -1;">
+      <!-- Coordinate — tampil untuk New, Existing -->
+      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxCoord" style="grid-column: 1 / -1;">
         <label class="form-label">Coordinate Site</label>
         <div class="coord-input-row">
           <input type="text" class="form-input" id="fCoordLat" placeholder="Latitude" readonly>
@@ -604,7 +749,6 @@
           </button>
         </div>
         <div class="coord-status" id="coordStatus"></div>
-        <!-- GPS Map Preview -->
         <div class="map-preview-wrap" id="mapPreviewWrap">
           <div class="map-preview-header">
             <span>📍 Lokasi di Peta</span>
@@ -614,12 +758,54 @@
         </div>
       </div>
 
-      <!-- Floor Location -->
-      <div class="form-group">
+      <!-- Floor Location — New, Existing -->
+      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxFloor">
         <label class="form-label">Floor Location</label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
           <button class="stt-btn" title="Ucapkan Floor Location" onclick="startSTT('fFloorLocation', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Keterangan Penambahan — Additional -->
+      <div class="form-group ctx-field ctx-additional" id="ctxAddNotes" style="grid-column: 1 / -1;">
+        <label class="form-label">Keterangan Penambahan</label>
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Penambahan switch untuk ekspansi kapasitas" id="fAddNotes">
+          <button class="stt-btn" title="Ucapkan Keterangan" onclick="startSTT('fAddNotes', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alasan Dismantle -->
+      <div class="form-group ctx-field ctx-dismantle" id="ctxDismantleReason" style="grid-column: 1 / -1;">
+        <label class="form-label">Alasan Dismantle</label>
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Perangkat end-of-life, kontrak berakhir" id="fDismantleReason">
+          <button class="stt-btn" title="Ucapkan Alasan" onclick="startSTT('fDismantleReason', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group ctx-field ctx-dismantle" id="ctxDismantleWarehouse">
+        <label class="form-label">Lokasi Penyimpanan / Warehouse</label>
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Gudang Jakarta Selatan, Rak B-3" id="fWarehouse">
+          <button class="stt-btn" title="Ucapkan Lokasi Penyimpanan" onclick="startSTT('fWarehouse', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Keterangan Replace -->
+      <div class="form-group ctx-field ctx-replace" id="ctxReplaceReason" style="grid-column: 1 / -1;">
+        <label class="form-label">Alasan Pergantian</label>
+        <div class="stt-wrap">
+          <input type="text" class="form-input" placeholder="e.g. Perangkat rusak, upgrade kapasitas" id="fReplaceReason">
+          <button class="stt-btn" title="Ucapkan Alasan" onclick="startSTT('fReplaceReason', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
         </div>
@@ -641,8 +827,8 @@
     </div>
   </div>
 
-  <!-- Form View Site / Rack -->
-  <div class="section-card">
+  <!-- Form View Site / Rack — hanya New & Existing -->
+  <div class="section-card ctx-field ctx-new ctx-existing" id="sectionRack">
     <div class="section-title"><span class="section-title-dot"></span>View Site / Rack</div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
       Upload foto kondisi site secara keseluruhan beserta rack. Bisa lebih dari satu foto.
@@ -662,8 +848,9 @@
   </div>
 
   <!-- Form Collect Data Asset -->
-  <div class="section-card">
-    <div class="section-title"><span class="section-title-dot"></span>Form Collect Data Asset</div>
+  <div class="section-card" id="sectionCollect">
+    <div class="section-title"><span class="section-title-dot"></span><span id="collectSectionTitle">Form Collect Data Asset</span></div>
+    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;" id="collectSectionHint"></div>
     <div id="deviceList"></div>
     <!-- Add Device Button with Popup -->
     <div class="add-type-popup-wrap" id="addTypeWrap">
@@ -917,8 +1104,153 @@
   let currentPhotoTarget = null;
   let sitePhotos = []; // { url, ext }
   let picPhotoData = null; // { url, ext }
+  let currentActivity = ''; // 'new' | 'existing' | 'additional' | 'dismantle' | 'replace'
+  let currentWoId = '';
 
-  // ── Foto PIC Handlers ─────────────────────────────────
+  // ── Work Order ID Engine ───────────────────────────────
+  const ACT_CODE = { new: 'NEW', existing: 'EXI', additional: 'ADD', dismantle: 'DIS', replace: 'REP' };
+
+  function _genWoId(actType) {
+    const code    = ACT_CODE[actType] || 'UNK';
+    const siteId  = (document.getElementById('fSiteId')?.value || 'SITE').trim().replace(/[^a-zA-Z0-9]/g,'').toUpperCase() || 'SITE';
+    const now     = new Date();
+    const ymd     = now.getFullYear().toString() +
+                    String(now.getMonth() + 1).padStart(2,'0') +
+                    String(now.getDate()).padStart(2,'0');
+    return `${code}-${siteId}-${ymd}`;
+  }
+
+  function _renderWoId(id, actType) {
+    const now = new Date();
+    const cfg = ACTIVITY_CONFIG[actType] || {};
+    document.getElementById('woIdBox').style.display = '';
+    document.getElementById('woIdValue').textContent = id;
+    document.getElementById('woIdMeta').textContent =
+      `${cfg.label || actType} • ${now.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}`;
+  }
+
+  function copyWoId() {
+    if (!currentWoId) return;
+    navigator.clipboard.writeText(currentWoId).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = currentWoId; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    const toast = document.getElementById('woCopyToast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function regenWoId() {
+    if (!currentActivity) return;
+    if (!confirm('Regenerate Work Order ID? ID lama tidak bisa dipakai lagi.')) return;
+    currentWoId = _genWoId(currentActivity);
+    _renderWoId(currentWoId, currentActivity);
+    _autoSave();
+    showToast('Work Order ID: ' + currentWoId, 3000);
+  }
+
+  // ── Activity Selector ─────────────────────────────────
+  const ACTIVITY_CONFIG = {
+    new: {
+      label: 'New Site', badgeClass: 'badge-new', tabClass: 'active-new',
+      collectTitle: 'Data Asset — New Site',
+      collectHint: 'Catat semua asset yang terpasang di site baru. Lengkapi foto Full, Type, S/N, dan P/N untuk setiap device.',
+      addBtnLabel: 'Tambah Asset',
+    },
+    existing: {
+      label: 'Existing', badgeClass: 'badge-existing', tabClass: 'active-existing',
+      collectTitle: 'Data Asset — Existing Site',
+      collectHint: 'Catat kondisi terkini semua asset yang sudah ada di site. Update S/N, P/N, dan status setiap device.',
+      addBtnLabel: 'Tambah Asset',
+    },
+    additional: {
+      label: 'Additional', badgeClass: 'badge-additional', tabClass: 'active-additional',
+      collectTitle: 'Asset yang Ditambahkan',
+      collectHint: 'Catat hanya device/module yang baru ditambahkan ke site ini.',
+      addBtnLabel: 'Tambah Asset Baru',
+    },
+    dismantle: {
+      label: 'Dismantle', badgeClass: 'badge-dismantle', tabClass: 'active-dismantle',
+      collectTitle: 'Asset yang Di-Dismantle',
+      collectHint: 'Catat device/module yang dilepas. Wajib isi S/N dan foto kondisi sebelum dilepas.',
+      addBtnLabel: 'Tambah Asset Dismantle',
+    },
+    replace: {
+      label: 'Replace', badgeClass: 'badge-replace', tabClass: 'active-replace',
+      collectTitle: 'Asset yang Diganti',
+      collectHint: 'Setiap entri berisi pasangan: device LAMA (dilepas) dan device BARU (dipasang).',
+      addBtnLabel: 'Tambah Pasangan Replace',
+    },
+  };
+
+  function setActivity(type) {
+    const cfg = ACTIVITY_CONFIG[type];
+
+    // Update tab active state
+    Object.keys(ACTIVITY_CONFIG).forEach(t => {
+      const tab = document.getElementById('tab-' + t);
+      tab.className = 'activity-tab' + (t === type ? ' active-' + t : '');
+    });
+
+    // Update badge
+    document.getElementById('activityBadge').innerHTML =
+      `<span class="activity-badge ${cfg.badgeClass}">${cfg.label}</span>`;
+
+    // Generate Work Order ID (hanya jika belum ada atau beda activity)
+    if (!currentWoId || currentActivity !== type) {
+      currentWoId = _genWoId(type);
+    }
+    currentActivity = type;
+    _renderWoId(currentWoId, type);
+
+    // Show/hide context fields
+    document.querySelectorAll('.ctx-field').forEach(el => {
+      const show = el.classList.contains('ctx-' + type);
+      el.classList.toggle('show', show);
+      // grid-column preserve
+      if (show && el.dataset.gridCol) el.style.gridColumn = el.dataset.gridCol;
+    });
+    // Preserve grid-column for elements that had it
+    document.querySelectorAll('[style*="grid-column"]').forEach(el => {
+      if (el.classList.contains('ctx-field')) el.dataset.gridCol = el.style.gridColumn;
+    });
+
+    // Show/hide Rack section
+    const rack = document.getElementById('sectionRack');
+    rack.classList.toggle('show', type === 'new' || type === 'existing');
+    // ctx-field on section needs special handling
+    if (type === 'new' || type === 'existing') {
+      rack.style.display = '';
+    } else {
+      rack.style.display = 'none';
+    }
+
+    // Update collect section title & hint
+    document.getElementById('collectSectionTitle').textContent = cfg.collectTitle;
+    document.getElementById('collectSectionHint').textContent = cfg.collectHint;
+    document.getElementById('btnAddDevice').querySelector('span') &&
+      (document.getElementById('btnAddDevice').lastChild.textContent = cfg.addBtnLabel);
+
+    // Update Add button label text
+    const addBtn = document.getElementById('btnAddDevice');
+    if (addBtn) {
+      const span = addBtn.querySelector('span') || addBtn;
+      addBtn.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' ' + cfg.addBtnLabel; });
+    }
+
+    // Clear devices when switching activity to avoid confusion
+    if (devices.length > 0) {
+      if (confirm('Ganti jenis kegiatan akan menghapus data asset yang sudah diisi. Lanjutkan?')) {
+        devices = []; deviceCounter = 0; renderDevices(); updatePhotoProgress();
+      } else {
+        // Revert — re-set to old activity (find which was active before)
+        return;
+      }
+    }
+
+    _autoSave();
+  }
   function triggerPicPhoto() {
     document.getElementById('picPhotoInput').click();
   }
@@ -1731,10 +2063,10 @@
     const devs       = document.getElementById('chk_devices').checked;
 
     if (site) {
-      ['fDate','fSiteName','fSiteId','fFloorLocation'].forEach(id => {
+      ['fDate','fSiteName','fSiteId','fFloorLocation','fAddNotes','fDismantleReason','fWarehouse','fReplaceReason'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
-      ['fStatusSite','fTypeSite','fDivision'].forEach(id => {
+      ['fTypeSite','fDivision'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       document.getElementById('fCoordLat').value = '';
@@ -1849,30 +2181,39 @@
 
   // ── Form Data ──────────────────────────────────────────
   function getFormData() {
+    const _v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
     return {
-      date:          document.getElementById('fDate').value,
-      statusSite:    document.getElementById('fStatusSite').value,
-      siteName:      document.getElementById('fSiteName').value,
-      siteId:        document.getElementById('fSiteId').value,
-      typeSite:      document.getElementById('fTypeSite').value,
-      picName:       document.getElementById('fPicName').value,
-      picPhoto:      picPhotoData,
-      division:      document.getElementById('fDivision').value,
-      coordLat:      document.getElementById('fCoordLat').value,
-      coordLng:      document.getElementById('fCoordLng').value,
-      floorLocation: document.getElementById('fFloorLocation').value,
-      signature:     sigDataUrl,
+      woId:            currentWoId,
+      activity:        currentActivity,
+      date:            _v('fDate'),
+      siteName:        _v('fSiteName'),
+      siteId:          _v('fSiteId'),
+      typeSite:        _v('fTypeSite'),
+      picName:         _v('fPicName'),
+      picPhoto:        picPhotoData,
+      division:        _v('fDivision'),
+      coordLat:        _v('fCoordLat'),
+      coordLng:        _v('fCoordLng'),
+      floorLocation:   _v('fFloorLocation'),
+      addNotes:        _v('fAddNotes'),
+      dismantleReason: _v('fDismantleReason'),
+      warehouse:   _v('fWarehouse'),
+      replaceReason:   _v('fReplaceReason'),
+      signature:       sigDataUrl,
       devices,
       sitePhotos
     };
   }
 
   function validateForm() {
+    if (!currentActivity) { showToast('⚠️ Pilih jenis kegiatan terlebih dahulu'); return false; }
     const f = getFormData();
-    if (!f.date || !f.siteName || !f.siteId || !f.typeSite) { showToast('Lengkapi data site terlebih dahulu'); return false; }
+    if (!f.date || !f.siteName || !f.siteId) { showToast('Lengkapi data site terlebih dahulu (Date, Site Name, Site ID)'); return false; }
     if (!f.picName)  { showToast('PIC Name harus diisi'); return false; }
     if (!f.division) { showToast('Division harus dipilih'); return false; }
-    if (f.devices.length === 0) { showToast('Minimal 1 device harus diisi'); return false; }
+    if (f.devices.length === 0) { showToast('Minimal 1 asset harus diisi'); return false; }
+    if (currentActivity === 'dismantle' && !f.dismantleReason) { showToast('Alasan Dismantle harus diisi'); return false; }
+    if (currentActivity === 'replace'   && !f.replaceReason)   { showToast('Alasan Pergantian harus diisi'); return false; }
     return true;
   }
 
@@ -1883,6 +2224,8 @@
     const sub = encodeURIComponent(`Asset Tagging - ${f.siteName} (${f.siteId}) - ${f.typeSite}`);
     const body = encodeURIComponent(
       `Halo Tim Asset Management,\n\nBerikut laporan Asset Tagging:\n\n` +
+      `Work Order ID : ${f.woId || '-'}\n` +
+      `Jenis Kegiatan: ${(ACTIVITY_CONFIG[f.activity]||{}).label || '-'}\n` +
       `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
       `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
       `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
@@ -1986,7 +2329,7 @@
   <div><span class="lbl">Site Name: </span><b>${escHtml(f.siteName)}</b></div>
   <div><span class="lbl">Site ID: </span><b>${escHtml(f.siteId)}</b></div>
   <div><span class="lbl">Type: </span><b>${escHtml(f.typeSite)}</b></div>
-  <div><span class="lbl">Status Site: </span><b>${escHtml(f.statusSite||'—')}</b></div>
+  <div><span class="lbl">Jenis Kegiatan: </span><b style="color:${actColor}">${escHtml(actLabel)}</b></div>
   <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
@@ -2038,22 +2381,33 @@ ${mapLink}
   function _buildXlsx(f) {
     const wb = XLSX.utils.book_new();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
 
     // ── Sheet 1: Site Info ──
+    const extraRows = [];
+    if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes]);
+    if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason]);
+    if (f.activity === 'dismantle'  && f.warehouse)   extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
+    if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason]);
+
     const siteData = [
       ['FIBERSTAR ASSET TAGGING REPORT'],
       [],
       ['Field', 'Value'],
-      ['Date',           f.date || '-'],
-      ['Status Site',    f.statusSite || '-'],
-      ['Site Name',      f.siteName || '-'],
-      ['Site ID',        f.siteId || '-'],
-      ['Type Site',      f.typeSite || '-'],
-      ['PIC Name',       f.picName || '-'],
-      ['Division',       f.division || '-'],
-      ['Koordinat',      coordStr],
-      ['Floor Location', f.floorLocation || '-'],
-      ['Jumlah Asset',   f.devices.length],
+      ['Work Order ID',  f.woId || '-'],
+      ['Jenis Kegiatan', actLabel],
+      ['Date',            f.date || '-'],
+      ['Site Name',       f.siteName || '-'],
+      ['Site ID',         f.siteId || '-'],
+      ['Type Site',       f.typeSite || '-'],
+      ['PIC Name',        f.picName || '-'],
+      ['Division',        f.division || '-'],
+      ...((f.activity==='new'||f.activity==='existing') ? [
+        ['Koordinat',     coordStr],
+        ['Floor Location',f.floorLocation || '-'],
+      ] : []),
+      ...extraRows,
+      ['Jumlah Asset',    f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
     ];
     const wsSite = XLSX.utils.aoa_to_sheet(siteData);
@@ -2095,19 +2449,27 @@ ${mapLink}
     if (typeof XLSX === 'undefined') return null;
     const wb = XLSX.utils.book_new();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
+    const extraRows = [];
+    if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes]);
+    if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason]);
+    if (f.activity === 'dismantle'  && f.warehouse)   extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
+    if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason]);
 
     const siteData = [
       ['FIBERSTAR ASSET TAGGING REPORT'], [],
       ['Field', 'Value'],
-      ['Date', f.date||'-'], ['Status Site', f.statusSite||'-'],
+      ['Work Order ID', f.woId || '-'],
+      ['Jenis Kegiatan', actLabel], ['Date', f.date||'-'],
       ['Site Name', f.siteName||'-'], ['Site ID', f.siteId||'-'],
       ['Type Site', f.typeSite||'-'], ['PIC Name', f.picName||'-'],
-      ['Division', f.division||'-'], ['Koordinat', coordStr],
-      ['Floor Location', f.floorLocation||'-'],
+      ['Division', f.division||'-'],
+      ...((f.activity==='new'||f.activity==='existing') ? [['Koordinat', coordStr],['Floor Location', f.floorLocation||'-']] : []),
+      ...extraRows,
       ['Jumlah Asset', f.devices.length], ['Jumlah Foto Site', f.sitePhotos.length],
     ];
     const wsSite = XLSX.utils.aoa_to_sheet(siteData);
-    wsSite['!cols'] = [{wch:20},{wch:40}];
+    wsSite['!cols'] = [{wch:22},{wch:40}];
     XLSX.utils.book_append_sheet(wb, wsSite, 'Site Info');
 
     const devHeaders = ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'];
@@ -2120,13 +2482,20 @@ ${mapLink}
     const wsDevices = XLSX.utils.aoa_to_sheet([devHeaders, ...devRows]);
     wsDevices['!cols'] = [{wch:4},{wch:9},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
     XLSX.utils.book_append_sheet(wb, wsDevices, 'Asset List');
-
     return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
   }
 
   // Helper: generate PDF HTML string untuk ZIP
   function _buildPdfHtml(f) {
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
+    const actColor = {new:'#185FA5',existing:'#3B6D11',additional:'#3730A3',dismantle:'#A32D2D',replace:'#BA7517'}[f.activity] || '#185FA5';
+    const extraInfo = [
+      f.activity === 'additional' && f.addNotes        ? `<div><span class="lbl">Keterangan Penambahan: </span><b>${escHtml(f.addNotes)}</b></div>` : '',
+      f.activity === 'dismantle'  && f.dismantleReason ? `<div><span class="lbl">Alasan Dismantle: </span><b>${escHtml(f.dismantleReason)}</b></div>` : '',
+      f.activity === 'dismantle'  && f.warehouse   ? `<div><span class="lbl">Lokasi Penyimpanan: </span><b>${escHtml(f.warehouse)}</b></div>` : '',
+      f.activity === 'replace'    && f.replaceReason   ? `<div><span class="lbl">Alasan Pergantian: </span><b>${escHtml(f.replaceReason)}</b></div>` : '',
+    ].filter(Boolean).join('');
     const rows = f.devices.map((d, i) => {
       const smList = (d.subModules||[]).length > 0
         ? `<br><small style="color:#666">Modules: ${(d.subModules||[]).map(s=>escHtml(s.moduleName)||'(no name)').join(', ')}</small>` : '';
@@ -2155,17 +2524,20 @@ td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:top;}
 tr:nth-child(even) td{background:#f9f9f9;}
 </style></head><body>
 <h1>Fiberstar Asset Tagging Report</h1>
-<div class="sub">Generated: ${new Date().toLocaleString('id-ID')}</div>
+<div class="sub">
+  <span style="background:${actColor};color:#fff;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-right:8px;">${escHtml(actLabel)}</span>
+  <span style="background:#f1f5f9;color:#334155;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;font-family:monospace;margin-right:8px;">${escHtml(f.woId||'—')}</span>
+  Generated: ${new Date().toLocaleString('id-ID')}
+</div>
 <div class="meta">
   <div><span class="lbl">Site Name: </span><b>${escHtml(f.siteName)}</b></div>
   <div><span class="lbl">Site ID: </span><b>${escHtml(f.siteId)}</b></div>
   <div><span class="lbl">Type: </span><b>${escHtml(f.typeSite)}</b></div>
-  <div><span class="lbl">Status Site: </span><b>${escHtml(f.statusSite||'-')}</b></div>
   <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
-  <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
-  <div><span class="lbl">Floor: </span><b>${escHtml(f.floorLocation||'-')}</b></div>
+  ${(f.activity==='new'||f.activity==='existing') ? `<div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div><div><span class="lbl">Floor: </span><b>${escHtml(f.floorLocation||'—')}</b></div>` : ''}
+  ${extraInfo}
 </div>
 ${mapLink}
 <table><thead><tr><th>#</th><th>Tipe</th><th>Device Name</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>F.Full</th><th>F.Type</th><th>F.S/N</th></tr></thead>
@@ -2394,6 +2766,9 @@ ${sigSection}
   renderDevices();
   renderSitePhotos();
   if (!STT_SUPPORTED) document.getElementById('sttUnsupported').classList.add('show');
+  // Hide rack section and all context fields until activity chosen
+  document.getElementById('sectionRack').style.display = 'none';
+  document.querySelectorAll('.ctx-field').forEach(el => el.classList.remove('show'));
 
   // ── Offline Mode ──────────────────────────────────────
   function _updateOfflineBanner() {
@@ -2413,14 +2788,17 @@ ${sigSection}
       const f = getFormData();
       // Simpan data form (tanpa foto — terlalu besar untuk localStorage)
       const draft = {
-        date: f.date, statusSite: f.statusSite, siteName: f.siteName, siteId: f.siteId,
+        woId: currentWoId,
+        activity: currentActivity,
+        date: f.date, siteName: f.siteName, siteId: f.siteId,
         typeSite: f.typeSite, picName: f.picName, division: f.division,
         coordLat: f.coordLat, coordLng: f.coordLng, floorLocation: f.floorLocation,
+        addNotes: f.addNotes, dismantleReason: f.dismantleReason,
+        warehouse: f.warehouse, replaceReason: f.replaceReason,
         devices: devices.map(d => ({
           id: d.id, deviceName: d.deviceName,
           serialNumber: d.serialNumber, partNumber: d.partNumber,
           collapsed: d.collapsed,
-          // Simpan foto juga (base64) — hanya jika total < 4MB
         })),
         deviceCounter,
         savedAt: new Date().toISOString()
@@ -2448,34 +2826,61 @@ ${sigSection}
       const draft = JSON.parse(raw);
       if (!draft.savedAt) return;
 
-      // Restore field form
-      if (draft.date)          document.getElementById('fDate').value = draft.date;
-      if (draft.statusSite)    document.getElementById('fStatusSite').value = draft.statusSite;
-      if (draft.siteName)      document.getElementById('fSiteName').value = draft.siteName;
-      if (draft.siteId)        document.getElementById('fSiteId').value = draft.siteId;
-      if (draft.typeSite)      document.getElementById('fTypeSite').value = draft.typeSite;
-      if (draft.picName)       document.getElementById('fPicName').value = draft.picName;
-      if (draft.division)      document.getElementById('fDivision').value = draft.division;
-      if (draft.coordLat)      document.getElementById('fCoordLat').value = draft.coordLat;
-      if (draft.coordLng)      document.getElementById('fCoordLng').value = draft.coordLng;
-      if (draft.floorLocation) document.getElementById('fFloorLocation').value = draft.floorLocation;
+      // Restore WO ID
+      if (draft.woId) {
+        currentWoId = draft.woId;
+      }
+
+      // Restore activity first
+      if (draft.activity) {
+        currentActivity = draft.activity;
+        // Apply tab UI without confirm dialog (no devices yet)
+        const cfg = ACTIVITY_CONFIG[draft.activity];
+        if (cfg) {
+          Object.keys(ACTIVITY_CONFIG).forEach(t => {
+            const tab = document.getElementById('tab-' + t);
+            if (tab) tab.className = 'activity-tab' + (t === draft.activity ? ' active-' + t : '');
+          });
+          document.getElementById('activityBadge').innerHTML =
+            `<span class="activity-badge ${cfg.badgeClass}">${cfg.label}</span>`;
+          document.querySelectorAll('.ctx-field').forEach(el => {
+            el.classList.toggle('show', el.classList.contains('ctx-' + draft.activity));
+          });
+          const rack = document.getElementById('sectionRack');
+          rack.style.display = (draft.activity === 'new' || draft.activity === 'existing') ? '' : 'none';
+          document.getElementById('collectSectionTitle').textContent = cfg.collectTitle;
+          document.getElementById('collectSectionHint').textContent = cfg.collectHint;
+          // Tampilkan WO ID yang sudah disimpan (jangan regen)
+          if (currentWoId) _renderWoId(currentWoId, draft.activity);
+        }
+      }
+
+      // Restore common fields
+      const _set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      _set('fDate', draft.date); _set('fSiteName', draft.siteName); _set('fSiteId', draft.siteId);
+      _set('fTypeSite', draft.typeSite); _set('fPicName', draft.picName); _set('fDivision', draft.division);
+      _set('fCoordLat', draft.coordLat); _set('fCoordLng', draft.coordLng);
+      _set('fFloorLocation', draft.floorLocation);
+      // Context fields
+      _set('fAddNotes', draft.addNotes); _set('fDismantleReason', draft.dismantleReason);
+      _set('fWarehouse', draft.warehouse); _set('fReplaceReason', draft.replaceReason);
 
       // Restore devices
       if (draft.devices && draft.devices.length > 0) {
         devices = draft.devices.map(d => ({
-          id: d.id,
-          deviceName:   d.deviceName   || '',
-          serialNumber: d.serialNumber || '',
-          partNumber:   d.partNumber   || '',
-          photos: d.photos || { full: null, zoom: null, label: null },
-          exts:   d.exts   || { full: null, zoom: null, label: null },
+          id: d.id, type: d.type || 'single',
+          deviceName: d.deviceName || '', serialNumber: d.serialNumber || '',
+          partNumber: d.partNumber || '', statusDevice: d.statusDevice || '',
+          photos: d.photos || { full: null, zoom: null, label: null, pn: null },
+          exts:   d.exts   || { full: null, zoom: null, label: null, pn: null },
+          subModules: d.subModules || [],
           collapsed: d.collapsed || false,
         }));
         deviceCounter = draft.deviceCounter || devices.length;
         renderDevices();
       }
 
-      // Restore map preview jika ada koordinat
+      // Restore map preview
       if (draft.coordLat && draft.coordLng) {
         _showMapPreview(draft.coordLat, draft.coordLng);
         setCoordStatus('✓ Koordinat dipulihkan dari draft tersimpan', 'ok');
@@ -2487,18 +2892,22 @@ ${sigSection}
   }
 
   // Auto-save setiap perubahan input
-  document.querySelectorAll('#fDate,#fStatusSite,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fFloorLocation').forEach(el => {
+  document.querySelectorAll('#fDate,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fFloorLocation,#fAddNotes,#fDismantleReason,#fWarehouse,#fReplaceReason').forEach(el => {
     el.addEventListener('change', _autoSave);
     el.addEventListener('input',  _autoSave);
+  });
+
+  // Update WO ID saat Site ID berubah (karena format pakai Site ID)
+  document.getElementById('fSiteId').addEventListener('input', function() {
+    if (currentActivity && this.value.trim()) {
+      currentWoId = _genWoId(currentActivity);
+      _renderWoId(currentWoId, currentActivity);
+    }
   });
 
   // Restore draft saat load
   _restoreDraft();
 
-  // Clear draft setelah berhasil kirim
-  const _origSendEmail = sendEmail;
-  // (auto-save berjalan, draft bisa dihapus manual jika diperlukan)
-  // Tombol clear draft — hidden, bisa dipanggil lewat console: clearDraft()
   window.clearDraft = function() {
     try { localStorage.removeItem(SAVE_KEY); showToast('Draft dihapus.'); } catch(e) {}
   };
