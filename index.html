@@ -1103,7 +1103,8 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Sync ke Google Sheets
       </button>
-      <button class="btn-config-sheets" onclick="openSheetsConfig()">
+      <!-- Konfigurasi Sheets: disembunyikan dari UI, akses admin via Shift+Ctrl+S -->
+      <button class="btn-config-sheets" id="btnConfigSheets" onclick="openSheetsConfig()" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Konfigurasi Sheets
       </button>
@@ -3652,6 +3653,14 @@ ${sigSection}
 
       document.getElementById('formStatus').textContent = '✓ Tersimpan';
       document.getElementById('formStatus').className   = 'status-badge status-done';
+
+      // ── Auto-sync segera setelah save jika online & Sheets sudah dikonfigurasi ──
+      if (_sheetsUrl && navigator.onLine) {
+        _syncLog('🔄 Auto-sync dimulai setelah save...', 'info');
+        setTimeout(syncToSheets, 800);
+      } else if (!navigator.onLine) {
+        _syncLog('📴 Offline — data tersimpan lokal, sync otomatis saat koneksi kembali.', 'info');
+      }
     } catch (err) {
       console.error('[IDB Save]', err);
       document.querySelector('.btn-save-idb').disabled = false;
@@ -3729,11 +3738,16 @@ ${sigSection}
   // ── Google Sheets Sync Engine ─────────────────────────
   // ══════════════════════════════════════════════════════
   const SHEETS_URL_KEY = 'fs_sheets_webhook_url';
+  const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwOECXjprzm4qavFOdgbw2XahN8lc9MpNzILR-D1N-bYNCk0EJ9X7lfNqydJl4CnNdX/exec';
   let _sheetsUrl = '';
 
   function _loadSheetsConfig() {
     try {
-      _sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || '';
+      _sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || SHEETS_URL_DEFAULT;
+      // Pastikan default selalu tersimpan agar session berikutnya langsung pakai
+      if (!localStorage.getItem(SHEETS_URL_KEY)) {
+        localStorage.setItem(SHEETS_URL_KEY, SHEETS_URL_DEFAULT);
+      }
       const dot  = document.getElementById('sheetsDot');
       const txt  = document.getElementById('sheetsStatusText');
       if (_sheetsUrl) {
@@ -3906,7 +3920,7 @@ ${sigSection}
 // ═══════════════════════════════════════════════════════
 
 const SHEET_NAME = 'Asset Tagging Log';
-const SPREADSHEET_ID = ''; // Kosongkan = pakai spreadsheet aktif
+const SPREADSHEET_ID = '15CDTqJokhZ3lsNIzwLdi5vPhOvVvb4sAtukh_DfTleU';
 
 function getSheet() {
   const ss = SPREADSHEET_ID
@@ -4010,9 +4024,19 @@ function doGet(e) {
   _loadSheetsConfig();
   _openIDB().then(() => _refreshQueueUI()).catch(e => console.warn('[IDB Init]', e));
 
-  // Auto-refresh queue saat tab kembali aktif
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) _refreshQueueUI();
+  // Auto-refresh + auto-sync saat tab kembali aktif
+  document.addEventListener('visibilitychange', async () => {
+    if (!document.hidden) {
+      _refreshQueueUI();
+      if (_sheetsUrl && navigator.onLine) {
+        const all = await _idbGetAll().catch(() => []);
+        const pending = all.filter(r => r.syncStatus === 'pending');
+        if (pending.length > 0) {
+          _syncLog(`👁 Tab aktif — ${pending.length} pending ditemukan, memulai sync...`, 'info');
+          setTimeout(syncToSheets, 1000);
+        }
+      }
+    }
   });
 
   // ── Auto-sync jika online dan ada pending ──────────────
@@ -4031,9 +4055,30 @@ function doGet(e) {
     showToast('📴 Offline. Data tetap tersimpan lokal, sync otomatis saat koneksi kembali.', 5000);
   });
 
+  // ── Periodic auto-sync setiap 5 menit jika ada data pending ──────────────
+  const AUTO_SYNC_INTERVAL_MS = 5 * 60 * 1000;
+  setInterval(async () => {
+    if (!_sheetsUrl || !navigator.onLine) return;
+    const all = await _idbGetAll().catch(() => []);
+    const pending = all.filter(r => r.syncStatus === 'pending');
+    if (pending.length > 0) {
+      _syncLog(`⏱ Periodic sync — ${pending.length} data pending ditemukan`, 'info');
+      syncToSheets();
+    }
+  }, AUTO_SYNC_INTERVAL_MS);
+
   window.clearDraft = function() {
     try { localStorage.removeItem(SAVE_KEY); showToast('Draft dihapus.'); } catch(e) {}
   };
+
+  // ── Admin shortcut: Shift+Ctrl+S → buka Konfigurasi Sheets ───────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.shiftKey && e.ctrlKey && e.key === 'S') {
+      e.preventDefault();
+      document.getElementById('btnConfigSheets').style.display = '';
+      openSheetsConfig();
+    }
+  });
 </script>
 </body>
 </html>
