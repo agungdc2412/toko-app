@@ -195,6 +195,84 @@
     .del-submodule-btn { font-size: 11px; color: var(--fs-red); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-family: inherit; }
     .del-submodule-btn:hover { background: var(--fs-red-light); }
 
+    /* ── Photo Progress Counter ──────────────────────── */
+    .photo-progress-bar {
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 12px 16px; margin-bottom: 1.25rem;
+    }
+    .photo-progress-title {
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.07em;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .photo-progress-title span { font-size: 13px; color: var(--fs-blue); font-weight: 700; text-transform: none; letter-spacing: 0; }
+    .progress-track {
+      height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 10px;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 99px; background: var(--fs-blue);
+      transition: width 0.4s ease; min-width: 0;
+    }
+    .progress-fill.complete { background: var(--fs-green); }
+    .photo-progress-devices { display: flex; flex-direction: column; gap: 6px; }
+    .ppd-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .ppd-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
+    .ppd-dots { display: flex; gap: 3px; flex-shrink: 0; }
+    .ppd-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      border: 1.5px solid var(--border); background: var(--bg-primary);
+      transition: all 0.2s;
+    }
+    .ppd-dot.filled { background: var(--fs-blue); border-color: var(--fs-blue); }
+    .ppd-dot.filled.ok { background: var(--fs-green); border-color: var(--fs-green); }
+    .ppd-count { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; min-width: 32px; text-align: right; }
+
+    /* ── Reset Button & Modal ───────────────────────── */
+    .btn-reset {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 16px; border-radius: var(--radius-md); font-size: 13px;
+      font-weight: 500; font-family: inherit; cursor: pointer; border: none;
+      background: var(--fs-red-light); color: var(--fs-red);
+      border: 1px solid rgba(163,45,45,0.2); transition: all 0.15s;
+    }
+    .btn-reset:hover { background: #f7c1c1; border-color: var(--fs-red); }
+    .btn-reset svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    .reset-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 1002; align-items: center; justify-content: center;
+    }
+    .reset-overlay.active { display: flex; }
+    .reset-modal {
+      background: var(--bg-primary); border-radius: var(--radius-lg);
+      width: min(380px, 92vw); box-shadow: 0 24px 60px rgba(0,0,0,0.2); overflow: hidden;
+    }
+    .reset-modal-header {
+      padding: 14px 18px; background: var(--fs-red);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .reset-modal-header svg { width: 20px; height: 20px; color: white; flex-shrink: 0; }
+    .reset-modal-header span { font-size: 15px; font-weight: 600; color: white; }
+    .reset-modal-body { padding: 18px; }
+    .reset-modal-body p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px; }
+    .reset-modal-body p b { color: var(--text-primary); }
+    .reset-checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+    .reset-checkbox-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: var(--radius-md);
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 13px; color: var(--text-primary); transition: all 0.15s;
+    }
+    .reset-checkbox-item:hover { background: var(--fs-red-light); border-color: rgba(163,45,45,0.3); }
+    .reset-checkbox-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--fs-red); cursor: pointer; flex-shrink: 0; }
+    .reset-checkbox-item.checked { background: var(--fs-red-light); border-color: rgba(163,45,45,0.3); }
+    .reset-modal-actions { display: flex; gap: 8px; }
+    .reset-btn-cancel { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); background: none; font-family: inherit; font-size: 13px; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; }
+    .reset-btn-cancel:hover { background: var(--bg-secondary); }
+    .reset-btn-confirm { flex: 1; padding: 10px; border: none; border-radius: var(--radius-md); background: var(--fs-red); font-family: inherit; font-size: 13px; font-weight: 600; color: white; cursor: pointer; transition: background 0.15s; }
+    .reset-btn-confirm:hover { background: #8B2020; }
+
     /* ── Photo 4-col group for Module ────────────────── */
     .photo-btn-group-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
     .photo-btn-group-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
@@ -573,6 +651,16 @@
     <div class="site-photo-count" id="sitePhotoCount"></div>
   </div>
 
+  <!-- Photo Progress Counter -->
+  <div class="photo-progress-bar" id="photoProgressBar" style="display:none;">
+    <div class="photo-progress-title">
+      Progress Foto
+      <span id="progressSummary">0 / 0 foto</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="photo-progress-devices" id="progressDeviceList"></div>
+  </div>
+
   <!-- Form Collect Data Asset -->
   <div class="section-card">
     <div class="section-title"><span class="section-title-dot"></span>Form Collect Data Asset</div>
@@ -637,6 +725,15 @@
         </svg>
         Download ZIP &mdash; Semua Foto + Data (Attach ke Email / Teams)
       </button>
+
+      <!-- Reset Button -->
+      <button class="btn-reset" onclick="openResetModal()" style="grid-column:1/-1;margin-top:4px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
+          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+        </svg>
+        Reset Form
+      </button>
     </div>
     <div class="zip-info">
       &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.pdf</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
@@ -645,6 +742,44 @@
     </div>
   </div>
 
+</div>
+
+<!-- Reset Modal -->
+<div class="reset-overlay" id="resetOverlay">
+  <div class="reset-modal">
+    <div class="reset-modal-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+      </svg>
+      <span>Reset Form</span>
+    </div>
+    <div class="reset-modal-body">
+      <p>Pilih bagian yang ingin direset. Data yang direset <b>tidak dapat dikembalikan</b>.</p>
+      <div class="reset-checkbox-group" id="resetCheckboxGroup">
+        <label class="reset-checkbox-item" id="rc_site">
+          <input type="checkbox" id="chk_site" checked onchange="toggleResetItem('rc_site',this.checked)">
+          <span>📋 Form Site Information (semua field)</span>
+        </label>
+        <label class="reset-checkbox-item" id="rc_pic">
+          <input type="checkbox" id="chk_pic" checked onchange="toggleResetItem('rc_pic',this.checked)">
+          <span>📸 Foto PIC & Tanda Tangan</span>
+        </label>
+        <label class="reset-checkbox-item" id="rc_site_photos">
+          <input type="checkbox" id="chk_site_photos" checked onchange="toggleResetItem('rc_site_photos',this.checked)">
+          <span>🖼️ Foto Site / Rack</span>
+        </label>
+        <label class="reset-checkbox-item" id="rc_devices">
+          <input type="checkbox" id="chk_devices" checked onchange="toggleResetItem('rc_devices',this.checked)">
+          <span>🔧 Semua Data Asset & Foto Device</span>
+        </label>
+      </div>
+      <div class="reset-modal-actions">
+        <button class="reset-btn-cancel" onclick="closeResetModal()">Batal</button>
+        <button class="reset-btn-confirm" onclick="confirmReset()">Reset Sekarang</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Tanda Tangan Modal -->
@@ -1537,10 +1672,119 @@
       </div>`;
   }
 
+  // ── Photo Progress Counter ─────────────────────────────
+  function updatePhotoProgress() {
+    const bar = document.getElementById('photoProgressBar');
+    if (devices.length === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = 'block';
+
+    let totalExpected = 0, totalHave = 0;
+    const rows = devices.map((d, i) => {
+      const slots = d.type === 'module'
+        ? ['full','zoom','label','pn']
+        : ['full','zoom','label'];
+      const have = slots.filter(s => d.photos[s]).length;
+      const exp  = slots.length;
+      totalExpected += exp;
+      totalHave += have;
+      const dots = slots.map(s =>
+        `<div class="ppd-dot ${d.photos[s] ? 'filled ok' : ''}" title="${s}"></div>`
+      ).join('');
+      return `<div class="ppd-row">
+        <span class="ppd-name">${i+1}. ${escHtml(d.deviceName)||'Asset '+(i+1)}</span>
+        <div class="ppd-dots">${dots}</div>
+        <span class="ppd-count">${have}/${exp}</span>
+      </div>`;
+    });
+
+    const pct = totalExpected > 0 ? Math.round((totalHave/totalExpected)*100) : 0;
+    const fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.className = 'progress-fill' + (pct === 100 ? ' complete' : '');
+    document.getElementById('progressSummary').textContent = `${totalHave} / ${totalExpected} foto (${pct}%)`;
+    document.getElementById('progressDeviceList').innerHTML = rows.join('');
+  }
+
+  // ── Reset Form ─────────────────────────────────────────
+  function openResetModal() {
+    // Reset semua checkbox ke checked
+    ['chk_site','chk_pic','chk_site_photos','chk_devices'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.checked = true; document.getElementById(id.replace('chk_','rc_')).classList.add('checked'); }
+    });
+    document.getElementById('resetOverlay').classList.add('active');
+  }
+
+  function closeResetModal() {
+    document.getElementById('resetOverlay').classList.remove('active');
+  }
+
+  function toggleResetItem(rcId, checked) {
+    const el = document.getElementById(rcId);
+    if (el) el.classList.toggle('checked', checked);
+  }
+
+  function confirmReset() {
+    const site       = document.getElementById('chk_site').checked;
+    const pic        = document.getElementById('chk_pic').checked;
+    const sitePhotos = document.getElementById('chk_site_photos').checked;
+    const devs       = document.getElementById('chk_devices').checked;
+
+    if (site) {
+      ['fDate','fSiteName','fSiteId','fFloorLocation'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      ['fStatusSite','fTypeSite','fDivision'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      document.getElementById('fCoordLat').value = '';
+      document.getElementById('fCoordLng').value = '';
+      setCoordStatus('', '');
+      document.getElementById('mapPreviewWrap').classList.remove('show');
+      document.getElementById('fPicName').value = '';
+    }
+
+    if (pic) {
+      clearPicPhoto();
+      sigDataUrl = null;
+      const badge = document.getElementById('sigBadge');
+      badge.classList.add('empty');
+      badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Tambah Tanda Tangan`;
+      document.getElementById('sigThumbWrap').style.display = 'none';
+    }
+
+    if (sitePhotos) {
+      window.sitePhotos = [];
+      renderSitePhotos();
+    }
+
+    if (devs) {
+      devices = [];
+      deviceCounter = 0;
+      renderDevices();
+      updatePhotoProgress();
+    }
+
+    // Reset draft
+    try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+
+    // Reset status badge
+    document.getElementById('formStatus').textContent = '● Draft';
+    document.getElementById('formStatus').className = 'status-badge status-pending';
+
+    closeResetModal();
+    showToast('✅ Form berhasil direset!', 3000);
+  }
+
+  document.getElementById('resetOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeResetModal();
+  });
+
   function renderDevices() {
     const list = document.getElementById('deviceList');
     if (devices.length === 0) {
       list.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;font-size:13px;">Belum ada asset. Klik tombol "Tambah Asset" untuk menambah.</div>';
+      updatePhotoProgress();
       return;
     }
     list.innerHTML = devices.map((d, i) => {
@@ -1563,6 +1807,7 @@
           ${!d.collapsed ? (d.type === 'module' ? _renderModuleBody(d, i) : _renderSingleBody(d, i)) : ''}
         </div>`;
     }).join('');
+    updatePhotoProgress();
   }
 
   // ── Photo Handling ─────────────────────────────────────
@@ -1653,30 +1898,133 @@
     document.getElementById('formStatus').className = 'status-badge status-done';
   }
 
-  // ── Generate PDF ───────────────────────────────────────
+  // ── Generate PDF (dengan foto device) ─────────────────
   function generatePDF() {
     if (!validateForm()) return;
     const f = getFormData();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
-    const rows = f.devices.map((d, i) =>
-      `<tr><td>${i+1}</td><td>${escHtml(d.deviceName)}</td><td>${escHtml(d.serialNumber)}</td><td>${escHtml(d.partNumber)}</td></tr>`
-    ).join('');
+    const mapLink = (f.coordLat && f.coordLng)
+      ? `<p style="margin:4px 0 12px;font-size:11px;">🗺️ <a href="https://www.google.com/maps?q=${f.coordLat},${f.coordLng}" target="_blank">Lihat di Google Maps</a></p>` : '';
+
+    // Baris tabel device dengan foto kecil
+    const rows = f.devices.map((d, i) => {
+      const photos = [];
+      if (d.photos.full)  photos.push(`<img src="${d.photos.full}"  title="Full"  style="${_pdfImgStyle}">`);
+      if (d.photos.zoom)  photos.push(`<img src="${d.photos.zoom}"  title="Type"  style="${_pdfImgStyle}">`);
+      if (d.photos.label) photos.push(`<img src="${d.photos.label}" title="S/N"   style="${_pdfImgStyle}">`);
+      if (d.photos.pn)    photos.push(`<img src="${d.photos.pn}"    title="P/N"   style="${_pdfImgStyle}">`);
+      const photoCell = photos.length > 0
+        ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">${photos.join('')}</div>`
+        : '<span style="color:#aaa;font-size:11px;">—</span>';
+      const typeLabel = d.type==='module'
+        ? `<span style="background:#EEF0FE;color:#3730A3;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;">Module</span>`
+        : `<span style="background:#E6F1FB;color:#185FA5;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;">Single</span>`;
+      const statusColor = d.statusDevice==='Active'?'#3B6D11':d.statusDevice==='Damage'?'#A32D2D':'#BA7517';
+      const statusLabel = d.statusDevice
+        ? `<span style="color:${statusColor};font-size:11px;font-weight:600;">${d.statusDevice}</span>` : '—';
+
+      // Sub-modules rows jika module device
+      const smRows = (d.subModules||[]).length > 0 ? (d.subModules||[]).map((sm, si) => {
+        const smPhotos = [];
+        if (sm.photos.sn) smPhotos.push(`<img src="${sm.photos.sn}" title="S/N" style="${_pdfImgStyle}">`);
+        if (sm.photos.pn) smPhotos.push(`<img src="${sm.photos.pn}" title="P/N" style="${_pdfImgStyle}">`);
+        return `<tr style="background:#fafbff;">
+          <td style="padding:5px 8px;color:#666;font-size:11px;" colspan="2">
+            &nbsp;&nbsp;&nbsp;↳ <b>Module ${si+1}:</b> ${escHtml(sm.moduleName||'(no name)')}
+          </td>
+          <td style="padding:5px 8px;font-size:11px;">${escHtml(sm.serialNumber||'—')}</td>
+          <td style="padding:5px 8px;font-size:11px;">${escHtml(sm.partNumber||'—')}</td>
+          <td style="padding:5px 8px;">—</td>
+          <td style="padding:5px 8px;">${smPhotos.length?`<div style="display:flex;gap:3px;">${smPhotos.join('')}</div>`:'—'}</td>
+        </tr>`;
+      }).join('') : '';
+
+      return `<tr>
+        <td style="padding:7px 8px;font-size:12px;">${i+1}</td>
+        <td style="padding:7px 8px;font-size:12px;">${typeLabel}<br><span style="font-size:12px;">${escHtml(d.deviceName)}</span></td>
+        <td style="padding:7px 8px;font-size:12px;">${escHtml(d.serialNumber||'—')}</td>
+        <td style="padding:7px 8px;font-size:12px;">${escHtml(d.partNumber||'—')}</td>
+        <td style="padding:7px 8px;">${statusLabel}</td>
+        <td style="padding:7px 8px;">${photoCell}</td>
+      </tr>${smRows}`;
+    }).join('');
+
+    const picSection = f.picPhoto
+      ? `<div style="display:inline-block;margin-left:12px;vertical-align:top;">
+           <p style="font-size:10px;color:#666;margin-bottom:3px;">Foto PIC:</p>
+           <img src="${f.picPhoto.url}" style="height:60px;border-radius:6px;border:1px solid #eee;">
+         </div>` : '';
+    const sigSection = f.signature
+      ? `<div style="display:inline-block;margin-left:12px;vertical-align:top;">
+           <p style="font-size:10px;color:#666;margin-bottom:3px;">Tanda Tangan:</p>
+           <img src="${f.signature}" style="height:60px;border:1px solid #eee;border-radius:4px;padding:3px;background:#fff;">
+         </div>` : '';
+
     const win = window.open('', '_blank');
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Asset Tagging - ${f.siteName}</title>
-    <style>body{font-family:Arial,sans-serif;padding:32px;color:#111;}h1{font-size:20px;margin-bottom:8px;color:#185FA5;}.meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 24px;margin-bottom:20px;font-size:13px;}.meta span{color:#666;}table{width:100%;border-collapse:collapse;}th{background:#185FA5;color:white;padding:9px 12px;text-align:left;font-size:12px;}td{padding:9px 12px;font-size:13px;border-bottom:1px solid #eee;}tr:nth-child(even) td{background:#f9f9f9;}@media print{body{padding:16px;}}</style>
-    </head><body>
-    <h1>Fiberstar Asset Tagging Report</h1>
-    <div class="meta">
-      <p><span>Site</span>&nbsp;<b>${escHtml(f.siteName)}</b></p><p><span>Site ID</span>&nbsp;<b>${escHtml(f.siteId)}</b></p>
-      <p><span>Type</span>&nbsp;<b>${escHtml(f.typeSite)}</b></p><p><span>Date</span>&nbsp;<b>${escHtml(f.date)}</b></p>
-      <p><span>PIC</span>&nbsp;<b>${escHtml(f.picName)}</b></p><p><span>Division</span>&nbsp;<b>${escHtml(f.division)}</b></p>
-      <p><span>Koordinat</span>&nbsp;<b>${escHtml(coordStr)}</b></p><p><span>Floor</span>&nbsp;<b>${escHtml(f.floorLocation || '-')}</b></p>
-    </div>
-    <table><thead><tr><th>#</th><th>Device Name</th><th>Serial Number</th><th>Part Number</th></tr></thead>
-    <tbody>${rows}</tbody></table>
-    ${f.signature ? `<div style="margin-top:28px;border-top:1px solid #eee;padding-top:16px;"><p style="font-size:12px;color:#666;margin-bottom:6px;">Tanda Tangan PIC:</p><img src="${f.signature}" style="height:70px;border:1px solid #eee;border-radius:6px;padding:4px;"></div>` : ''}
-    <script>window.print();<\/script></body></html>`);
+    if (!win) { showToast('⚠️ Pop-up diblokir browser. Izinkan pop-up untuk Generate PDF.'); return; }
+    win.document.write(`<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<title>Asset Tagging - ${escHtml(f.siteName)}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;padding:24px;color:#111;font-size:13px;}
+  h1{font-size:17px;color:#185FA5;margin-bottom:3px;}
+  .sub{font-size:11px;color:#888;margin-bottom:12px;}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px;margin-bottom:10px;font-size:12px;}
+  .meta .lbl{color:#666;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#185FA5;color:#fff;padding:7px 8px;text-align:left;font-size:11px;}
+  td{border-bottom:1px solid #eee;vertical-align:middle;}
+  tr:nth-child(even) td{background:#fafafa;}
+  .footer{margin-top:18px;padding-top:12px;border-top:1px solid #eee;display:flex;align-items:flex-start;gap:4px;flex-wrap:wrap;}
+  @media print{body{padding:12px;}@page{margin:1cm;}}
+</style>
+</head><body>
+<h1>Fiberstar Asset Tagging Report</h1>
+<div class="sub">Generated: ${new Date().toLocaleString('id-ID')}</div>
+<div class="meta">
+  <div><span class="lbl">Site Name: </span><b>${escHtml(f.siteName)}</b></div>
+  <div><span class="lbl">Site ID: </span><b>${escHtml(f.siteId)}</b></div>
+  <div><span class="lbl">Type: </span><b>${escHtml(f.typeSite)}</b></div>
+  <div><span class="lbl">Status Site: </span><b>${escHtml(f.statusSite||'—')}</b></div>
+  <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
+  <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
+  <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
+  <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
+  <div><span class="lbl">Floor Location: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
+</div>
+${mapLink}
+<table>
+  <thead><tr>
+    <th style="width:28px">#</th>
+    <th style="width:22%">Device</th>
+    <th style="width:18%">Serial Number</th>
+    <th style="width:18%">Part Number</th>
+    <th style="width:60px">Status</th>
+    <th>Foto</th>
+  </tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div class="footer">${picSection}${sigSection}</div>
+<script>
+  // tunggu semua gambar load baru print
+  const imgs = document.images;
+  let loaded = 0;
+  if(imgs.length===0){window.print();}
+  else{
+    function tryPrint(){loaded++;if(loaded>=imgs.length)window.print();}
+    Array.from(imgs).forEach(img=>{
+      if(img.complete)tryPrint();
+      else{img.onload=tryPrint;img.onerror=tryPrint;}
+    });
   }
+<\/script>
+</body></html>`);
+    win.document.close();
+  }
+
+  // Ukuran foto di PDF
+  const _pdfImgStyle = 'width:52px;height:52px;object-fit:cover;border-radius:4px;border:1px solid #eee;';
 
   // ── Generate Excel XLSX ────────────────────────────────
   function generateExcel() {
