@@ -576,6 +576,108 @@
     .map-preview-header a { color: rgba(255,255,255,0.85); font-size: 11px; text-decoration: none; }
     .map-preview-header a:hover { color: white; text-decoration: underline; }
     #mapIframe { width: 100%; height: 220px; border: none; display: block; }
+
+    /* ── Coord Mode Toggle ──────────────────────────── */
+    .coord-mode-tabs {
+      display: flex; gap: 4px; margin-bottom: 8px;
+    }
+    .coord-mode-tab {
+      flex: 1; padding: 6px 8px; font-size: 11px; font-weight: 600;
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--bg-primary); cursor: pointer; font-family: inherit;
+      color: var(--text-secondary); transition: all 0.15s; display: flex;
+      align-items: center; justify-content: center; gap: 5px;
+    }
+    .coord-mode-tab svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .coord-mode-tab:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
+    .coord-mode-tab.active { background: var(--fs-blue); color: white; border-color: var(--fs-blue); }
+    .coord-mode-tab.active:hover { background: #0F4D8A; }
+
+    /* ── Manual Input Row ───────────────────────────── */
+    .coord-manual-row {
+      display: none; gap: 6px; align-items: center; margin-bottom: 4px;
+    }
+    .coord-manual-row.show { display: flex; }
+    .coord-manual-row .form-input { flex: 1; min-width: 0; }
+    .btn-apply-coord {
+      height: 38px; padding: 0 12px; background: var(--fs-teal); color: white;
+      border: none; border-radius: var(--radius-md); cursor: pointer; font-family: inherit;
+      font-size: 12px; font-weight: 600; white-space: nowrap; display: flex;
+      align-items: center; gap: 5px; transition: background 0.15s; flex-shrink: 0;
+    }
+    .btn-apply-coord:hover { background: #085041; }
+    .btn-apply-coord svg { width: 13px; height: 13px; }
+
+    /* ── Map Click Modal ────────────────────────────── */
+    .mapclick-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 1003; align-items: center; justify-content: center;
+    }
+    .mapclick-overlay.active { display: flex; }
+    .mapclick-modal {
+      background: var(--bg-primary); border-radius: var(--radius-lg);
+      width: min(640px, 96vw); max-height: 92vh;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.28); display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .mapclick-header {
+      padding: 13px 18px; background: var(--fs-teal);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .mapclick-header-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .mapclick-header-title svg { width: 17px; height: 17px; }
+    .mapclick-close {
+      width: 30px; height: 30px; background: rgba(255,255,255,0.15); border: none;
+      border-radius: 50%; color: white; cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+    }
+    .mapclick-close:hover { background: rgba(255,255,255,0.3); }
+    .mapclick-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .mapclick-toolbar {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+      background: var(--bg-secondary); border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .mapclick-search {
+      flex: 1; height: 34px; border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 0 10px; font-size: 13px; font-family: inherit; background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+    .mapclick-search:focus { outline: none; border-color: var(--fs-teal); box-shadow: 0 0 0 3px rgba(15,110,86,0.12); }
+    .btn-mapclick-search {
+      height: 34px; padding: 0 12px; background: var(--fs-teal); color: white; border: none;
+      border-radius: var(--radius-md); font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap; transition: background 0.15s;
+    }
+    .btn-mapclick-search:hover { background: #085041; }
+    .mapclick-hint {
+      font-size: 11px; color: var(--text-secondary); padding: 6px 14px;
+      background: var(--fs-amber-light); border-bottom: 1px solid rgba(186,117,23,0.2);
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .mapclick-hint svg { width: 13px; height: 13px; color: var(--fs-amber); flex-shrink: 0; }
+    #mapClickIframe {
+      width: 100%; border: none; display: block; flex: 1;
+      min-height: 360px; cursor: crosshair;
+    }
+    .mapclick-footer {
+      padding: 10px 14px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      background: var(--bg-secondary);
+    }
+    .mapclick-coord-preview {
+      flex: 1; font-size: 12px; color: var(--text-secondary);
+      font-family: 'Courier New', monospace;
+    }
+    .mapclick-coord-preview.has-coord { color: var(--fs-teal); font-weight: 600; }
+    .btn-mapclick-confirm {
+      padding: 8px 18px; background: var(--fs-teal); color: white; border: none;
+      border-radius: var(--radius-md); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-mapclick-confirm:hover { background: #085041; }
+    .btn-mapclick-confirm:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-mapclick-confirm svg { width: 14px; height: 14px; }
   </style>
 </head>
 <body>
@@ -733,10 +835,28 @@
         </select>
       </div>
 
-      <!-- Coordinate — tampil untuk New, Existing -->
+      <!-- Coordinate — tampil untuk semua activity -->
       <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxCoord" style="grid-column: 1 / -1;">
         <label class="form-label">Coordinate Site</label>
-        <div class="coord-input-row">
+
+        <!-- Mode selector -->
+        <div class="coord-mode-tabs">
+          <button class="coord-mode-tab active" id="coordModeGps" onclick="switchCoordMode('gps')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+            GPS Otomatis
+          </button>
+          <button class="coord-mode-tab" id="coordModeManual" onclick="switchCoordMode('manual')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Input Manual
+          </button>
+          <button class="coord-mode-tab" id="coordModeMap" onclick="switchCoordMode('map')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Klik Peta
+          </button>
+        </div>
+
+        <!-- Mode GPS: tombol capture -->
+        <div class="coord-input-row" id="coordPanelGps">
           <input type="text" class="form-input" id="fCoordLat" placeholder="Latitude" readonly>
           <input type="text" class="form-input" id="fCoordLng" placeholder="Longitude" readonly>
           <button class="btn-capture-loc" id="btnCaptureLoc" onclick="captureLocation()">
@@ -748,7 +868,28 @@
             Capture Location
           </button>
         </div>
+
+        <!-- Mode Manual: input ketik langsung -->
+        <div class="coord-manual-row" id="coordPanelManual">
+          <input type="text" class="form-input" id="fCoordLatManual" placeholder="Latitude  (e.g. -6.2088)">
+          <input type="text" class="form-input" id="fCoordLngManual" placeholder="Longitude  (e.g. 106.8456)">
+          <button class="btn-apply-coord" onclick="applyManualCoord()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Terapkan
+          </button>
+        </div>
+
+        <!-- Mode Peta: tombol buka modal -->
+        <div id="coordPanelMap" style="display:none;">
+          <button class="btn-capture-loc" style="background:var(--fs-teal);width:100%;justify-content:center;" onclick="openMapClick()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+            Buka Peta — Klik untuk Pilih Lokasi
+          </button>
+        </div>
+
         <div class="coord-status" id="coordStatus"></div>
+
+        <!-- Preview peta (muncul setelah koordinat diisi, semua mode) -->
         <div class="map-preview-wrap" id="mapPreviewWrap">
           <div class="map-preview-header">
             <span>📍 Lokasi di Peta</span>
@@ -1031,6 +1172,39 @@
 <input type="file" accept="image/*" class="file-input" id="siteFileInput" multiple>
 <div class="toast" id="toast"></div>
 
+<!-- ── Map Click Modal ─────────────────────────────────────── -->
+<div class="mapclick-overlay" id="mapClickOverlay">
+  <div class="mapclick-modal">
+    <div class="mapclick-header">
+      <div class="mapclick-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+        Pilih Lokasi di Peta
+      </div>
+      <button class="mapclick-close" onclick="closeMapClick()">✕</button>
+    </div>
+    <div class="mapclick-body">
+      <div class="mapclick-toolbar">
+        <input type="text" class="mapclick-search" id="mapClickSearch"
+          placeholder="Cari alamat / nama lokasi…"
+          onkeydown="if(event.key==='Enter')searchMapClick()">
+        <button class="btn-mapclick-search" onclick="searchMapClick()">Cari</button>
+      </div>
+      <div class="mapclick-hint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Klik titik pada peta untuk memilih koordinat, lalu tekan <b style="color:var(--fs-teal)">Gunakan Koordinat Ini</b>.
+      </div>
+      <iframe id="mapClickIframe" title="Pilih Lokasi"></iframe>
+    </div>
+    <div class="mapclick-footer">
+      <span class="mapclick-coord-preview" id="mapClickCoordPreview">Belum ada titik dipilih</span>
+      <button class="btn-mapclick-confirm" id="btnMapClickConfirm" disabled onclick="confirmMapClick()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Gunakan Koordinat Ini
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── Speech-to-Text Engine ─────────────────────────────
   const STT_SUPPORTED = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
@@ -1254,20 +1428,32 @@
   function triggerPicPhoto() {
     document.getElementById('picPhotoInput').click();
   }
-  document.getElementById('picPhotoInput').addEventListener('change', function() {
+  document.getElementById('picPhotoInput').addEventListener('change', async function() {
     if (!this.files[0]) return;
     const file = this.files[0];
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      picPhotoData = { url: ev.target.result, ext };
-      document.getElementById('picPhotoImg').src = ev.target.result;
+    showToast('Memproses foto PIC…', 1500);
+    try {
+      const { dataUrl, ext, origKB, finalKB, ratio } = await compressImage(file);
+      picPhotoData = { url: dataUrl, ext };
+      document.getElementById('picPhotoImg').src = dataUrl;
       document.getElementById('picPhotoThumb').style.display = 'block';
       document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
       document.getElementById('btnFotoPic').classList.add('has-photo');
-      showToast('Foto PIC berhasil ditambahkan ✓');
-    };
-    reader.readAsDataURL(file);
+      _toastCompress(origKB, finalKB, ratio);
+    } catch (e) {
+      // Fallback tanpa kompresi
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        picPhotoData = { url: ev.target.result, ext };
+        document.getElementById('picPhotoImg').src = ev.target.result;
+        document.getElementById('picPhotoThumb').style.display = 'block';
+        document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
+        document.getElementById('btnFotoPic').classList.add('has-photo');
+        showToast('Foto PIC berhasil ditambahkan ✓');
+      };
+      reader.readAsDataURL(file);
+    }
     this.value = '';
   });
   function clearPicPhoto() {
@@ -1506,34 +1692,233 @@
     setTimeout(() => t.classList.remove('show'), dur);
   }
 
+  // ── Coordinate Mode Switcher ──────────────────────────
+  let _coordMode = 'gps'; // 'gps' | 'manual' | 'map'
+
+  function switchCoordMode(mode) {
+    _coordMode = mode;
+    // Update tab styles
+    ['gps','manual','map'].forEach(m => {
+      document.getElementById('coordMode' + m.charAt(0).toUpperCase() + m.slice(1))
+        .classList.toggle('active', m === mode);
+    });
+    // Show/hide panels
+    document.getElementById('coordPanelGps').style.display    = mode === 'gps'    ? 'flex'  : 'none';
+    document.getElementById('coordPanelManual').className = 'coord-manual-row' + (mode === 'manual' ? ' show' : '');
+    document.getElementById('coordPanelMap').style.display    = mode === 'map'    ? 'block' : 'none';
+
+    // Hint teks status
+    if (mode === 'gps') {
+      const lat = document.getElementById('fCoordLat').value;
+      if (!lat) setCoordStatus('Tekan "Capture Location" untuk mengambil koordinat GPS.', 'loading');
+    } else if (mode === 'manual') {
+      setCoordStatus('Ketik koordinat desimal, lalu tekan Terapkan. Contoh: -6.2088, 106.8456', 'loading');
+      // Prefill manual inputs dari nilai yang sudah ada
+      const lat = document.getElementById('fCoordLat').value;
+      const lng = document.getElementById('fCoordLng').value;
+      if (lat) document.getElementById('fCoordLatManual').value = lat;
+      if (lng) document.getElementById('fCoordLngManual').value = lng;
+    } else if (mode === 'map') {
+      setCoordStatus('Klik tombol di bawah untuk membuka peta interaktif.', 'loading');
+    }
+  }
+
+  // ── Apply Manual Coord ─────────────────────────────────
+  function applyManualCoord() {
+    const rawLat = document.getElementById('fCoordLatManual').value.trim().replace(',', '.');
+    const rawLng = document.getElementById('fCoordLngManual').value.trim().replace(',', '.');
+    const lat = parseFloat(rawLat);
+    const lng = parseFloat(rawLng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      setCoordStatus('⚠ Format salah. Masukkan angka desimal, contoh: -6.2088 dan 106.8456', 'err');
+      return;
+    }
+    if (lat < -90 || lat > 90) {
+      setCoordStatus('⚠ Latitude harus antara -90 dan 90', 'err'); return;
+    }
+    if (lng < -180 || lng > 180) {
+      setCoordStatus('⚠ Longitude harus antara -180 dan 180', 'err'); return;
+    }
+
+    const latStr = lat.toFixed(7);
+    const lngStr = lng.toFixed(7);
+    document.getElementById('fCoordLat').value = latStr;
+    document.getElementById('fCoordLng').value = lngStr;
+    setCoordStatus('✓ Koordinat manual diterapkan: ' + latStr + ', ' + lngStr, 'ok');
+    _showMapPreview(latStr, lngStr);
+    _autoSave();
+    showToast('Koordinat manual disimpan ✓');
+  }
+
+  // ── Map Click Modal ────────────────────────────────────
+  let _mapClickPendingLat = null;
+  let _mapClickPendingLng = null;
+  // Default center: Jakarta
+  let _mapClickCenterLat = -6.2088;
+  let _mapClickCenterLng = 106.8456;
+  let _mapClickZoom = 13;
+
+  function _buildMapClickUrl(lat, lng, zoom) {
+    const bbox = 0.05 * Math.pow(2, 13 - zoom);
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-bbox},${lat-bbox},${lng+bbox},${lat+bbox}&layer=mapnik`;
+  }
+
+  function openMapClick() {
+    _mapClickPendingLat = null;
+    _mapClickPendingLng = null;
+    document.getElementById('mapClickCoordPreview').textContent = 'Belum ada titik dipilih';
+    document.getElementById('mapClickCoordPreview').className = 'mapclick-coord-preview';
+    document.getElementById('btnMapClickConfirm').disabled = true;
+    document.getElementById('mapClickSearch').value = '';
+
+    // Jika sudah ada koordinat, pakai sebagai center
+    const existLat = parseFloat(document.getElementById('fCoordLat').value);
+    const existLng = parseFloat(document.getElementById('fCoordLng').value);
+    if (!isNaN(existLat) && !isNaN(existLng)) {
+      _mapClickCenterLat = existLat;
+      _mapClickCenterLng = existLng;
+      _mapClickZoom = 16;
+    }
+
+    _loadMapClickFrame();
+    document.getElementById('mapClickOverlay').classList.add('active');
+  }
+
+  function _loadMapClickFrame() {
+    // Gunakan OpenStreetMap embed. Karena iframe tidak bisa di-intercept klik,
+    // kita pakai pendekatan: overlay transparan di atas iframe + decode koordinat dari posisi klik.
+    // Lebih andal: gunakan leaflet.js via srcdoc.
+    const lat = _mapClickCenterLat;
+    const lng = _mapClickCenterLng;
+    const z   = _mapClickZoom;
+
+    const html = `<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  html,body,#map{margin:0;padding:0;width:100%;height:100vh;}
+  .leaflet-container{font-family:sans-serif;cursor:crosshair!important;}
+</style>
+</head><body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>
+<script>
+var map = L.map('map',{zoomControl:true}).setView([${lat},${lng}],${z});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  attribution:'© OSM contributors', maxZoom:19
+}).addTo(map);
+var marker = null;
+var pinIcon = L.icon({
+  iconUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],shadowSize:[41,41]
+});
+map.on('click',function(e){
+  var lat=e.latlng.lat.toFixed(7), lng=e.latlng.lng.toFixed(7);
+  if(marker){marker.setLatLng(e.latlng);}
+  else{marker=L.marker(e.latlng,{icon:pinIcon,draggable:true}).addTo(map);}
+  marker.on('dragend',function(){
+    var p=marker.getLatLng();
+    window.parent.postMessage({type:'mapclick',lat:p.lat.toFixed(7),lng:p.lng.toFixed(7)},'*');
+  });
+  window.parent.postMessage({type:'mapclick',lat:lat,lng:lng},'*');
+});
+<\/script></body></html>`;
+
+    const iframe = document.getElementById('mapClickIframe');
+    iframe.srcdoc = html;
+  }
+
+  // Terima pesan koordinat dari iframe Leaflet
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'mapclick') return;
+    _mapClickPendingLat = e.data.lat;
+    _mapClickPendingLng = e.data.lng;
+    const preview = document.getElementById('mapClickCoordPreview');
+    preview.textContent = '📍 ' + _mapClickPendingLat + ', ' + _mapClickPendingLng;
+    preview.className = 'mapclick-coord-preview has-coord';
+    document.getElementById('btnMapClickConfirm').disabled = false;
+  });
+
+  function searchMapClick() {
+    const q = document.getElementById('mapClickSearch').value.trim();
+    if (!q) return;
+    // Nominatim geocoding (OpenStreetMap, gratis, no key)
+    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&limit=1', {
+      headers: { 'Accept-Language': 'id,en' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (!data || data.length === 0) {
+        showToast('Lokasi tidak ditemukan. Coba kata kunci yang lebih spesifik.', 4000);
+        return;
+      }
+      _mapClickCenterLat = parseFloat(data[0].lat);
+      _mapClickCenterLng = parseFloat(data[0].lon);
+      _mapClickZoom = 16;
+      _loadMapClickFrame();
+      showToast('📍 Pindah ke: ' + data[0].display_name.split(',')[0], 3000);
+    })
+    .catch(() => showToast('Gagal mencari lokasi. Periksa koneksi internet.', 3500));
+  }
+
+  function confirmMapClick() {
+    if (!_mapClickPendingLat || !_mapClickPendingLng) return;
+    document.getElementById('fCoordLat').value = _mapClickPendingLat;
+    document.getElementById('fCoordLng').value = _mapClickPendingLng;
+    setCoordStatus('✓ Koordinat dari peta: ' + _mapClickPendingLat + ', ' + _mapClickPendingLng, 'ok');
+    _showMapPreview(_mapClickPendingLat, _mapClickPendingLng);
+    _autoSave();
+    closeMapClick();
+    showToast('Koordinat dari peta berhasil disimpan ✓');
+  }
+
+  function closeMapClick() {
+    document.getElementById('mapClickOverlay').classList.remove('active');
+    // Stop iframe untuk hemat memory
+    const iframe = document.getElementById('mapClickIframe');
+    iframe.srcdoc = '';
+    _mapClickPendingLat = null;
+    _mapClickPendingLng = null;
+  }
+
+  document.getElementById('mapClickOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeMapClick();
+  });
+
   // ── Capture Location + Map Preview ────────────────────
   function captureLocation() {
     if (!navigator.geolocation) {
-      setCoordStatus('Geolocation tidak didukung browser ini.', 'err');
+      setCoordStatus('Geolocation tidak didukung browser ini. Gunakan mode Input Manual atau Klik Peta.', 'err');
       return;
     }
     const btn = document.getElementById('btnCaptureLoc');
     btn.disabled = true;
-    setCoordStatus('Mendapatkan lokasi...', 'loading');
+    setCoordStatus('Mendapatkan lokasi GPS...', 'loading');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude.toFixed(7);
         const lng = pos.coords.longitude.toFixed(7);
         document.getElementById('fCoordLat').value = lat;
         document.getElementById('fCoordLng').value = lng;
-        setCoordStatus('✓ Lokasi berhasil didapat (akurasi ±' + Math.round(pos.coords.accuracy) + 'm)', 'ok');
+        setCoordStatus('✓ GPS berhasil (akurasi ±' + Math.round(pos.coords.accuracy) + 'm) — ' + lat + ', ' + lng, 'ok');
         btn.disabled = false;
-        showToast('Koordinat: ' + lat + ', ' + lng);
+        showToast('Koordinat GPS: ' + lat + ', ' + lng);
         _showMapPreview(lat, lng);
         _autoSave();
       },
       (err) => {
-        let msg = 'Gagal mendapatkan lokasi.';
-        if (err.code === 1) msg = 'Izin lokasi ditolak. Aktifkan izin lokasi di browser.';
-        else if (err.code === 2) msg = 'Lokasi tidak tersedia. Coba lagi.';
-        else if (err.code === 3) msg = 'Timeout. Coba lagi.';
+        let msg = 'GPS gagal. ';
+        if (err.code === 1) msg += 'Izin lokasi ditolak — coba mode "Input Manual" atau "Klik Peta".';
+        else if (err.code === 2) msg += 'Sinyal tidak tersedia — coba mode "Input Manual" atau "Klik Peta".';
+        else if (err.code === 3) msg += 'Timeout — coba lagi atau gunakan mode "Input Manual" / "Klik Peta".';
         setCoordStatus(msg, 'err');
         btn.disabled = false;
+        // Sarankan pindah ke manual jika GPS gagal
+        showToast('⚠ GPS gagal. Gunakan tab "Input Manual" atau "Klik Peta" sebagai alternatif.', 5000);
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
@@ -1583,21 +1968,41 @@
     sitePhotos.splice(idx, 1);
     renderSitePhotos();
   }
-  document.getElementById('siteFileInput').addEventListener('change', function () {
+  document.getElementById('siteFileInput').addEventListener('change', async function () {
     const files = Array.from(this.files);
     if (!files.length) return;
-    let loaded = 0;
-    files.forEach(file => {
-      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        sitePhotos.push({ url: ev.target.result, ext });
-        loaded++;
-        if (loaded === files.length) { renderSitePhotos(); showToast(files.length + ' foto site berhasil ditambahkan'); }
-      };
-      reader.readAsDataURL(file);
-    });
     this.value = '';
+    showToast('Memproses ' + files.length + ' foto…', 1500);
+    let successCount = 0;
+    let totalOrig = 0, totalFinal = 0;
+    for (const file of files) {
+      try {
+        const { dataUrl, ext, origKB, finalKB } = await compressImage(file);
+        sitePhotos.push({ url: dataUrl, ext });
+        totalOrig  += origKB;
+        totalFinal += finalKB;
+        successCount++;
+      } catch (e) {
+        // Fallback tanpa kompresi
+        await new Promise(res => {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            sitePhotos.push({ url: ev.target.result, ext });
+            successCount++;
+            res();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    }
+    renderSitePhotos();
+    if (files.length === 1) {
+      _toastCompress(totalOrig, totalFinal, Math.round((1 - totalFinal / totalOrig) * 100));
+    } else {
+      const hemat = totalOrig > 0 ? Math.round((1 - totalFinal / totalOrig) * 100) : 0;
+      showToast(successCount + ' foto site ditambahkan. Total: ' + Math.round(totalOrig) + ' → ' + Math.round(totalFinal) + ' KB (hemat ' + hemat + '%) ✓', 5000);
+    }
   });
 
   // ── Add Device Popup ───────────────────────────────────
@@ -2071,6 +2476,8 @@
       });
       document.getElementById('fCoordLat').value = '';
       document.getElementById('fCoordLng').value = '';
+      document.getElementById('fCoordLatManual').value = '';
+      document.getElementById('fCoordLngManual').value = '';
       setCoordStatus('', '');
       document.getElementById('mapPreviewWrap').classList.remove('show');
       document.getElementById('fPicName').value = '';
@@ -2142,6 +2549,73 @@
     updatePhotoProgress();
   }
 
+  // ── Photo Compression Engine ───────────────────────────
+  // Target: maks 500 KB per foto, maks 1600px sisi terpanjang
+  const COMPRESS_MAX_PX   = 1600;   // px — sisi terpanjang
+  const COMPRESS_MAX_BYTE = 500 * 1024; // 500 KB
+  const COMPRESS_QUALITY_START = 0.82;
+  const COMPRESS_QUALITY_MIN   = 0.45;
+  const COMPRESS_QUALITY_STEP  = 0.07;
+
+  /**
+   * compressImage(file) → Promise<{ dataUrl, ext, origKB, finalKB, ratio }>
+   * Mengompresi foto via OffscreenCanvas / Canvas:
+   *  1. Resize jika lebar/tinggi > COMPRESS_MAX_PX (pertahankan aspek rasio)
+   *  2. Iterasi kualitas JPEG turun sampai ukuran ≤ COMPRESS_MAX_BYTE
+   *  3. Jika kualitas minimum pun masih besar, tetap pakai hasil terbaik
+   */
+  function compressImage(file) {
+    return new Promise((resolve, reject) => {
+      const origKB = (file.size / 1024).toFixed(1);
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { naturalWidth: w, naturalHeight: h } = img;
+
+        // 1. Hitung dimensi target (jaga aspek rasio)
+        if (w > COMPRESS_MAX_PX || h > COMPRESS_MAX_PX) {
+          if (w >= h) { h = Math.round(h * COMPRESS_MAX_PX / w); w = COMPRESS_MAX_PX; }
+          else        { w = Math.round(w * COMPRESS_MAX_PX / h); h = COMPRESS_MAX_PX; }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // Aktifkan image smoothing terbaik
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, w, h);
+
+        // 2. Iterasi kualitas
+        let quality = COMPRESS_QUALITY_START;
+        let dataUrl;
+        do {
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+          // base64 overhead: setiap 4 char base64 ≈ 3 byte
+          const byteEst = Math.round((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75);
+          if (byteEst <= COMPRESS_MAX_BYTE || quality <= COMPRESS_QUALITY_MIN) break;
+          quality = Math.max(COMPRESS_QUALITY_MIN, quality - COMPRESS_QUALITY_STEP);
+        } while (true);
+
+        const finalKB = Math.round((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75 / 1024);
+        const ratio   = Math.round((1 - finalKB / +origKB) * 100);
+        resolve({ dataUrl, ext: 'jpg', origKB: +origKB, finalKB, ratio });
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Gagal membaca gambar')); };
+      img.src = url;
+    });
+  }
+
+  /** Toast khusus kompresi — tampilkan info sebelum/sesudah */
+  function _toastCompress(origKB, finalKB, ratio) {
+    if (origKB <= 500) {
+      showToast('Foto berhasil ditambahkan (' + finalKB + ' KB)');
+    } else {
+      showToast('Foto dikompres: ' + origKB + ' KB → ' + finalKB + ' KB (hemat ' + ratio + '%) ✓', 4000);
+    }
+  }
+
   // ── Photo Handling ─────────────────────────────────────
   function clearPhoto(id, type) {
     const d = devices.find(x => x.id === id);
@@ -2157,26 +2631,41 @@
     inp.click();
   }
 
-  document.getElementById('globalFileInput').addEventListener('change', function () {
+  document.getElementById('globalFileInput').addEventListener('change', async function () {
     if (!currentPhotoTarget || !this.files[0]) return;
     const { devId, type, smId } = currentPhotoTarget;
     const file = this.files[0];
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-    const reader = new FileReader();
-    reader.onload = function (ev) {
+    showToast('Memproses foto…', 1500);
+    try {
+      const { dataUrl, ext, origKB, finalKB, ratio } = await compressImage(file);
       const d = devices.find(x => x.id === devId);
       if (!d) return;
       if (smId) {
-        // Sub-module photo
         const sm = (d.subModules || []).find(s => s.id === smId);
-        if (sm) { sm.photos[type] = ev.target.result; sm.exts[type] = ext; }
+        if (sm) { sm.photos[type] = dataUrl; sm.exts[type] = ext; }
       } else {
-        d.photos[type] = ev.target.result; d.exts[type] = ext;
+        d.photos[type] = dataUrl; d.exts[type] = ext;
       }
       renderDevices();
-      showToast('Foto berhasil ditambahkan');
-    };
-    reader.readAsDataURL(file);
+      _toastCompress(origKB, finalKB, ratio);
+    } catch (e) {
+      // Fallback ke FileReader tanpa kompresi jika canvas gagal
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const d = devices.find(x => x.id === devId);
+        if (!d) return;
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        if (smId) {
+          const sm = (d.subModules || []).find(s => s.id === smId);
+          if (sm) { sm.photos[type] = ev.target.result; sm.exts[type] = ext; }
+        } else {
+          d.photos[type] = ev.target.result; d.exts[type] = ext;
+        }
+        renderDevices();
+        showToast('Foto ditambahkan (tanpa kompresi)');
+      };
+      reader.readAsDataURL(file);
+    }
   });
 
   // ── Form Data ──────────────────────────────────────────
