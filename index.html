@@ -1093,7 +1093,7 @@
       </button>
     </div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;" id="collectSectionHint"></div>
-    <div class="catalog-status loading" id="catalogStatusBar">⏳ Memuat katalog device...</div>
+    <div class="catalog-status ok" id="catalogStatusBar">✓ 173 device tersedia dari katalog</div>
     <div id="deviceList"></div>
     <!-- Add Device Button with Popup -->
     <div class="add-type-popup-wrap" id="addTypeWrap">
@@ -3791,14 +3791,16 @@ ${sigSection}
   // ── Google Sheets Sync Engine ─────────────────────────
   // ══════════════════════════════════════════════════════
   const SHEETS_URL_KEY = 'fs_sheets_webhook_url';
-  const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyHT58ZNfV9ouoMlfmg9JTx9nuFkpp_lGgJsS41O3IZJMwTdddXAgzIg8cllhHEEDqc/exec';
+  const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwv-_203MMsFkIOWh33rVy4_0JR2dSzmRzz9uq7HsUQILlxa1SlPFlpjAnziBeiipnS/exec';
   let _sheetsUrl = '';
 
   function _loadSheetsConfig() {
     try {
       _sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || SHEETS_URL_DEFAULT;
-      // Pastikan default selalu tersimpan agar session berikutnya langsung pakai
-      if (!localStorage.getItem(SHEETS_URL_KEY)) {
+      // Force update jika masih pakai URL lama
+      const OLD_URL = 'AKfycbwOECXjprzm4qavFOdgbw2XahN8lc9MpNzILR-D1N-bYNCk0EJ9X7lfNqydJl4CnNdX';
+      if (!localStorage.getItem(SHEETS_URL_KEY) || (_sheetsUrl && _sheetsUrl.includes(OLD_URL))) {
+        _sheetsUrl = SHEETS_URL_DEFAULT;
         localStorage.setItem(SHEETS_URL_KEY, SHEETS_URL_DEFAULT);
       }
       const dot  = document.getElementById('sheetsDot');
@@ -4169,63 +4171,28 @@ function doGet(e) {
   });
 
   // ══════════════════════════════════════════════════════
-  // ── Device Catalog Engine ─────────────────────────────
+  // ── Device Catalog Engine — Data Hardcoded dari Excel ─
   // ══════════════════════════════════════════════════════
-  const CATALOG_CACHE_KEY = 'fs_device_catalog';
-  const CATALOG_CACHE_TTL = 30 * 60 * 1000; // 30 menit
-  let _catalog = [];       // array of { 'Device Name', 'Part Number', 'Kategori', 'Manufacturer', 'Remark' }
-  let _catalogLoaded = false;
-  let _acFocusIdx = {};    // { devId: number } untuk navigasi keyboard
+  // Katalog 173 device — update: embed ulang dari file DEVICE_KATALOG.xlsx
+  const _CATALOG_RAW = [{"n":"AC DAIKIN 0.5 PK FTC15NV14","p":"FTC15NV14","k":"AC","m":"","r":""},{"n":"AC DAIKIN 0.5 PK FTV15BXV14","p":"FTV15BXV14","k":"AC","m":"","r":""},{"n":"AC DAIKIN 2 PK FTV50BXV14","p":"FTV50BXV14","k":"AC","m":"","r":""},{"n":"AC PANASONIC CS-YN9AKJ","p":"YN9AKJ","k":"AC","m":"","r":""},{"n":"AC PANASONIC CS-YN9WKJ","p":"YN9WKJ","k":"AC","m":"","r":""},{"n":"APAR 3 KG","p":"","k":"APAR","m":"","r":""},{"n":"APAR CITIFIRE 2KG","p":"","k":"APAR","m":"","r":""},{"n":"BATTERY FIAM 12FIT/100M","p":"","k":"BATTERY","m":"","r":""},{"n":"BATTERY GENESIS 12TD100F4","p":"","k":"BATTERY","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - AUX - TMF2AUX02","p":"TMF2AUX02","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - FAN DWDM - TNG1FAN05","p":"TNG1FAN05","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - FILTER ROADM BOARD - TNG2WSMD90","p":"TNG2WSMD90","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - M60 - TNG1M608D","p":"TNG1M608D","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - OPT. SPV. CHANNEL - TNG2OPM801","p":"TNG2OPM801","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - OPTICAL AMPLIFIER - TNG2DAP","p":"TNG2DAP","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - PDU - TMF1PIU01","p":"TMF1PIU01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - QCP - TNG2QCP01","p":"TNG2QCP01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - RACK","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - SYS. COMM. CTRL - TME3CTU01","p":"TME3CTU01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - TNG20H9L01","p":"TNG20H9L01","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - AHPHG - OPTICAL AMPLIFIER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - AHPLG - OPTICAL AMPLIFIER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - FAN","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - INVERTER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - ITLU - INTERLEAVER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - POWER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - RED EC - SYS. COMM. CTRL","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - S13X100R - OPT. TRANSPONDER UNIT","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - SFD44 - SFD/MUX-DEMUX","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - WR8-88AF - FILTER ROADM BOARD","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32- 260SCX2 - OPT. TRANSPONDER UNIT","p":"","k":"DWDM","m":"","r":""},{"n":"FAN OLT","p":"","k":"FAN","m":"","r":""},{"n":"FAN OLT HUAWEI EA5800_X2 H90F1FMSA","p":"","k":"FAN","m":"","r":""},{"n":"FAN ROUTER HUAWEI FAN 036A-B","p":"","k":"FAN","m":"","r":""},{"n":"GENSET YAMAHA EF7200","p":"","k":"GENSET","m":"","r":""},{"n":"INVERTER","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER COTEX SRT1000T-248","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER EVADA XMI 10HR CE 1000VA","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER EVEREXCEED 1 KVA","p":"","k":"INVERTER","m":"","r":""},{"n":"LINE CARD IO OLT HUAWEI MPSFE-G","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE GFGH C620","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE GTGH C320","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE HFTL C620","p":"","k":"LINE","m":"","r":""},{"n":"MIKROBITS AINOS","p":"","k":"MIKROBITS","m":"","r":""},{"n":"MIKROTIK RB92","p":"","k":"MIKROTIK","m":"","r":""},{"n":"MIKROTIK RB95","p":"","k":"MIKROTIK","m":"","r":""},{"n":"MODUL RECTIFIER EATON NPR48 ES","p":"","k":"MODUL","m":"","r":""},{"n":"MODULE RECTIFIER ELTEK FLATPACK2 48/2000 SHE","p":"","k":"MODULE","m":"","r":""},{"n":"MODULE RECTIFIER SMART POWER III 48","p":"","k":"MODULE","m":"","r":""},{"n":"OLT BDCOM","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI EA5800","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI EA5800 X2","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI MA5801S","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI SMARTAX EA5800_X2","p":"","k":"OLT","m":"","r":""},{"n":"OLT ZTE C320","p":"","k":"OLT","m":"","r":""},{"n":"OLT ZTE C620","p":"","k":"OLT","m":"","r":""},{"n":"OPTIX OSN 1800","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800 M12","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800 M24","p":"","k":"OPTIX","m":"","r":""},{"n":"OS6900 C32E","p":"","k":"OS6900","m":"","r":""},{"n":"OS6900 X20","p":"","k":"OS6900","m":"","r":""},{"n":"OTB 96 CORE LITECH","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE NWC","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE PAZ","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE PAZ","p":"","k":"OTB","m":"","r":""},{"n":"POWER OLT HUAWEI H901PISC","p":"","k":"POWER","m":"","r":""},{"n":"POWER OLT ZTE PRSF C620","p":"","k":"POWER","m":"","r":""},{"n":"POWER ROUTER HUAWEI PAC1K2S12-B","p":"","k":"POWER","m":"","r":""},{"n":"RACK","p":"","k":"RACK","m":"","r":""},{"n":"RACK BATTERY","p":"","k":"RACK","m":"","r":""},{"n":"RACK OLT","p":"","k":"RACK","m":"","r":""},{"n":"RACK OTB","p":"","k":"RACK","m":"","r":""},{"n":"RACK RECTIFIER","p":"","k":"RACK","m":"","r":""},{"n":"RECTIFIER","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER DPC SP SERIES 48V","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER EATON SC200","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER ELTEK FLATPACK CABINET","p":"","k":"RECTIFIER","m":"","r":""},{"n":"ROUTER ARISTA","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO 2950","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO 3850","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9006","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 920","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9300","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9901","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9903","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR920","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 540","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 540","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5500","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5501","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5501","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5504","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1 24H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1 36H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO XRV9000","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CE 6730","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6730","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6730 H48X6C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900 X20","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900 X72","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE SC503","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 40","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F1A 8H20Q","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2A 8H20Q","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2A 8K36H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 X 4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 X4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000E F2C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE40E F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE40E SERIES","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE8000 F2A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NETENGINE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736 S24S4XC","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S6750 H36C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUWAEI NE 8000 F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER ISCOM2624G 4GE AC","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA 7750 SR-A4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA CPM-A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA FILTER UDARA","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA MDA-A","p":"","k":"ROUTER","m":"","r":""},{"n":"SFP OLT","p":"","k":"SFP","m":"","r":""},{"n":"SFP SWITCH","p":"","k":"SFP","m":"","r":""},{"n":"SWITCH ALCATEL 2950","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6224","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6250","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450 10","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450 24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6860","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6860 24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6900","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT 0S6540-24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT 0S6540-P10","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT OS6860-U28","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT OS6860E-U28","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL OS6900 X72","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ARISTA","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH BDCOM","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 2950","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 2960","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 3850","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH EDGECORE","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 2600G","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 2624 4GE","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 551E 4G AC","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX700","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX701","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX711","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAX700 MOI MDF","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH SEIMENS","p":"","k":"SWITCH","m":"","r":""},{"n":"SYS. CONTROL RECTIFIER EATON SC200","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROL RECTIFIER EATON SC300","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT HUAWEI FLHFE","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT ZTE SMXA C320","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT ZTE SPUF C620","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER RECTIFIER SC503","p":"","k":"SYS.","m":"","r":""},{"n":"TANGGA","p":"","k":"TANGGA","m":"","r":""},{"n":"UPS APC","p":"","k":"UPS","m":"","r":""},{"n":"UPS GAMATECH","p":"","k":"UPS","m":"","r":""}];
 
-  // ── Fetch katalog dari Apps Script (GET ?action=getCatalog) ──
+  // Normalisasi ke format internal
+  let _catalog = _CATALOG_RAW.map(function(x) {
+    return {
+      'Device Name':  x.n,
+      'Part Number':  x.p,
+      'Kategori':     x.k,
+      'Manufacturer': x.m,
+      'Remark':       x.r
+    };
+  });
+  let _catalogLoaded = true;
+  let _acFocusIdx = {};
+
+  // _fetchCatalog tidak diperlukan — data sudah embedded
   async function _fetchCatalog() {
-    const url = _sheetsUrl;
-    if (!url) return;
-
-    // Coba load dari cache dulu
-    try {
-      const raw = localStorage.getItem(CATALOG_CACHE_KEY);
-      if (raw) {
-        const cached = JSON.parse(raw);
-        if (cached.data && cached.ts && (Date.now() - cached.ts) < CATALOG_CACHE_TTL) {
-          _catalog = cached.data;
-          _catalogLoaded = true;
-          _renderCatalogStatus('ok', `${_catalog.length} device tersedia`);
-          return;
-        }
-      }
-    } catch(e) {}
-
-    _renderCatalogStatus('loading', 'Memuat katalog device...');
-    try {
-      const resp = await fetch(url + '?action=getCatalog', {
-        method: 'GET',
-        redirect: 'follow',
-      });
-      if (!resp.ok) {
-        _renderCatalogStatus('err', `Server error: HTTP ${resp.status}`);
-        return;
-      }
-      const text = await resp.text();
-      let json;
-      try { json = JSON.parse(text); } catch(_) { json = { status: 'error', msg: 'Respons bukan JSON: ' + text.substring(0, 80) }; }
-
-      if (json.status === 'ok' && Array.isArray(json.catalog)) {
-        _catalog = json.catalog;
-        _catalogLoaded = true;
-        localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ data: _catalog, ts: Date.now() }));
-        _renderCatalogStatus('ok', `${_catalog.length} device tersedia dari katalog`);
-      } else if (json.status === 'pong') {
-        // Apps Script belum di-deploy ulang dengan kode V2
-        _renderCatalogStatus('err', 'Apps Script belum diperbarui. Deploy ulang dengan kode V2 lalu Refresh Katalog.');
-      } else {
-        _renderCatalogStatus('err', 'Gagal: ' + (json.msg || JSON.stringify(json).substring(0, 80)));
-      }
-    } catch(err) {
-      _renderCatalogStatus('err', 'Tidak dapat mengakses katalog — ' + err.message);
-    }
+    _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog');
   }
-
   function _renderCatalogStatus(type, msg) {
     const el = document.getElementById('catalogStatusBar');
     if (!el) return;
@@ -4363,18 +4330,14 @@ function doGet(e) {
 
   // ── Refresh katalog manual (admin) ────────────────────
   window.refreshCatalog = async function() {
-    localStorage.removeItem(CATALOG_CACHE_KEY);
-    _catalogLoaded = false;
-    _catalog = [];
-    await _fetchCatalog();
-    showToast('✅ Katalog device diperbarui dari Google Sheets!', 4000);
+    // Katalog sudah embedded — tidak perlu fetch. Tampilkan ulang status saja.
+    _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog (embedded)');
+    showToast('✅ Katalog sudah up-to-date (' + _catalog.length + ' device)', 3000);
   };
 
-  // ── Load katalog saat app pertama kali dibuka ─────────
+  // ── Init: IDB + queue UI (katalog sudah siap sejak load) ──
   _openIDB().then(() => {
     _refreshQueueUI();
-    // Fetch katalog setelah IDB siap
-    setTimeout(_fetchCatalog, 500);
   }).catch(e => console.warn('[IDB Init]', e));
 </script>
 </body>
