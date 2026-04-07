@@ -1891,6 +1891,7 @@
       document.getElementById('picPhotoThumb').style.display = 'block';
       document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
       document.getElementById('btnFotoPic').classList.add('has-photo');
+      _autoSave();
       _toastCompress(origKB, finalKB, ratio);
     } catch (e) {
       // Fallback tanpa kompresi
@@ -1902,6 +1903,7 @@
         document.getElementById('picPhotoThumb').style.display = 'block';
         document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
         document.getElementById('btnFotoPic').classList.add('has-photo');
+        _autoSave();
         showToast('Foto PIC berhasil ditambahkan ✓');
       };
       reader.readAsDataURL(file);
@@ -2449,6 +2451,7 @@ map.on('click',function(e){
       }
     }
     renderSitePhotos();
+    _autoSave();
     if (files.length === 1) {
       _toastCompress(totalOrig, totalFinal, Math.round((1 - totalFinal / totalOrig) * 100));
     } else {
@@ -2970,6 +2973,8 @@ map.on('click',function(e){
 
     // Reset draft
     try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+    // Hapus foto draft dari IDB juga
+    _openIDB().then(() => _idbClearPhotoDraft()).catch(() => {});
 
     // Reset status badge
     document.getElementById('formStatus').textContent = '● Draft';
@@ -3111,6 +3116,7 @@ map.on('click',function(e){
         d.photos[type] = dataUrl; d.exts[type] = ext;
       }
       renderDevices();
+      _autoSave();
       _toastCompress(origKB, finalKB, ratio);
     } catch (e) {
       // Fallback ke FileReader tanpa kompresi jika canvas gagal
@@ -3126,6 +3132,7 @@ map.on('click',function(e){
           d.photos[type] = ev.target.result; d.exts[type] = ext;
         }
         renderDevices();
+        _autoSave();
         showToast('Foto ditambahkan (tanpa kompresi)');
       };
       reader.readAsDataURL(file);
@@ -3779,6 +3786,7 @@ ${sigSection}
     document.getElementById('sigThumb').src = sigDataUrl;
     document.getElementById('sigThumbWrap').style.display = 'block';
     closeSig();
+    _autoSave();
     showToast('Tanda tangan berhasil disimpan ✓');
   }
 
@@ -3858,6 +3866,8 @@ ${sigSection}
         localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
       }
     } catch(e) { /* localStorage tidak tersedia */ }
+    // Simpan foto ke IDB (async, tidak blocking)
+    _openIDB().then(() => _idbSavePhotoDraft()).catch(() => {});
   }
 
   function _restoreDraft() {
@@ -3949,13 +3959,29 @@ ${sigSection}
 
   // Restore draft saat load
   _restoreDraft();
+  // Setelah text draft di-restore, muat foto dari IDB (async)
+  _openIDB().then(() => {
+    _idbLoadPhotoDraft().then(restored => {
+      if (restored) showToast('🖼️ Foto draft dipulihkan dari penyimpanan lokal', 3000);
+    });
+  }).catch(() => {});
+
+  // Helper alias untuk dipakai oleh _idbLoadPhotoDraft
+  function _renderSitePhotos() { renderSitePhotos(); }
+  function _applyPicPhoto(url) {
+    document.getElementById('picPhotoImg').src = url;
+    document.getElementById('picPhotoThumb').style.display = 'block';
+    document.getElementById('btnFotoPicLabel').textContent = 'Ganti Foto PIC';
+    document.getElementById('btnFotoPic').classList.add('has-photo');
+  }
 
   // ══════════════════════════════════════════════════════
   // ── IndexedDB Engine ──────────────────────────────────
   // ══════════════════════════════════════════════════════
   const IDB_NAME    = 'FiberstarAssetTagging';
-  const IDB_VERSION = 1;
+  const IDB_VERSION = 2;          // naik ke 2 — tambah store photodraft
   const IDB_STORE   = 'workorders';
+  const IDB_DRAFT   = 'photodraft'; // store khusus simpan foto draft
   let _idb = null;
 
   function _openIDB() {
@@ -3968,6 +3994,10 @@ ${sigSection}
           const store = db.createObjectStore(IDB_STORE, { keyPath: 'collectId' });
           store.createIndex('syncStatus', 'syncStatus', { unique: false });
           store.createIndex('savedAt',    'savedAt',    { unique: false });
+        }
+        // Store baru untuk draft foto — key tunggal '__draft__'
+        if (!db.objectStoreNames.contains(IDB_DRAFT)) {
+          db.createObjectStore(IDB_DRAFT, { keyPath: 'id' });
         }
       };
       req.onsuccess = (e) => { _idb = e.target.result; resolve(_idb); };
@@ -4007,6 +4037,103 @@ ${sigSection}
       tx.oncomplete = resolve;
       tx.onerror    = (e) => reject(e.target.error);
     });
+  }
+
+  // ── Draft Foto di IndexedDB ────────────────────────────
+  // Simpan semua foto aktif (device, site, pic, signature) ke IDB
+  async function _idbSavePhotoDraft() {
+    try {
+      const db = await _openIDB();
+      const record = {
+        id: '__draft__',
+        savedAt: new Date().toISOString(),
+        sitePhotos: sitePhotos,
+        picPhoto: picPhotoData,
+        signature: sigDataUrl,
+        devices: devices.map(d => ({
+          id: d.id,
+          photos: d.photos || {},
+          exts:   d.exts   || {},
+          subModules: (d.subModules || []).map(sm => ({
+            id: sm.id,
+            photos: sm.photos || {},
+            exts:   sm.exts   || {},
+          })),
+        })),
+      };
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_DRAFT, 'readwrite');
+        tx.objectStore(IDB_DRAFT).put(record);
+        tx.oncomplete = resolve;
+        tx.onerror    = (e) => reject(e.target.error);
+      });
+    } catch(e) { console.warn('[PhotoDraft save]', e); }
+  }
+
+  // Muat foto draft dari IDB dan pasang ke variabel global
+  async function _idbLoadPhotoDraft() {
+    try {
+      const db = await _openIDB();
+      const record = await new Promise((resolve, reject) => {
+        const req = db.transaction(IDB_DRAFT, 'readonly').objectStore(IDB_DRAFT).get('__draft__');
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror   = (e) => reject(e.target.error);
+      });
+      if (!record) return false;
+
+      // Restore site photos
+      if (record.sitePhotos && record.sitePhotos.length > 0) {
+        sitePhotos = record.sitePhotos;
+        _renderSitePhotos();
+      }
+      // Restore foto PIC
+      if (record.picPhoto) {
+        picPhotoData = record.picPhoto;
+        _applyPicPhoto(picPhotoData.url);
+      }
+      // Restore tanda tangan
+      if (record.signature) {
+        sigDataUrl = record.signature;
+        document.getElementById('sigThumb').src = sigDataUrl;
+        document.getElementById('sigThumbWrap').style.display = '';
+        const badge = document.getElementById('sigBadge');
+        badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Ubah Tanda Tangan`;
+        badge.className = 'sig-badge';
+      }
+      // Restore foto per device — merge ke devices array yang sudah ada
+      if (record.devices && record.devices.length > 0) {
+        record.devices.forEach(photoRec => {
+          const d = devices.find(x => x.id === photoRec.id);
+          if (d) {
+            if (photoRec.photos) { d.photos = { ...d.photos, ...photoRec.photos }; }
+            if (photoRec.exts)   { d.exts   = { ...d.exts,   ...photoRec.exts };   }
+            (photoRec.subModules || []).forEach(smRec => {
+              const sm = (d.subModules || []).find(s => s.id === smRec.id);
+              if (sm) {
+                if (smRec.photos) sm.photos = { ...sm.photos, ...smRec.photos };
+                if (smRec.exts)   sm.exts   = { ...sm.exts,   ...smRec.exts   };
+              }
+            });
+          }
+        });
+        renderDevices();
+        updatePhotoProgress();
+      }
+      return true;
+    } catch(e) { console.warn('[PhotoDraft load]', e); return false; }
+  }
+
+  // Hapus draft foto dari IDB (dipanggil saat Reset Form)
+  async function _idbClearPhotoDraft() {
+    try {
+      const db = await _openIDB();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction(IDB_DRAFT, 'readwrite');
+        tx.objectStore(IDB_DRAFT).delete('__draft__');
+        tx.oncomplete = resolve;
+        tx.onerror    = (e) => reject(e.target.error);
+      });
+    } catch(e) { console.warn('[PhotoDraft clear]', e); }
   }
 
   async function _idbUpdateStatus(collectId, syncStatus, syncedAt) {
