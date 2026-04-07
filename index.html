@@ -4282,8 +4282,7 @@ ${sigSection}
 
     for (const record of pending) {
       try {
-        // Kirim data teks saja (tanpa foto base64 — terlalu besar untuk Sheets)
-        // Foto ada di ZIP yang di-download terpisah
+        // Kirim data lengkap — foto base64 dikecualikan, hanya teks & struktur device
         const payload = {
           action:          'submit',
           collectId:       record.collectId,
@@ -4301,16 +4300,20 @@ ${sigSection}
           dismantleReason: record.dismantleReason || '',
           warehouse:       record.warehouse || '',
           replaceReason:   record.replaceReason || '',
-          deviceCount:     (record.devices || []).length,
           sitePhotoCount:  (record.sitePhotos || []).length,
-          // Summary device sebagai teks (termasuk sub-modul)
-          deviceSummary: (record.devices || []).map((d, i) => {
-            let line = `${i+1}. ${d.deviceName || '-'} | S/N: ${d.serialNumber || '-'} | P/N: ${d.partNumber || '-'} | Status: ${d.statusDevice || '-'}`;
-            (d.subModules || []).forEach((sm, si) => {
-              line += `\n   └ Modul ${si+1}: ${sm.moduleName || '-'} | S/N: ${sm.serialNumber || '-'} | P/N: ${sm.partNumber || '-'}`;
-            });
-            return line;
-          }).join('\n'),
+          // Kirim array devices lengkap (tanpa foto base64)
+          devices: (record.devices || []).map(d => ({
+            type:         d.type || 'single',
+            deviceName:   d.deviceName || '',
+            serialNumber: d.serialNumber || '',
+            partNumber:   d.partNumber || '',
+            statusDevice: d.statusDevice || '',
+            subModules:   (d.subModules || []).map(sm => ({
+              moduleName:   sm.moduleName || '',
+              serialNumber: sm.serialNumber || '',
+              partNumber:   sm.partNumber || '',
+            })),
+          })),
           savedAt: record.savedAt,
           syncedAt: new Date().toISOString(),
         };
@@ -4353,14 +4356,25 @@ ${sigSection}
   // ── Salin kode Apps Script ke clipboard ───────────────
   function copyAppsScript() {
     const code = `// ═══════════════════════════════════════════════════════
-// Fiberstar Asset Tagging — Google Apps Script Backend
+// Fiberstar Asset Tagging — Google Apps Script Backend v2
 // Cara deploy: Extensions → Apps Script → paste kode ini
 //              Deploy → New Deployment → Web App
 //              Execute as: Me | Who has access: Anyone
 // ═══════════════════════════════════════════════════════
 
-const SHEET_NAME = 'Asset Tagging Log';
+const SHEET_NAME    = 'Asset Tagging Log';
 const SPREADSHEET_ID = '15CDTqJokhZ3lsNIzwLdi5vPhOvVvb4sAtukh_DfTleU';
+
+const HEADERS = [
+  'Timestamp Sync', 'Collect ID', 'Jenis Kegiatan', 'Tanggal',
+  'Site Name', 'Site ID', 'Type Site', 'PIC Name', 'Division',
+  'Latitude', 'Longitude', 'Floor Location',
+  'Keterangan', 'Alasan Dismantle', 'Warehouse', 'Alasan Replace',
+  'Jumlah Device', 'Jumlah Foto Site',
+  'No', 'Tipe Device', 'Device Name', 'Serial Number (S/N)', 'Part Number (P/N)', 'Status Device',
+  'Modul ke', 'Nama Modul', 'S/N Modul', 'P/N Modul',
+  'Disimpan Pada'
+];
 
 function getSheet() {
   const ss = SPREADSHEET_ID
@@ -4369,19 +4383,28 @@ function getSheet() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    // Header row
-    const headers = [
-      'Timestamp Sync','Collect ID','Jenis Kegiatan','Tanggal',
-      'Site Name','Site ID','Type Site','PIC Name','Division',
-      'Latitude','Longitude','Floor Location',
-      'Keterangan','Alasan Dismantle','Warehouse','Alasan Replace',
-      'Jumlah Device','Jumlah Foto Site','Device Summary','Disimpan Pada'
-    ];
-    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    sheet.getRange(1, 1, 1, headers.length)
+  }
+  // Selalu pastikan header row benar (update jika berbeda)
+  const existingHeader = sheet.getLastRow() > 0
+    ? sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0]
+    : [];
+  const needsUpdate = HEADERS.some((h, i) => existingHeader[i] !== h);
+  if (needsUpdate) {
+    // Jika ada data lama, sisipkan row baru di baris 1
+    if (sheet.getLastRow() > 0 && existingHeader[0] !== HEADERS[0]) {
+      sheet.insertRowBefore(1);
+    }
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    sheet.getRange(1, 1, 1, HEADERS.length)
       .setBackground('#185FA5').setFontColor('#FFFFFF')
-      .setFontWeight('bold');
+      .setFontWeight('bold').setWrap(true);
     sheet.setFrozenRows(1);
+    sheet.setColumnWidth(1, 140);   // Timestamp
+    sheet.setColumnWidth(2, 200);   // Collect ID
+    sheet.setColumnWidth(5, 160);   // Site Name
+    sheet.setColumnWidth(21, 180);  // Device Name
+    sheet.setColumnWidth(22, 160);  // S/N
+    sheet.setColumnWidth(23, 140);  // P/N
   }
   return sheet;
 }
@@ -4389,44 +4412,117 @@ function getSheet() {
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
-    // Handle ping (test koneksi)
+
     if (data.action === 'ping') {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'pong', app: 'FiberstarAssetTagging' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    // Handle submit
+
     if (data.action === 'submit') {
       const sheet = getSheet();
-      const row = [
-        new Date().toLocaleString('id-ID'),
-        data.collectId || '',
-        data.activity || '',
-        data.date || '',
-        data.siteName || '',
-        data.siteId || '',
-        data.typeSite || '',
-        data.picName || '',
-        data.division || '',
-        data.coordLat || '',
-        data.coordLng || '',
-        data.floorLocation || '',
-        data.addNotes || '',
-        data.dismantleReason || '',
-        data.warehouse || '',
-        data.replaceReason || '',
-        data.deviceCount || 0,
-        data.sitePhotoCount || 0,
-        data.deviceSummary || '',
-        data.savedAt || '',
-      ];
-      sheet.appendRow(row);
-      // Auto-resize kolom pertama kali
-      if (sheet.getLastRow() <= 2) sheet.autoResizeColumns(1, 20);
+      const ts      = new Date().toLocaleString('id-ID');
+      const lat     = parseFloat(data.coordLat) || '';
+      const lng     = parseFloat(data.coordLng) || '';
+      const devices = data.devices || [];
+
+      // Baris utama untuk setiap device
+      let firstRow = true;
+      if (devices.length === 0) {
+        // Tidak ada device — tulis 1 baris header saja
+        sheet.appendRow([
+          ts, data.collectId||'', data.activity||'', data.date||'',
+          data.siteName||'', data.siteId||'', data.typeSite||'',
+          data.picName||'', data.division||'',
+          lat, lng, data.floorLocation||'',
+          data.addNotes||'', data.dismantleReason||'', data.warehouse||'', data.replaceReason||'',
+          0, data.sitePhotoCount||0,
+          '', '', '', '', '', '',
+          '', '', '', '',
+          data.savedAt||''
+        ]);
+      } else {
+        devices.forEach(function(d, di) {
+          const subMods = d.subModules || [];
+          if (subMods.length === 0) {
+            // Device tanpa sub-modul — 1 baris
+            sheet.appendRow([
+              firstRow ? ts : '',
+              firstRow ? (data.collectId||'') : '',
+              firstRow ? (data.activity||'') : '',
+              firstRow ? (data.date||'') : '',
+              firstRow ? (data.siteName||'') : '',
+              firstRow ? (data.siteId||'') : '',
+              firstRow ? (data.typeSite||'') : '',
+              firstRow ? (data.picName||'') : '',
+              firstRow ? (data.division||'') : '',
+              firstRow ? lat : '',
+              firstRow ? lng : '',
+              firstRow ? (data.floorLocation||'') : '',
+              firstRow ? (data.addNotes||'') : '',
+              firstRow ? (data.dismantleReason||'') : '',
+              firstRow ? (data.warehouse||'') : '',
+              firstRow ? (data.replaceReason||'') : '',
+              firstRow ? (devices.length) : '',
+              firstRow ? (data.sitePhotoCount||0) : '',
+              di + 1,
+              d.type === 'module' ? 'Module' : 'Single',
+              d.deviceName || '',
+              d.serialNumber || '',
+              d.partNumber || '',
+              d.statusDevice || '',
+              '', '', '', '',
+              firstRow ? (data.savedAt||'') : ''
+            ]);
+            firstRow = false;
+          } else {
+            // Device dengan sub-modul — 1 baris per modul
+            subMods.forEach(function(sm, si) {
+              sheet.appendRow([
+                firstRow ? ts : '',
+                firstRow ? (data.collectId||'') : '',
+                firstRow ? (data.activity||'') : '',
+                firstRow ? (data.date||'') : '',
+                firstRow ? (data.siteName||'') : '',
+                firstRow ? (data.siteId||'') : '',
+                firstRow ? (data.typeSite||'') : '',
+                firstRow ? (data.picName||'') : '',
+                firstRow ? (data.division||'') : '',
+                firstRow ? lat : '',
+                firstRow ? lng : '',
+                firstRow ? (data.floorLocation||'') : '',
+                firstRow ? (data.addNotes||'') : '',
+                firstRow ? (data.dismantleReason||'') : '',
+                firstRow ? (data.warehouse||'') : '',
+                firstRow ? (data.replaceReason||'') : '',
+                firstRow ? (devices.length) : '',
+                firstRow ? (data.sitePhotoCount||0) : '',
+                si === 0 ? (di + 1) : '',
+                si === 0 ? 'Module' : '',
+                si === 0 ? (d.deviceName||'') : '',
+                si === 0 ? (d.serialNumber||'') : '',
+                si === 0 ? (d.partNumber||'') : '',
+                si === 0 ? (d.statusDevice||'') : '',
+                si + 1,
+                sm.moduleName || '',
+                sm.serialNumber || '',
+                sm.partNumber || '',
+                firstRow ? (data.savedAt||'') : ''
+              ]);
+              firstRow = false;
+            });
+          }
+        });
+      }
+
+      // Auto-resize kolom
+      sheet.autoResizeColumns(1, HEADERS.length);
+
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'ok', row: sheet.getLastRow() }))
         .setMimeType(ContentService.MimeType.JSON);
     }
+
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'error', msg: 'Unknown action' }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -4439,7 +4535,6 @@ function doPost(e) {
 
 function doGet(e) {
   const action = e && e.parameter && e.parameter.action;
-  // ── Endpoint: ambil katalog device ──────────────────────
   if (action === 'getCatalog') {
     try {
       const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -4455,16 +4550,16 @@ function doGet(e) {
           .createTextOutput(JSON.stringify({ status: 'ok', catalog: [] }))
           .setMimeType(ContentService.MimeType.JSON);
       }
-      const headers = data[0].map(h => String(h).trim());
+      const headers = data[0].map(function(h){ return String(h).trim(); });
       const catalog = data.slice(1)
-        .filter(row => row[0] && String(row[0]).trim() !== '')
-        .map(row => {
+        .filter(function(row){ return row[0] && String(row[0]).trim() !== ''; })
+        .map(function(row) {
           const obj = {};
-          headers.forEach((h, i) => { obj[h] = String(row[i] || '').trim(); });
+          headers.forEach(function(h, i){ obj[h] = String(row[i] || '').trim(); });
           return obj;
         });
       return ContentService
-        .createTextOutput(JSON.stringify({ status: 'ok', catalog, updatedAt: new Date().toISOString() }))
+        .createTextOutput(JSON.stringify({ status: 'ok', catalog: catalog, updatedAt: new Date().toISOString() }))
         .setMimeType(ContentService.MimeType.JSON);
     } catch(err) {
       return ContentService
@@ -4472,7 +4567,6 @@ function doGet(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
   }
-  // ── Default ping ─────────────────────────────────────────
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'pong', app: 'FiberstarAssetTagging', method: 'GET' }))
     .setMimeType(ContentService.MimeType.JSON);
