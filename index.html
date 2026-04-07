@@ -1001,8 +1001,7 @@
     </button>
     <div class="pin-msg neutral" id="pinMsg">Pilih divisi lalu masukkan token 6 karakter</div>
 
-    <!-- Admin Panel (unlock dulu dengan token Admin) -->
-    <button class="admin-toggle" onclick="toggleAdminPanel()">⚙ Panel Admin (generate token)</button>
+    <!-- Admin Panel (hidden - akses via Shift+Ctrl+A, khusus Admin) -->
     <div class="admin-panel" id="adminPanel">
       <div class="admin-unlock-wrap" id="adminUnlockWrap">
         <input type="password" class="admin-unlock-input" id="adminUnlockInput"
@@ -4685,17 +4684,33 @@ function doGet(e) {
   // ── Token Authentication System ───────────────────────
   // ══════════════════════════════════════════════════════
   //
-  // Cara kerja:
-  //  - 3 role: Asset, FOP, NetDev + 1 role Admin (khusus buka panel)
-  //  - Setiap role punya token 6 karakter alphanumerik (A-Z, 0-9)
-  //  - Token disimpan sebagai SHA-256 hash di localStorage
-  //  - Admin bisa generate ulang token kapan saja
-  //  - Token Admin sendiri bisa di-reset via ADMIN_MASTER_HASH
+  // Token hash ditanam langsung di file ini (bukan localStorage),
+  // sehingga berlaku sama di semua device/browser yang memakai file ini.
   //
-  // ADMIN MASTER TOKEN default: "FSADM1" — GANTI setelah deploy!
-  // Untuk ganti, generate SHA-256 dari token baru di:
-  //   https://emn178.github.io/online-tools/sha256.html
-  // lalu update ADMIN_MASTER_HASH di bawah.
+  // Cara ganti token:
+  //  1. Admin buka panel (Ctrl+Shift+A) → masuk dengan FSADM1
+  //  2. Klik ↻ Baru untuk generate token role tertentu
+  //  3. Klik "📋 Salin Kode" → paste ke dalam file HTML ini
+  //     pada bagian /* === ROLE_TOKEN_HASHES === */
+  //  4. Simpan file → bagikan file + token baru ke tim
+  //
+  // Default token (GANTI setelah pertama deploy!):
+  //   Asset  → A1B2C3
+  //   FOP    → D4E5F6
+  //   NetDev → G7H8J9
+  //   Admin  → FSADM1
+
+  /* === ROLE_TOKEN_HASHES === */
+  const ROLE_HASHES = {
+    Asset:  '91e45b9dc41b1b0cf5576ae64ebaeb1b649771ead2d68df705c91ead989433b5',
+    FOP:    '733b06a759d9183449c82b2c1608a0f2750a295f9842da872a2e8b5bbb453609',
+    NetDev: 'ba7b791ba9e138d0bac29191afd2cb1d2d493b92ded7515aeb47ec970a8f0737',
+  };
+  /* === END ROLE_TOKEN_HASHES === */
+
+  // Token default plaintext untuk ditampilkan di panel admin saat pertama kali
+  // Hapus/kosongkan ini setelah ganti token pertama kali
+  const DEFAULT_TOKENS = { Asset: 'A1B2C3', FOP: 'D4E5F6', NetDev: 'G7H8J9' };
 
   const ADMIN_MASTER_HASH = '6cc82233c13057c8e479971cc290361528099300ae7f732375525495b32ff0ce'; // "FSADM1"
 
@@ -4705,111 +4720,75 @@ function doGet(e) {
     { id: 'NetDev', label: 'NetDev', icon: '🌐' },
   ];
 
-  const TOKEN_STORE_KEY = 'fs_token_store';   // localStorage key untuk hash token
-  const SESSION_KEY     = 'fs_pin_session';
+  const SESSION_KEY        = 'fs_pin_session';
   const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
 
-  let _selectedRole    = null;
-  let _sessionTimer    = null;
-  let _adminUnlocked   = false;
-  let _tokenVisible    = false;
+  let _selectedRole  = null;
+  let _sessionTimer  = null;
+  let _adminUnlocked = false;
+  let _tokenVisible  = false;
+  let _pendingTokens = {}; // token baru yang belum disimpan ke file
 
-  // ── Crypto helpers ─────────────────────────────────────
+  // ── Crypto ─────────────────────────────────────────────
   async function _sha256(str) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
   }
 
   function _genToken() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa O,0,I,1 agar tidak bingung
-    let t = '';
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const arr = new Uint8Array(6);
     crypto.getRandomValues(arr);
-    arr.forEach(v => { t += chars[v % chars.length]; });
-    return t;
-  }
-
-  // ── Token store (hash) di localStorage ─────────────────
-  function _loadTokenStore() {
-    try {
-      const raw = localStorage.getItem(TOKEN_STORE_KEY);
-      return raw ? JSON.parse(raw) : {};
-    } catch(_) { return {}; }
-  }
-
-  function _saveTokenStore(store) {
-    try { localStorage.setItem(TOKEN_STORE_KEY, JSON.stringify(store)); } catch(_) {}
-  }
-
-  // Jika belum ada token untuk role tertentu, generate saat pertama kali
-  async function _ensureTokens() {
-    const store = _loadTokenStore();
-    let changed = false;
-    for (const r of TOKEN_ROLES) {
-      if (!store[r.id]) {
-        const tok = _genToken();
-        store[r.id] = { hash: await _sha256(tok), plain: tok, createdAt: Date.now() };
-        changed = true;
-      }
-    }
-    if (changed) _saveTokenStore(store);
-    return store;
+    return Array.from(arr).map(v => chars[v % chars.length]).join('');
   }
 
   // ── UI helpers ─────────────────────────────────────────
+  function _setPinMsg(txt, cls) {
+    const el = document.getElementById('pinMsg');
+    el.textContent = txt; el.className = 'pin-msg ' + cls;
+  }
+
   function selectRole(roleId) {
     _selectedRole = roleId;
     TOKEN_ROLES.forEach(r => {
       const el = document.getElementById('rp_' + r.id);
       if (el) el.classList.toggle('selected', r.id === roleId);
     });
-    _setPinMsg('Masukkan token 6 karakter untuk ' + roleId, 'neutral');
+    _setPinMsg('Masukkan token untuk ' + roleId, 'neutral');
     document.getElementById('tokenInput').focus();
   }
 
   function toggleTokenVis() {
     _tokenVisible = !_tokenVisible;
-    const inp = document.getElementById('tokenInput');
-    inp.type = _tokenVisible ? 'text' : 'password';
+    document.getElementById('tokenInput').type = _tokenVisible ? 'text' : 'password';
     document.getElementById('eyeIconShow').style.display = _tokenVisible ? 'none' : '';
-    document.getElementById('eyeIconHide').style.display = _tokenVisible ? '' : 'none';
-  }
-
-  function _setPinMsg(txt, cls) {
-    const el = document.getElementById('pinMsg');
-    el.textContent = txt;
-    el.className = 'pin-msg ' + cls;
+    document.getElementById('eyeIconHide').style.display = _tokenVisible ? ''     : 'none';
   }
 
   // ── Submit token ────────────────────────────────────────
   async function submitToken() {
-    const raw = document.getElementById('tokenInput').value.trim().toUpperCase();
     const inp = document.getElementById('tokenInput');
-    if (!_selectedRole) {
-      _setPinMsg('Pilih divisi terlebih dahulu', 'err');
-      return;
+    const raw = inp.value.trim().toUpperCase();
+    if (!_selectedRole) { _setPinMsg('Pilih divisi terlebih dahulu', 'err'); return; }
+    if (raw.length < 4) {
+      _setPinMsg('Token terlalu pendek', 'err');
+      inp.classList.add('error'); setTimeout(() => inp.classList.remove('error'), 700); return;
     }
-    if (raw.length !== 6) {
-      _setPinMsg('Token harus 6 karakter', 'err');
-      inp.classList.add('error');
-      setTimeout(() => inp.classList.remove('error'), 600);
-      return;
-    }
-    const hash  = await _sha256(raw);
-    const store = _loadTokenStore();
-    const entry = store[_selectedRole];
-    if (entry && hash === entry.hash) {
+    const hash      = await _sha256(raw);
+    const stored    = ROLE_HASHES[_selectedRole];
+    // Cek juga pending token jika ada (untuk demo langsung setelah admin regen)
+    const pending   = _pendingTokens[_selectedRole];
+    const matchMain = stored  && hash === stored;
+    const matchPend = pending && hash === pending.hash;
+    if (matchMain || matchPend) {
       inp.classList.add('success');
       _setPinMsg('✓ Token valid! Memuat...', 'ok');
       setTimeout(() => _loginSuccess(_selectedRole), 500);
     } else {
       inp.classList.add('error');
-      _setPinMsg('Token salah atau belum dibuat. Hubungi Admin.', 'err');
-      setTimeout(() => {
-        inp.classList.remove('error');
-        inp.value = '';
-        _setPinMsg('Masukkan token 6 karakter untuk ' + (_selectedRole || '—'), 'neutral');
-      }, 1000);
+      _setPinMsg('Token salah. Hubungi Admin.', 'err');
+      setTimeout(() => { inp.classList.remove('error'); inp.value = '';
+        _setPinMsg('Masukkan token untuk ' + (_selectedRole||'—'), 'neutral'); }, 1200);
     }
   }
 
@@ -4817,135 +4796,129 @@ function doGet(e) {
   function toggleAdminPanel() {
     const p = document.getElementById('adminPanel');
     p.classList.toggle('open');
-    if (p.classList.contains('open') && !_adminUnlocked) {
+    if (p.classList.contains('open') && !_adminUnlocked)
       document.getElementById('adminUnlockInput').focus();
-    }
   }
 
   async function unlockAdmin() {
     const raw  = document.getElementById('adminUnlockInput').value.trim().toUpperCase();
     const hash = await _sha256(raw);
-    // Check against master hash
     if (hash === ADMIN_MASTER_HASH) {
       _adminUnlocked = true;
       document.getElementById('adminUnlockWrap').style.display = 'none';
       document.getElementById('adminTokenList').style.display  = 'block';
-      await _renderTokenRows();
+      _renderAdminPanel();
     } else {
-      document.getElementById('adminUnlockInput').style.borderColor = 'var(--fs-red)';
-      document.getElementById('adminUnlockInput').value = '';
-      setTimeout(() => { document.getElementById('adminUnlockInput').style.borderColor = ''; }, 1000);
+      const inp = document.getElementById('adminUnlockInput');
+      inp.style.borderColor = 'var(--fs-red)'; inp.value = '';
+      inp.placeholder = 'Token salah, coba lagi…';
+      setTimeout(() => { inp.style.borderColor=''; inp.placeholder='Token Admin…'; }, 1200);
     }
   }
 
-  async function _renderTokenRows() {
-    const store = await _ensureTokens();
-    const cont  = document.getElementById('tokenRowsContainer');
+  function _renderAdminPanel() {
+    const cont = document.getElementById('tokenRowsContainer');
     cont.innerHTML = TOKEN_ROLES.map(r => {
-      const entry = store[r.id];
-      const tok   = entry ? entry.plain : '??????';
-      const age   = entry ? _tokenAge(entry.createdAt) : '';
+      const p = _pendingTokens[r.id];
+      const displayTok = p ? p.plain : (DEFAULT_TOKENS[r.id] || '(aktif)');
+      const isNew = !!p;
       return `<div class="token-row">
-        <div class="token-row-role">${r.icon} ${r.label} <span>${age}</span></div>
-        <div class="token-display" id="td_${r.id}" title="Klik untuk lihat">${tok}</div>
-        <button class="btn-copy-token" onclick="copyToken('${r.id}')" title="Salin token">📋</button>
-        <button class="btn-regen" onclick="regenToken('${r.id}')">↻ Baru</button>
+        <div class="token-row-role">${r.icon} ${r.label}</div>
+        <div class="token-display" style="${isNew?'color:var(--fs-green);background:var(--fs-green-light)':''}">${displayTok}</div>
+        <button class="btn-copy-token" onclick="copyAdminToken('${r.id}')" title="Salin">📋</button>
+        <button class="btn-regen" onclick="regenAdminToken('${r.id}')">↻ Baru</button>
       </div>`;
-    }).join('');
+    }).join('') +
+    (Object.keys(_pendingTokens).length ? `
+      <div style="margin-top:10px;padding:10px;background:var(--fs-amber-light);border-radius:8px;font-size:11px;color:var(--fs-amber);">
+        ⚠️ Token baru sudah di-generate. Klik <b>"Salin Kode"</b> lalu tempel ke file HTML pada bagian <code>ROLE_TOKEN_HASHES</code>, kemudian re-distribusi file ke tim.
+      </div>
+      <button onclick="copyNewHashes()" style="width:100%;margin-top:8px;padding:9px;background:var(--fs-blue);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        📋 Salin Kode (tempel ke file HTML)
+      </button>` : '');
   }
 
-  function _tokenAge(ts) {
-    if (!ts) return '';
-    const mins = Math.round((Date.now() - ts) / 60000);
-    if (mins < 1)   return '(baru saja)';
-    if (mins < 60)  return `(${mins}m lalu)`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24)   return `(${hrs}j lalu)`;
-    return `(${Math.round(hrs/24)}h lalu)`;
+  async function regenAdminToken(roleId) {
+    const tok  = _genToken();
+    const hash = await _sha256(tok);
+    _pendingTokens[roleId] = { plain: tok, hash };
+    _renderAdminPanel();
+    showToast(`Token ${roleId} baru: ${tok} — salin kode & update file!`, 6000);
   }
 
-  async function regenToken(roleId) {
-    if (!confirm(`Generate token baru untuk "${roleId}"?\nToken lama akan langsung tidak berlaku.`)) return;
-    const tok   = _genToken();
-    const hash  = await _sha256(tok);
-    const store = _loadTokenStore();
-    store[roleId] = { hash, plain: tok, createdAt: Date.now() };
-    _saveTokenStore(store);
-    await _renderTokenRows();
-    showToast(`✅ Token ${roleId} berhasil diperbarui: ${tok}`);
+  function copyAdminToken(roleId) {
+    const p = _pendingTokens[roleId];
+    const tok = p ? p.plain : (DEFAULT_TOKENS[roleId] || '');
+    if (!tok) { showToast('Generate token baru dulu dengan ↻ Baru'); return; }
+    navigator.clipboard.writeText(tok).catch(() => prompt('Salin token:', tok));
+    showToast(`📋 Token ${roleId} disalin: ${tok}`, 3000);
   }
 
-  function copyToken(roleId) {
-    const store = _loadTokenStore();
-    const tok   = (store[roleId] || {}).plain || '';
-    if (!tok) return;
-    navigator.clipboard.writeText(tok).then(() => {
-      showToast(`📋 Token ${roleId} disalin: ${tok}`, 3000);
-    }).catch(() => {
-      prompt('Salin token ini:', tok);
+  function copyNewHashes() {
+    const lines = TOKEN_ROLES.map(r => {
+      const p = _pendingTokens[r.id];
+      const h = p ? p.hash : ROLE_HASHES[r.id];
+      return `    ${r.id.padEnd(7)}: '${h}',`;
     });
+    const snippet = `  const ROLE_HASHES = {\n${lines.join('\n')}\n  };`;
+    navigator.clipboard.writeText(snippet).catch(() => prompt('Salin kode ini:', snippet));
+    showToast('📋 Kode hash disalin! Paste ke file HTML antara /* === ROLE_TOKEN_HASHES === */', 5000);
   }
 
   // ── Login & session ─────────────────────────────────────
   function _loginSuccess(roleId) {
     const session = { name: roleId, role: roleId, loginAt: Date.now() };
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(_) {}
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(_){}
     _applySession(session);
   }
 
   function _applySession(session) {
     document.getElementById('pinScreen').classList.remove('active');
-    const bar = document.getElementById('sessionBar');
-    bar.classList.add('active');
+    document.getElementById('sessionBar').classList.add('active');
     document.body.classList.add('has-session');
-    const loginTime = new Date(session.loginAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const t = new Date(session.loginAt).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('sessionUserLabel').textContent = `Divisi: ${session.role}`;
-    document.getElementById('sessionTimeLabel').textContent = `Login: ${loginTime}`;
-    // Auto-fill Division jika cocok
+    document.getElementById('sessionTimeLabel').textContent = `Login: ${t}`;
     const divEl = document.getElementById('fDivision');
     if (divEl && !divEl.value) {
-      const map = { Asset: 'Asset', FOP: 'FOP', NetDev: 'Network Development' };
+      const map = { Asset:'Asset', FOP:'FOP', NetDev:'Network Development' };
       if (map[session.role]) { divEl.value = map[session.role]; _autoSave(); }
     }
     if (_sessionTimer) clearTimeout(_sessionTimer);
-    const remaining = SESSION_TIMEOUT_MS - (Date.now() - session.loginAt);
-    if (remaining <= 0) { doLogout(); return; }
-    _sessionTimer = setTimeout(() => {
-      showToast('⏰ Sesi habis. Silakan login kembali.');
-      doLogout();
-    }, remaining);
+    const rem = SESSION_TIMEOUT_MS - (Date.now() - session.loginAt);
+    if (rem <= 0) { doLogout(); return; }
+    _sessionTimer = setTimeout(() => { showToast('⏰ Sesi habis. Silakan login kembali.'); doLogout(); }, rem);
   }
 
   function doLogout() {
-    try { localStorage.removeItem(SESSION_KEY); } catch(_) {}
+    try { localStorage.removeItem(SESSION_KEY); } catch(_){}
     if (_sessionTimer) clearTimeout(_sessionTimer);
-    _selectedRole    = null;
-    _adminUnlocked   = false;
-    // Reset UI
-    TOKEN_ROLES.forEach(r => { const el = document.getElementById('rp_' + r.id); if(el) el.classList.remove('selected'); });
+    _selectedRole = null; _adminUnlocked = false; _pendingTokens = {};
+    TOKEN_ROLES.forEach(r => { const el=document.getElementById('rp_'+r.id); if(el) el.classList.remove('selected'); });
     document.getElementById('tokenInput').value = '';
-    document.getElementById('pinMsg').textContent = 'Pilih divisi lalu masukkan token 6 karakter';
-    document.getElementById('pinMsg').className = 'pin-msg neutral';
+    _setPinMsg('Pilih divisi lalu masukkan token', 'neutral');
     document.getElementById('adminPanel').classList.remove('open');
-    document.getElementById('adminUnlockWrap').style.display  = 'flex';
-    document.getElementById('adminTokenList').style.display   = 'none';
+    document.getElementById('adminUnlockWrap').style.display = 'flex';
+    document.getElementById('adminTokenList').style.display  = 'none';
     document.getElementById('adminUnlockInput').value = '';
     document.getElementById('pinScreen').classList.add('active');
     document.getElementById('sessionBar').classList.remove('active');
     document.body.classList.remove('has-session');
   }
 
-  // ── Init token auth ─────────────────────────────────────
-  (async function _initTokenAuth() {
-    await _ensureTokens();  // pastikan semua role sudah punya token
-    // Check existing session
+  // Keyboard shortcut rahasia Admin: Ctrl+Shift+A
+  document.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); toggleAdminPanel(); }
+  });
+
+  // ── Init session check ──────────────────────────────────
+  (function _initAuth() {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       if (raw) {
-        const session = JSON.parse(raw);
-        if (session && session.loginAt && (Date.now() - session.loginAt) < SESSION_TIMEOUT_MS) {
-          _applySession(session);
-          return;
+        const s = JSON.parse(raw);
+        if (s && s.loginAt && (Date.now() - s.loginAt) < SESSION_TIMEOUT_MS) {
+          _applySession(s); return;
         }
       }
     } catch(_) {}
