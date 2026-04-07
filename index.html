@@ -3976,6 +3976,11 @@ ${sigSection}
   }
 
   async function _idbPut(record) {
+    // Guard: collectId wajib ada dan tidak boleh kosong
+    if (!record.collectId || !String(record.collectId).trim()) {
+      throw new Error('collectId kosong — tidak bisa simpan ke IndexedDB. Pastikan Activity dan Site ID sudah diisi.');
+    }
+    record.collectId = String(record.collectId).trim(); // pastikan string bersih
     const db = await _openIDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(IDB_STORE, 'readwrite');
@@ -4025,20 +4030,20 @@ ${sigSection}
   // ── Simpan WO ke IndexedDB ─────────────────────────────
   async function saveToIDB() {
     if (!validateForm()) return;
+    // validateForm() sudah memastikan currentCollectId terisi
     const f = getFormData();
 
-    // Pastikan collectId selalu ada — generate jika kosong
-    let collectId = (f.collectId && f.collectId.trim()) ? f.collectId.trim() : null;
-    if (!collectId) {
-      // Coba generate dari activity & siteId
-      if (currentActivity) {
-        collectId = _genCollectId(currentActivity);
-        currentCollectId = collectId;
-        _renderCollectId(currentCollectId, currentActivity);
-      } else {
-        collectId = 'CID-' + Date.now();
-        currentCollectId = collectId;
-      }
+    // Triple-check: collectId tidak boleh kosong dalam kondisi apapun
+    let collectId = currentCollectId && currentCollectId.trim()
+      ? currentCollectId.trim()
+      : (f.collectId && String(f.collectId).trim()
+          ? String(f.collectId).trim()
+          : 'CID-' + Date.now());
+
+    // Update currentCollectId jika terpaksa di-generate di sini
+    if (collectId !== currentCollectId) {
+      currentCollectId = collectId;
+      if (currentActivity) _renderCollectId(currentCollectId, currentActivity);
     }
 
     // Bangun record lengkap termasuk semua foto
@@ -4172,7 +4177,7 @@ ${sigSection}
   // ── Google Sheets Sync Engine ─────────────────────────
   // ══════════════════════════════════════════════════════
   const SHEETS_URL_KEY = 'fs_sheets_webhook_url';
-  const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbzEY2lnJ6XgMOSMuXPrb1rpV635Tt1Ps11saSr7D8D5CzUNwNpznGSxIIALogX96l8F/exec';
+  const SHEETS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbwv-_203MMsFkIOWh33rVy4_0JR2dSzmRzz9uq7HsUQILlxa1SlPFlpjAnziBeiipnS/exec';
   let _sheetsUrl = '';
 
   function _loadSheetsConfig() {
