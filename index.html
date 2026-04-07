@@ -596,31 +596,31 @@
     .badge-dismantle  { background: #FCEBEB; color: #A32D2D; }
     .badge-replace    { background: #FAEEDA; color: #BA7517; }
 
-    /* ── Work Order ID ──────────────────────────────── */
-    .wo-id-box {
+    /* ── Collect ID ──────────────────────────────── */
+    .collect-id-box {
       background: linear-gradient(135deg, var(--fs-blue) 0%, #0F4D8A 100%);
       border-radius: var(--radius-md); padding: 12px 16px;
       display: flex; align-items: center; justify-content: space-between;
       gap: 12px; margin-bottom: 14px;
     }
-    .wo-id-left { display: flex; flex-direction: column; gap: 2px; }
-    .wo-id-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; }
-    .wo-id-value { font-size: 18px; font-weight: 700; color: white; letter-spacing: 0.04em; font-family: 'Courier New', monospace; }
-    .wo-id-meta  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
-    .wo-id-actions { display: flex; gap: 6px; align-items: center; }
-    .wo-id-btn {
+    .collect-id-left { display: flex; flex-direction: column; gap: 2px; }
+    .collect-id-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.08em; }
+    .collect-id-value { font-size: 18px; font-weight: 700; color: white; letter-spacing: 0.04em; font-family: 'Courier New', monospace; }
+    .collect-id-meta  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+    .collect-id-actions { display: flex; gap: 6px; align-items: center; }
+    .collect-id-btn {
       width: 32px; height: 32px; border-radius: 8px;
       background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
       color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: background 0.15s; flex-shrink: 0;
     }
-    .wo-id-btn:hover { background: rgba(255,255,255,0.28); }
-    .wo-id-btn svg { width: 15px; height: 15px; }
-    .wo-id-copy-toast {
+    .collect-id-btn:hover { background: rgba(255,255,255,0.28); }
+    .collect-id-btn svg { width: 15px; height: 15px; }
+    .collect-id-copy-toast {
       font-size: 11px; color: rgba(255,255,255,0.8); opacity: 0;
       transition: opacity 0.3s; white-space: nowrap;
     }
-    .wo-id-copy-toast.show { opacity: 1; }
+    .collect-id-copy-toast.show { opacity: 1; }
     .ctx-field { display: none; }
     .ctx-field.show { display: flex; flex-direction: column; gap: 5px; }
 
@@ -838,22 +838,22 @@
       <span id="activityBadge" style="margin-left:auto;"></span>
     </div>
 
-    <!-- Work Order ID Box -->
-    <div class="wo-id-box" id="woIdBox" style="display:none;">
-      <div class="wo-id-left">
-        <span class="wo-id-label">Work Order ID</span>
-        <span class="wo-id-value" id="woIdValue">—</span>
-        <span class="wo-id-meta" id="woIdMeta">Pilih jenis kegiatan untuk generate ID</span>
+    <!-- Collect ID Box -->
+    <div class="collect-id-box" id="collectIdBox" style="display:none;">
+      <div class="collect-id-left">
+        <span class="collect-id-label">Collect ID</span>
+        <span class="collect-id-value" id="collectIdValue">—</span>
+        <span class="collect-id-meta" id="collectIdMeta">Pilih jenis kegiatan untuk generate ID</span>
       </div>
-      <div class="wo-id-actions">
-        <span class="wo-id-copy-toast" id="woCopyToast">Tersalin!</span>
-        <button class="wo-id-btn" title="Salin ID" onclick="copyWoId()">
+      <div class="collect-id-actions">
+        <span class="collect-id-copy-toast" id="collectCopyToast">Tersalin!</span>
+        <button class="collect-id-btn" title="Salin ID" onclick="copyCollectId()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="13" height="13" rx="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
         </button>
-        <button class="wo-id-btn" title="Generate ulang ID baru" onclick="regenWoId()">
+        <button class="collect-id-btn" title="Generate ulang ID baru" onclick="regenCollectId()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="1 4 1 10 7 10"/>
             <path d="M3.51 15a9 9 0 1 0 .49-4.37"/>
@@ -1454,49 +1454,58 @@
   let sitePhotos = []; // { url, ext }
   let picPhotoData = null; // { url, ext }
   let currentActivity = ''; // 'new' | 'existing' | 'additional' | 'dismantle' | 'replace'
-  let currentWoId = '';
+  let currentCollectId = '';
 
-  // ── Work Order ID Engine ───────────────────────────────
+  // ── Collect ID Engine ───────────────────────────────
   const ACT_CODE = { new: 'NEW', existing: 'EXI', additional: 'ADD', dismantle: 'DIS', replace: 'REP' };
 
-  function _genWoId(actType) {
-    const code    = ACT_CODE[actType] || 'UNK';
-    const siteId  = (document.getElementById('fSiteId')?.value || 'SITE').trim().replace(/[^a-zA-Z0-9]/g,'').toUpperCase() || 'SITE';
-    const now     = new Date();
-    const ymd     = now.getFullYear().toString() +
-                    String(now.getMonth() + 1).padStart(2,'0') +
-                    String(now.getDate()).padStart(2,'0');
-    return `${code}-${siteId}-${ymd}`;
+  // ── Collect ID Generator — unik, tidak bisa duplikat ──────────
+  // Format: {ACT}-{SITEID}-{YYYYMMDD}-{HHmm}-{RND4}
+  // Contoh:  NEW-CKG014-20260407-0856-A3F2
+  // Keunikan dijamin oleh kombinasi waktu (menit) + 4 char random hex
+  function _genCollectId(actType) {
+    const code   = ACT_CODE[actType] || 'UNK';
+    const siteId = (document.getElementById('fSiteId')?.value || 'SITE')
+                     .trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'SITE';
+    const now    = new Date();
+    const ymd    = now.getFullYear().toString() +
+                   String(now.getMonth() + 1).padStart(2, '0') +
+                   String(now.getDate()).padStart(2, '0');
+    const hhmm   = String(now.getHours()).padStart(2, '0') +
+                   String(now.getMinutes()).padStart(2, '0');
+    // 4 karakter hex random — kombinasi dengan timestamp → praktis unik
+    const rnd    = Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return `${code}-${siteId}-${ymd}-${hhmm}-${rnd}`;
   }
 
-  function _renderWoId(id, actType) {
+  function _renderCollectId(id, actType) {
     const now = new Date();
     const cfg = ACTIVITY_CONFIG[actType] || {};
-    document.getElementById('woIdBox').style.display = '';
-    document.getElementById('woIdValue').textContent = id;
-    document.getElementById('woIdMeta').textContent =
+    document.getElementById('collectIdBox').style.display = '';
+    document.getElementById('collectIdValue').textContent = id;
+    document.getElementById('collectIdMeta').textContent =
       `${cfg.label || actType} • ${now.toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}`;
   }
 
-  function copyWoId() {
-    if (!currentWoId) return;
-    navigator.clipboard.writeText(currentWoId).catch(() => {
+  function copyCollectId() {
+    if (!currentCollectId) return;
+    navigator.clipboard.writeText(currentCollectId).catch(() => {
       const ta = document.createElement('textarea');
-      ta.value = currentWoId; document.body.appendChild(ta);
+      ta.value = currentCollectId; document.body.appendChild(ta);
       ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     });
-    const toast = document.getElementById('woCopyToast');
+    const toast = document.getElementById('collectCopyToast');
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 1800);
   }
 
-  function regenWoId() {
+  function regenCollectId() {
     if (!currentActivity) return;
-    if (!confirm('Regenerate Work Order ID? ID lama tidak bisa dipakai lagi.')) return;
-    currentWoId = _genWoId(currentActivity);
-    _renderWoId(currentWoId, currentActivity);
+    if (!confirm('Regenerate Collect ID? ID lama tidak bisa dipakai lagi.')) return;
+    currentCollectId = _genCollectId(currentActivity);
+    _renderCollectId(currentCollectId, currentActivity);
     _autoSave();
-    showToast('Work Order ID: ' + currentWoId, 3000);
+    showToast('Collect ID: ' + currentCollectId, 3000);
   }
 
   // ── Activity Selector ─────────────────────────────────
@@ -1546,12 +1555,12 @@
     document.getElementById('activityBadge').innerHTML =
       `<span class="activity-badge ${cfg.badgeClass}">${cfg.label}</span>`;
 
-    // Generate Work Order ID (hanya jika belum ada atau beda activity)
-    if (!currentWoId || currentActivity !== type) {
-      currentWoId = _genWoId(type);
+    // Generate Collect ID (hanya jika belum ada atau beda activity)
+    if (!currentCollectId || currentActivity !== type) {
+      currentCollectId = _genCollectId(type);
     }
     currentActivity = type;
-    _renderWoId(currentWoId, type);
+    _renderCollectId(currentCollectId, type);
 
     // Show/hide context fields
     document.querySelectorAll('.ctx-field').forEach(el => {
@@ -2859,7 +2868,7 @@ map.on('click',function(e){
   function getFormData() {
     const _v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
     return {
-      woId:            currentWoId,
+      collectId:        currentCollectId,
       activity:        currentActivity,
       date:            _v('fDate'),
       siteName:        _v('fSiteName'),
@@ -2900,7 +2909,7 @@ map.on('click',function(e){
     const sub = encodeURIComponent(`Asset Tagging - ${f.siteName} (${f.siteId}) - ${f.typeSite}`);
     const body = encodeURIComponent(
       `Halo Tim Asset Management,\n\nBerikut laporan Asset Tagging:\n\n` +
-      `Work Order ID : ${f.woId || '-'}\n` +
+      `Collect ID : ${f.collectId || '-'}\n` +
       `Jenis Kegiatan: ${(ACTIVITY_CONFIG[f.activity]||{}).label || '-'}\n` +
       `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
       `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
@@ -3070,7 +3079,7 @@ ${mapLink}
       ['FIBERSTAR ASSET TAGGING REPORT'],
       [],
       ['Field', 'Value'],
-      ['Work Order ID',  f.woId || '-'],
+      ['Collect ID',  f.collectId || '-'],
       ['Jenis Kegiatan', actLabel],
       ['Date',            f.date || '-'],
       ['Site Name',       f.siteName || '-'],
@@ -3135,7 +3144,7 @@ ${mapLink}
     const siteData = [
       ['FIBERSTAR ASSET TAGGING REPORT'], [],
       ['Field', 'Value'],
-      ['Work Order ID', f.woId || '-'],
+      ['Collect ID', f.collectId || '-'],
       ['Jenis Kegiatan', actLabel], ['Date', f.date||'-'],
       ['Site Name', f.siteName||'-'], ['Site ID', f.siteId||'-'],
       ['Type Site', f.typeSite||'-'], ['PIC Name', f.picName||'-'],
@@ -3202,7 +3211,7 @@ tr:nth-child(even) td{background:#f9f9f9;}
 <h1>Fiberstar Asset Tagging Report</h1>
 <div class="sub">
   <span style="background:${actColor};color:#fff;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-right:8px;">${escHtml(actLabel)}</span>
-  <span style="background:#f1f5f9;color:#334155;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;font-family:monospace;margin-right:8px;">${escHtml(f.woId||'—')}</span>
+  <span style="background:#f1f5f9;color:#334155;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600;font-family:monospace;margin-right:8px;">${escHtml(f.collectId||'—')}</span>
   Generated: ${new Date().toLocaleString('id-ID')}
 </div>
 <div class="meta">
@@ -3464,7 +3473,7 @@ ${sigSection}
       const f = getFormData();
       // Simpan data form (tanpa foto — terlalu besar untuk localStorage)
       const draft = {
-        woId: currentWoId,
+        collectId: currentCollectId,
         activity: currentActivity,
         date: f.date, siteName: f.siteName, siteId: f.siteId,
         typeSite: f.typeSite, picName: f.picName, division: f.division,
@@ -3502,9 +3511,9 @@ ${sigSection}
       const draft = JSON.parse(raw);
       if (!draft.savedAt) return;
 
-      // Restore WO ID
-      if (draft.woId) {
-        currentWoId = draft.woId;
+      // Restore Collect ID
+      if (draft.collectId) {
+        currentCollectId = draft.collectId;
       }
 
       // Restore activity first
@@ -3526,8 +3535,8 @@ ${sigSection}
           rack.style.display = (draft.activity === 'new' || draft.activity === 'existing') ? '' : 'none';
           document.getElementById('collectSectionTitle').textContent = cfg.collectTitle;
           document.getElementById('collectSectionHint').textContent = cfg.collectHint;
-          // Tampilkan WO ID yang sudah disimpan (jangan regen)
-          if (currentWoId) _renderWoId(currentWoId, draft.activity);
+          // Tampilkan Collect ID yang sudah disimpan (jangan regen)
+          if (currentCollectId) _renderCollectId(currentCollectId, draft.activity);
         }
       }
 
@@ -3573,11 +3582,11 @@ ${sigSection}
     el.addEventListener('input',  _autoSave);
   });
 
-  // Update WO ID saat Site ID berubah (karena format pakai Site ID)
+  // Update Collect ID saat Site ID berubah (karena format pakai Site ID)
   document.getElementById('fSiteId').addEventListener('input', function() {
     if (currentActivity && this.value.trim()) {
-      currentWoId = _genWoId(currentActivity);
-      _renderWoId(currentWoId, currentActivity);
+      currentCollectId = _genCollectId(currentActivity);
+      _renderCollectId(currentCollectId, currentActivity);
     }
   });
 
@@ -3599,7 +3608,7 @@ ${sigSection}
       req.onupgradeneeded = (e) => {
         const db = e.target.result;
         if (!db.objectStoreNames.contains(IDB_STORE)) {
-          const store = db.createObjectStore(IDB_STORE, { keyPath: 'woId' });
+          const store = db.createObjectStore(IDB_STORE, { keyPath: 'collectId' });
           store.createIndex('syncStatus', 'syncStatus', { unique: false });
           store.createIndex('savedAt',    'savedAt',    { unique: false });
         }
@@ -3628,21 +3637,21 @@ ${sigSection}
     });
   }
 
-  async function _idbDelete(woId) {
+  async function _idbDelete(collectId) {
     const db = await _openIDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(IDB_STORE, 'readwrite');
-      tx.objectStore(IDB_STORE).delete(woId);
+      tx.objectStore(IDB_STORE).delete(collectId);
       tx.oncomplete = resolve;
       tx.onerror    = (e) => reject(e.target.error);
     });
   }
 
-  async function _idbUpdateStatus(woId, syncStatus, syncedAt) {
+  async function _idbUpdateStatus(collectId, syncStatus, syncedAt) {
     const db = await _openIDB();
     return new Promise((resolve, reject) => {
       const tx  = db.transaction(IDB_STORE, 'readwrite');
-      const req = tx.objectStore(IDB_STORE).get(woId);
+      const req = tx.objectStore(IDB_STORE).get(collectId);
       req.onsuccess = (e) => {
         const rec = e.target.result;
         if (rec) {
@@ -3662,7 +3671,7 @@ ${sigSection}
     const f = getFormData();
     // Bangun record lengkap termasuk semua foto
     const record = {
-      woId:            f.woId || ('WO-' + Date.now()),
+      collectId:        f.collectId || ('CID-' + Date.now()),
       activity:        f.activity,
       activityLabel:   (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity,
       date:            f.date,
@@ -3701,8 +3710,8 @@ ${sigSection}
       btn.disabled = false;
       btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan ke Antrian Lokal`;
 
-      _syncLog(`✓ WO ${record.woId} disimpan ke IndexedDB (${record.devices.length} device)`, 'ok');
-      showToast(`✅ Data WO ${record.woId} berhasil disimpan ke antrian lokal!`, 4000);
+      _syncLog(`✓ CID ${record.collectId} disimpan ke IndexedDB (${record.devices.length} device)`, 'ok');
+      showToast(`✅ Data CID ${record.collectId} berhasil disimpan ke antrian lokal!`, 4000);
 
       document.getElementById('formStatus').textContent = '✓ Tersimpan';
       document.getElementById('formStatus').className   = 'status-badge status-done';
@@ -3753,22 +3762,22 @@ ${sigSection}
         const statusTx  = r.syncStatus === 'synced' ? '✓ Synced' : r.syncStatus === 'error' ? '✗ Error' : '⏳ Pending';
         return `<div class="queue-item">
           <div class="queue-item-info">
-            <div class="queue-item-name">${escHtml(r.woId)} — ${escHtml(r.siteName || '-')}</div>
+            <div class="queue-item-name">${escHtml(r.collectId)} — ${escHtml(r.siteName || '-')}</div>
             <div class="queue-item-meta">${r.activityLabel || r.activity} · ${r.devices ? r.devices.length : 0} device · Simpan: ${savedFmt}${syncFmt ? ' · Sync: ' + syncFmt : ''}</div>
           </div>
           <span class="queue-status ${statusCls}">${statusTx}</span>
-          <button class="btn-queue-del" onclick="deleteFromQueue('${escHtml(r.woId)}')" title="Hapus dari antrian">🗑</button>
+          <button class="btn-queue-del" onclick="deleteFromQueue('${escHtml(r.collectId)}')" title="Hapus dari antrian">🗑</button>
         </div>`;
       }).join('');
     } catch (e) { console.error('[Queue UI]', e); }
   }
 
-  async function deleteFromQueue(woId) {
-    if (!confirm(`Hapus WO "${woId}" dari antrian lokal?`)) return;
+  async function deleteFromQueue(collectId) {
+    if (!confirm(`Hapus Collect ID "${collectId}" dari antrian lokal?`)) return;
     try {
-      await _idbDelete(woId);
+      await _idbDelete(collectId);
       await _refreshQueueUI();
-      _syncLog(`🗑 WO ${woId} dihapus dari antrian`, 'info');
+      _syncLog(`🗑 CID ${collectId} dihapus dari antrian`, 'info');
       showToast('Data dihapus dari antrian.');
     } catch (e) { showToast('Gagal hapus: ' + e.message); }
   }
@@ -3905,7 +3914,7 @@ ${sigSection}
         // Foto ada di ZIP yang di-download terpisah
         const payload = {
           action:          'submit',
-          woId:            record.woId,
+          collectId:       record.collectId,
           activity:        record.activityLabel || record.activity,
           date:            record.date,
           siteName:        record.siteName,
@@ -3939,18 +3948,18 @@ ${sigSection}
         try { json = JSON.parse(text); } catch(_) { json = { status: 'error', msg: text }; }
 
         if (json.status === 'ok') {
-          await _idbUpdateStatus(record.woId, 'synced', payload.syncedAt);
+          await _idbUpdateStatus(record.collectId, 'synced', payload.syncedAt);
           successCount++;
-          _syncLog(`✓ ${record.woId} (${record.siteName}) → Sheets`, 'ok');
+          _syncLog(`✓ ${record.collectId} (${record.siteName}) → Sheets`, 'ok');
         } else {
-          await _idbUpdateStatus(record.woId, 'error', null);
+          await _idbUpdateStatus(record.collectId, 'error', null);
           errorCount++;
-          _syncLog(`✗ ${record.woId}: ${json.msg || 'Unknown error'}`, 'err');
+          _syncLog(`✗ ${record.collectId}: ${json.msg || 'Unknown error'}`, 'err');
         }
       } catch (err) {
-        await _idbUpdateStatus(record.woId, 'error', null);
+        await _idbUpdateStatus(record.collectId, 'error', null);
         errorCount++;
-        _syncLog(`✗ ${record.woId}: ${err.message}`, 'err');
+        _syncLog(`✗ ${record.collectId}: ${err.message}`, 'err');
       }
     }
 
@@ -3986,7 +3995,7 @@ function getSheet() {
     sheet = ss.insertSheet(SHEET_NAME);
     // Header row
     const headers = [
-      'Timestamp Sync','WO ID','Jenis Kegiatan','Tanggal',
+      'Timestamp Sync','Collect ID','Jenis Kegiatan','Tanggal',
       'Site Name','Site ID','Type Site','PIC Name','Division',
       'Latitude','Longitude','Floor Location',
       'Keterangan','Alasan Dismantle','Warehouse','Alasan Replace',
@@ -4015,7 +4024,7 @@ function doPost(e) {
       const sheet = getSheet();
       const row = [
         new Date().toLocaleString('id-ID'),
-        data.woId || '',
+        data.collectId || '',
         data.activity || '',
         data.date || '',
         data.siteName || '',
