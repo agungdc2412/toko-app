@@ -769,9 +769,277 @@
     .btn-mapclick-confirm:hover { background: #085041; }
     .btn-mapclick-confirm:disabled { background: #aaa; cursor: not-allowed; }
     .btn-mapclick-confirm svg { width: 14px; height: 14px; }
+
+    /* ── Token Login Screen ─────────────────────────────── */
+    .pin-screen {
+      display: none; position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0d3d6e 0%, #185FA5 60%, #0F6E56 100%);
+      z-index: 9999; align-items: center; justify-content: center; flex-direction: column;
+    }
+    .pin-screen.active { display: flex; }
+    .pin-card {
+      background: #fff; border-radius: 20px; padding: 36px 32px 28px;
+      width: min(380px, 94vw); box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+    }
+    .pin-logo {
+      width: 56px; height: 56px; background: var(--fs-blue); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+    .pin-logo svg { width: 30px; height: 30px; stroke: white; fill: none; stroke-width: 2; }
+    .pin-title { font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .pin-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 22px; text-align: center; }
+
+    /* Role pills */
+    .role-pills { display: flex; gap: 8px; width: 100%; margin-bottom: 20px; }
+    .role-pill {
+      flex: 1; padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 12px;
+      background: var(--bg-secondary); font-size: 12px; font-weight: 600;
+      color: var(--text-secondary); cursor: pointer; font-family: inherit;
+      text-align: center; transition: all 0.15s; user-select: none;
+    }
+    .role-pill:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
+    .role-pill.selected { background: var(--fs-blue); border-color: var(--fs-blue); color: #fff; }
+    .role-pill .role-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+    /* Token input */
+    .token-input-wrap { width: 100%; margin-bottom: 6px; position: relative; }
+    .token-input {
+      width: 100%; height: 52px; border: 2px solid var(--border); border-radius: 12px;
+      padding: 0 48px 0 16px; font-size: 20px; font-weight: 700; letter-spacing: 0.18em;
+      text-align: center; font-family: 'Courier New', monospace; color: var(--text-primary);
+      background: var(--bg-secondary); transition: border-color 0.15s;
+      text-transform: uppercase;
+    }
+    .token-input:focus { outline: none; border-color: var(--fs-blue-mid); background: #fff; box-shadow: 0 0 0 3px rgba(55,138,221,0.12); }
+    .token-input.error  { border-color: var(--fs-red);   background: var(--fs-red-light); animation: pinShake 0.35s ease; }
+    .token-input.success{ border-color: var(--fs-green); background: var(--fs-green-light); }
+    .token-eye {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-secondary);
+      padding: 4px; display: flex; align-items: center;
+    }
+    .token-eye svg { width: 18px; height: 18px; }
+    .btn-token-submit {
+      width: 100%; height: 46px; background: var(--fs-blue); color: white; border: none;
+      border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: inherit; margin-top: 10px; transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-token-submit:hover { background: #0F4D8A; }
+    .btn-token-submit svg { width: 16px; height: 16px; }
+
+    @keyframes pinShake {
+      0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}60%{transform:translateX(6px);}80%{transform:translateX(-3px);}
+    }
+    .pin-msg { font-size: 12px; min-height: 18px; margin-top: 6px; font-weight: 500; text-align: center; }
+    .pin-msg.err     { color: var(--fs-red); }
+    .pin-msg.ok      { color: var(--fs-green); }
+    .pin-msg.neutral { color: var(--text-secondary); }
+    .pin-footer { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 20px; text-align: center; }
+
+    /* Admin Panel inside login */
+    .admin-toggle {
+      font-size: 11px; color: var(--text-secondary); background: none; border: none;
+      cursor: pointer; font-family: inherit; margin-top: 14px; text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .admin-toggle:hover { color: var(--fs-blue); }
+    .admin-panel {
+      display: none; width: 100%; margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px;
+    }
+    .admin-panel.open { display: block; }
+    .admin-panel-title { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .token-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px 10px;
+      border: 1px solid var(--border); border-radius: 10px; background: var(--bg-secondary);
+    }
+    .token-row-role { font-size: 12px; font-weight: 600; color: var(--text-primary); flex: 1; }
+    .token-row-role span { font-weight: 400; color: var(--text-secondary); font-size: 11px; }
+    .token-display {
+      font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--fs-blue); background: var(--fs-blue-light);
+      padding: 3px 8px; border-radius: 6px; min-width: 70px; text-align: center;
+    }
+    .token-display.hidden-token { color: transparent; background: var(--border); border-radius: 6px; user-select: none; cursor: pointer; }
+    .btn-regen {
+      background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px;
+      font-size: 11px; color: var(--fs-teal); cursor: pointer; font-family: inherit;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-regen:hover { background: var(--fs-green-light); border-color: var(--fs-teal); }
+    .btn-copy-token {
+      background: none; border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px;
+      font-size: 11px; color: var(--text-secondary); cursor: pointer; font-family: inherit;
+      transition: all 0.15s;
+    }
+    .btn-copy-token:hover { background: var(--fs-blue-light); color: var(--fs-blue); border-color: var(--fs-blue-mid); }
+    .admin-unlock-wrap { display: flex; gap: 6px; margin-bottom: 10px; }
+    .admin-unlock-input {
+      flex: 1; height: 34px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 0 10px; font-size: 13px; font-family: inherit; letter-spacing: 0.1em;
+    }
+    .admin-unlock-input:focus { outline: none; border-color: var(--fs-blue-mid); }
+    .btn-admin-unlock {
+      height: 34px; padding: 0 14px; background: var(--fs-blue); color: white; border: none;
+      border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+    }
+
+    /* ── Session Bar (top) ──────────────────────────────── */
+    .session-bar {
+      display: none; position: fixed; top: 0; left: 0; right: 0;
+      background: var(--fs-blue); color: white; font-size: 12px;
+      padding: 6px 16px; z-index: 500; align-items: center; justify-content: space-between;
+    }
+    .session-bar.active { display: flex; }
+    .session-bar-info { display: flex; align-items: center; gap: 8px; }
+    .session-bar-info svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-logout {
+      background: rgba(255,255,255,0.18); border: none; color: white;
+      padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,0.32); }
+
+    /* ── Validation Modal ───────────────────────────────── */
+    .val-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      z-index: 2000; align-items: center; justify-content: center;
+    }
+    .val-overlay.active { display: flex; }
+    .val-modal {
+      background: var(--bg-primary); border-radius: var(--radius-lg);
+      width: min(440px, 94vw); box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow: hidden;
+    }
+    .val-header {
+      background: var(--fs-red); padding: 14px 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .val-header svg { width: 20px; height: 20px; stroke: white; fill: none; stroke-width: 2; flex-shrink: 0; }
+    .val-header-title { font-size: 14px; font-weight: 700; color: white; }
+    .val-body { padding: 18px 20px; }
+    .val-intro { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; }
+    .val-list { display: flex; flex-direction: column; gap: 8px; }
+    .val-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+      border-radius: var(--radius-md); background: var(--fs-red-light);
+      border: 1px solid rgba(163,45,45,0.15);
+    }
+    .val-item-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .val-item-text { font-size: 13px; color: var(--fs-red); font-weight: 500; }
+    .val-item-sub  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+    .val-item.warn {
+      background: var(--fs-amber-light); border-color: rgba(186,117,23,0.15);
+    }
+    .val-item.warn .val-item-text { color: var(--fs-amber); }
+    .val-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-val-close {
+      padding: 9px 22px; background: var(--fs-red); color: white; border: none;
+      border-radius: var(--radius-md); font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .btn-val-close:hover { background: #8a2020; }
+
+    /* offset body saat session-bar tampil */
+    body.has-session { padding-top: 34px; }
   </style>
 </head>
 <body>
+
+<!-- ── Session Bar ─────────────────────────────────────── -->
+<div class="session-bar" id="sessionBar">
+  <div class="session-bar-info">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+    </svg>
+    <span id="sessionUserLabel">—</span>
+    <span style="opacity:0.6;">·</span>
+    <span id="sessionTimeLabel" style="opacity:0.7;font-size:11px;"></span>
+  </div>
+  <button class="btn-logout" onclick="doLogout()">⏻ Logout</button>
+</div>
+
+<!-- ── Token Login Screen ────────────────────────────────── -->
+<div class="pin-screen active" id="pinScreen">
+  <div class="pin-card">
+    <div class="pin-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="pin-title">Fiberstar Asset Management</div>
+    <div class="pin-subtitle">Pilih divisi Anda, lalu masukkan token akses</div>
+
+    <!-- Role Pills -->
+    <div class="role-pills">
+      <button class="role-pill" id="rp_Asset"  onclick="selectRole('Asset')">
+        <span class="role-icon">🏷️</span>Asset
+      </button>
+      <button class="role-pill" id="rp_FOP"    onclick="selectRole('FOP')">
+        <span class="role-icon">🔧</span>FOP
+      </button>
+      <button class="role-pill" id="rp_NetDev" onclick="selectRole('NetDev')">
+        <span class="role-icon">🌐</span>NetDev
+      </button>
+    </div>
+
+    <!-- Token input -->
+    <div class="token-input-wrap">
+      <input type="password" class="token-input" id="tokenInput"
+        placeholder="— — — — — —"
+        maxlength="6"
+        autocomplete="off" autocorrect="off" spellcheck="false"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+        onkeydown="if(event.key==='Enter')submitToken()">
+      <button class="token-eye" id="tokenEyeBtn" onclick="toggleTokenVis()" title="Tampilkan / Sembunyikan">
+        <svg id="eyeIconShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg id="eyeIconHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      </button>
+    </div>
+    <button class="btn-token-submit" onclick="submitToken()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Masuk
+    </button>
+    <div class="pin-msg neutral" id="pinMsg">Pilih divisi lalu masukkan token 6 karakter</div>
+
+    <!-- Admin Panel (unlock dulu dengan token Admin) -->
+    <button class="admin-toggle" onclick="toggleAdminPanel()">⚙ Panel Admin (generate token)</button>
+    <div class="admin-panel" id="adminPanel">
+      <div class="admin-unlock-wrap" id="adminUnlockWrap">
+        <input type="password" class="admin-unlock-input" id="adminUnlockInput"
+          placeholder="Token Admin…" maxlength="6"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+          onkeydown="if(event.key==='Enter')unlockAdmin()">
+        <button class="btn-admin-unlock" onclick="unlockAdmin()">Buka</button>
+      </div>
+      <div id="adminTokenList" style="display:none;">
+        <div class="admin-panel-title">Token Aktif per Divisi</div>
+        <div id="tokenRowsContainer"></div>
+        <div style="font-size:10px;color:var(--text-secondary);margin-top:8px;">
+          ⚠️ Generate ulang akan membatalkan token lama. Bagikan token ke anggota divisi.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pin-footer">Fiberstar Network Asset Management · v19</div>
+</div>
+
+<!-- ── Validation Modal ──────────────────────────────────── -->
+<div class="val-overlay" id="valOverlay">
+  <div class="val-modal">
+    <div class="val-header">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div class="val-header-title">Data Belum Lengkap</div>
+    </div>
+    <div class="val-body">
+      <div class="val-intro">Perbaiki item berikut sebelum melanjutkan:</div>
+      <div class="val-list" id="valList"></div>
+    </div>
+    <div class="val-footer">
+      <button class="btn-val-close" onclick="closeValModal()">Mengerti, akan diperbaiki</button>
+    </div>
+  </div>
+</div>
+
 <div class="offline-banner" id="offlineBanner">
   <span class="offline-dot"></span>⚠️ Anda sedang offline. Data form tersimpan otomatis. Fitur kamera & scan tetap bisa digunakan.
 </div>
@@ -2890,15 +3158,84 @@ map.on('click',function(e){
     };
   }
 
+  // ── Validation Modal ───────────────────────────────────
+  function showValModal(errors) {
+    const list = document.getElementById('valList');
+    list.innerHTML = errors.map(e =>
+      `<div class="val-item ${e.warn ? 'warn' : ''}">
+        <div class="val-item-icon">${e.icon || (e.warn ? '⚠️' : '❌')}</div>
+        <div>
+          <div class="val-item-text">${e.msg}</div>
+          ${e.sub ? `<div class="val-item-sub">${e.sub}</div>` : ''}
+        </div>
+      </div>`
+    ).join('');
+    document.getElementById('valOverlay').classList.add('active');
+  }
+
+  function closeValModal() {
+    document.getElementById('valOverlay').classList.remove('active');
+  }
+
+  document.getElementById('valOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeValModal();
+  });
+
   function validateForm() {
-    if (!currentActivity) { showToast('⚠️ Pilih jenis kegiatan terlebih dahulu'); return false; }
+    if (!currentActivity) {
+      showValModal([{ icon: '🔖', msg: 'Jenis kegiatan belum dipilih', sub: 'Pilih salah satu tab aktivitas di bagian atas form.' }]);
+      return false;
+    }
     const f = getFormData();
-    if (!f.date || !f.siteName || !f.siteId) { showToast('Lengkapi data site terlebih dahulu (Date, Site Name, Site ID)'); return false; }
-    if (!f.picName)  { showToast('PIC Name harus diisi'); return false; }
-    if (!f.division) { showToast('Division harus dipilih'); return false; }
-    if (f.devices.length === 0) { showToast('Minimal 1 asset harus diisi'); return false; }
-    if (currentActivity === 'dismantle' && !f.dismantleReason) { showToast('Alasan Dismantle harus diisi'); return false; }
-    if (currentActivity === 'replace'   && !f.replaceReason)   { showToast('Alasan Pergantian harus diisi'); return false; }
+    const errors = [];
+
+    // ── Wajib: Data Site ──
+    if (!f.date)     errors.push({ icon: '📅', msg: 'Tanggal (Date) harus diisi' });
+    if (!f.siteName) errors.push({ icon: '🏢', msg: 'Site Name harus diisi' });
+    if (!f.siteId)   errors.push({ icon: '🆔', msg: 'Site ID harus diisi' });
+    if (!f.typeSite) errors.push({ icon: '🏷️', msg: 'Type Site harus dipilih' });
+    if (!f.picName)  errors.push({ icon: '👤', msg: 'PIC Name harus diisi' });
+    if (!f.division) errors.push({ icon: '🏬', msg: 'Division harus dipilih' });
+
+    // ── Wajib: Koordinat ──
+    if (!f.coordLat || !f.coordLng) {
+      errors.push({ icon: '📍', msg: 'Koordinat Site belum diisi', sub: 'Gunakan GPS Otomatis, Input Manual, atau Klik Peta.' });
+    }
+
+    // ── Wajib activity-specific ──
+    if (currentActivity === 'dismantle' && !f.dismantleReason)
+      errors.push({ icon: '🗑️', msg: 'Alasan Dismantle harus diisi' });
+    if (currentActivity === 'replace' && !f.replaceReason)
+      errors.push({ icon: '🔄', msg: 'Alasan Pergantian harus diisi' });
+
+    // ── Wajib: minimal 1 device ──
+    if (f.devices.length === 0) {
+      errors.push({ icon: '🔧', msg: 'Minimal 1 asset harus ditambahkan' });
+    }
+
+    // ── Validasi per device ──
+    f.devices.forEach((d, i) => {
+      const label = d.deviceName ? `"${d.deviceName}"` : `Asset ${i + 1}`;
+
+      if (!d.deviceName)
+        errors.push({ icon: '📦', msg: `Device ${i+1}: Device Name belum diisi` });
+
+      if (!d.serialNumber)
+        errors.push({ icon: '🔢', msg: `${label}: Serial Number (S/N) belum diisi`, sub: 'Ketik manual, ucapkan via 🎤, atau scan barcode.' });
+
+      // Foto wajib: minimal 1 foto (full/zoom/label/pn)
+      const hasAnyPhoto = d.photos && (d.photos.full || d.photos.zoom || d.photos.label || d.photos.pn);
+      if (!hasAnyPhoto)
+        errors.push({ icon: '📷', msg: `${label}: Belum ada foto device`, sub: 'Ambil minimal 1 foto (Full, Zoom, Label S/N, atau P/N).' });
+
+      if (!d.statusDevice)
+        errors.push({ icon: '🔵', msg: `${label}: Status Device belum dipilih`, sub: 'Pilih Active, Damage, atau Spare.' });
+    });
+
+    if (errors.length > 0) {
+      showValModal(errors);
+      return false;
+    }
     return true;
   }
 
@@ -4343,6 +4680,277 @@ function doGet(e) {
     _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog (embedded)');
     showToast('✅ Katalog sudah up-to-date (' + _catalog.length + ' device)', 3000);
   };
+
+  // ══════════════════════════════════════════════════════
+  // ── Token Authentication System ───────────────────────
+  // ══════════════════════════════════════════════════════
+  //
+  // Cara kerja:
+  //  - 3 role: Asset, FOP, NetDev + 1 role Admin (khusus buka panel)
+  //  - Setiap role punya token 6 karakter alphanumerik (A-Z, 0-9)
+  //  - Token disimpan sebagai SHA-256 hash di localStorage
+  //  - Admin bisa generate ulang token kapan saja
+  //  - Token Admin sendiri bisa di-reset via ADMIN_MASTER_HASH
+  //
+  // ADMIN MASTER TOKEN default: "FSADM1" — GANTI setelah deploy!
+  // Untuk ganti, generate SHA-256 dari token baru di:
+  //   https://emn178.github.io/online-tools/sha256.html
+  // lalu update ADMIN_MASTER_HASH di bawah.
+
+  const ADMIN_MASTER_HASH = '5d39af9f46c8bf0e11c85a7aff0af7babe1ff82a5db93b4ec26cefcb7ef09c60'; // "FSADM1"
+
+  const TOKEN_ROLES = [
+    { id: 'Asset',  label: 'Asset',  icon: '🏷️' },
+    { id: 'FOP',    label: 'FOP',    icon: '🔧' },
+    { id: 'NetDev', label: 'NetDev', icon: '🌐' },
+  ];
+
+  const TOKEN_STORE_KEY = 'fs_token_store';   // localStorage key untuk hash token
+  const SESSION_KEY     = 'fs_pin_session';
+  const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+
+  let _selectedRole    = null;
+  let _sessionTimer    = null;
+  let _adminUnlocked   = false;
+  let _tokenVisible    = false;
+
+  // ── Crypto helpers ─────────────────────────────────────
+  async function _sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function _genToken() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa O,0,I,1 agar tidak bingung
+    let t = '';
+    const arr = new Uint8Array(6);
+    crypto.getRandomValues(arr);
+    arr.forEach(v => { t += chars[v % chars.length]; });
+    return t;
+  }
+
+  // ── Token store (hash) di localStorage ─────────────────
+  function _loadTokenStore() {
+    try {
+      const raw = localStorage.getItem(TOKEN_STORE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch(_) { return {}; }
+  }
+
+  function _saveTokenStore(store) {
+    try { localStorage.setItem(TOKEN_STORE_KEY, JSON.stringify(store)); } catch(_) {}
+  }
+
+  // Jika belum ada token untuk role tertentu, generate saat pertama kali
+  async function _ensureTokens() {
+    const store = _loadTokenStore();
+    let changed = false;
+    for (const r of TOKEN_ROLES) {
+      if (!store[r.id]) {
+        const tok = _genToken();
+        store[r.id] = { hash: await _sha256(tok), plain: tok, createdAt: Date.now() };
+        changed = true;
+      }
+    }
+    if (changed) _saveTokenStore(store);
+    return store;
+  }
+
+  // ── UI helpers ─────────────────────────────────────────
+  function selectRole(roleId) {
+    _selectedRole = roleId;
+    TOKEN_ROLES.forEach(r => {
+      const el = document.getElementById('rp_' + r.id);
+      if (el) el.classList.toggle('selected', r.id === roleId);
+    });
+    _setPinMsg('Masukkan token 6 karakter untuk ' + roleId, 'neutral');
+    document.getElementById('tokenInput').focus();
+  }
+
+  function toggleTokenVis() {
+    _tokenVisible = !_tokenVisible;
+    const inp = document.getElementById('tokenInput');
+    inp.type = _tokenVisible ? 'text' : 'password';
+    document.getElementById('eyeIconShow').style.display = _tokenVisible ? 'none' : '';
+    document.getElementById('eyeIconHide').style.display = _tokenVisible ? '' : 'none';
+  }
+
+  function _setPinMsg(txt, cls) {
+    const el = document.getElementById('pinMsg');
+    el.textContent = txt;
+    el.className = 'pin-msg ' + cls;
+  }
+
+  // ── Submit token ────────────────────────────────────────
+  async function submitToken() {
+    const raw = document.getElementById('tokenInput').value.trim().toUpperCase();
+    const inp = document.getElementById('tokenInput');
+    if (!_selectedRole) {
+      _setPinMsg('Pilih divisi terlebih dahulu', 'err');
+      return;
+    }
+    if (raw.length !== 6) {
+      _setPinMsg('Token harus 6 karakter', 'err');
+      inp.classList.add('error');
+      setTimeout(() => inp.classList.remove('error'), 600);
+      return;
+    }
+    const hash  = await _sha256(raw);
+    const store = _loadTokenStore();
+    const entry = store[_selectedRole];
+    if (entry && hash === entry.hash) {
+      inp.classList.add('success');
+      _setPinMsg('✓ Token valid! Memuat...', 'ok');
+      setTimeout(() => _loginSuccess(_selectedRole), 500);
+    } else {
+      inp.classList.add('error');
+      _setPinMsg('Token salah atau belum dibuat. Hubungi Admin.', 'err');
+      setTimeout(() => {
+        inp.classList.remove('error');
+        inp.value = '';
+        _setPinMsg('Masukkan token 6 karakter untuk ' + (_selectedRole || '—'), 'neutral');
+      }, 1000);
+    }
+  }
+
+  // ── Admin panel ─────────────────────────────────────────
+  function toggleAdminPanel() {
+    const p = document.getElementById('adminPanel');
+    p.classList.toggle('open');
+    if (p.classList.contains('open') && !_adminUnlocked) {
+      document.getElementById('adminUnlockInput').focus();
+    }
+  }
+
+  async function unlockAdmin() {
+    const raw  = document.getElementById('adminUnlockInput').value.trim().toUpperCase();
+    const hash = await _sha256(raw);
+    // Check against master hash
+    if (hash === ADMIN_MASTER_HASH) {
+      _adminUnlocked = true;
+      document.getElementById('adminUnlockWrap').style.display = 'none';
+      document.getElementById('adminTokenList').style.display  = 'block';
+      await _renderTokenRows();
+    } else {
+      document.getElementById('adminUnlockInput').style.borderColor = 'var(--fs-red)';
+      document.getElementById('adminUnlockInput').value = '';
+      setTimeout(() => { document.getElementById('adminUnlockInput').style.borderColor = ''; }, 1000);
+    }
+  }
+
+  async function _renderTokenRows() {
+    const store = await _ensureTokens();
+    const cont  = document.getElementById('tokenRowsContainer');
+    cont.innerHTML = TOKEN_ROLES.map(r => {
+      const entry = store[r.id];
+      const tok   = entry ? entry.plain : '??????';
+      const age   = entry ? _tokenAge(entry.createdAt) : '';
+      return `<div class="token-row">
+        <div class="token-row-role">${r.icon} ${r.label} <span>${age}</span></div>
+        <div class="token-display" id="td_${r.id}" title="Klik untuk lihat">${tok}</div>
+        <button class="btn-copy-token" onclick="copyToken('${r.id}')" title="Salin token">📋</button>
+        <button class="btn-regen" onclick="regenToken('${r.id}')">↻ Baru</button>
+      </div>`;
+    }).join('');
+  }
+
+  function _tokenAge(ts) {
+    if (!ts) return '';
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if (mins < 1)   return '(baru saja)';
+    if (mins < 60)  return `(${mins}m lalu)`;
+    const hrs = Math.round(mins / 60);
+    if (hrs < 24)   return `(${hrs}j lalu)`;
+    return `(${Math.round(hrs/24)}h lalu)`;
+  }
+
+  async function regenToken(roleId) {
+    if (!confirm(`Generate token baru untuk "${roleId}"?\nToken lama akan langsung tidak berlaku.`)) return;
+    const tok   = _genToken();
+    const hash  = await _sha256(tok);
+    const store = _loadTokenStore();
+    store[roleId] = { hash, plain: tok, createdAt: Date.now() };
+    _saveTokenStore(store);
+    await _renderTokenRows();
+    showToast(`✅ Token ${roleId} berhasil diperbarui: ${tok}`);
+  }
+
+  function copyToken(roleId) {
+    const store = _loadTokenStore();
+    const tok   = (store[roleId] || {}).plain || '';
+    if (!tok) return;
+    navigator.clipboard.writeText(tok).then(() => {
+      showToast(`📋 Token ${roleId} disalin: ${tok}`, 3000);
+    }).catch(() => {
+      prompt('Salin token ini:', tok);
+    });
+  }
+
+  // ── Login & session ─────────────────────────────────────
+  function _loginSuccess(roleId) {
+    const session = { name: roleId, role: roleId, loginAt: Date.now() };
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(_) {}
+    _applySession(session);
+  }
+
+  function _applySession(session) {
+    document.getElementById('pinScreen').classList.remove('active');
+    const bar = document.getElementById('sessionBar');
+    bar.classList.add('active');
+    document.body.classList.add('has-session');
+    const loginTime = new Date(session.loginAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('sessionUserLabel').textContent = `Divisi: ${session.role}`;
+    document.getElementById('sessionTimeLabel').textContent = `Login: ${loginTime}`;
+    // Auto-fill Division jika cocok
+    const divEl = document.getElementById('fDivision');
+    if (divEl && !divEl.value) {
+      const map = { Asset: 'Asset', FOP: 'FOP', NetDev: 'Network Development' };
+      if (map[session.role]) { divEl.value = map[session.role]; _autoSave(); }
+    }
+    if (_sessionTimer) clearTimeout(_sessionTimer);
+    const remaining = SESSION_TIMEOUT_MS - (Date.now() - session.loginAt);
+    if (remaining <= 0) { doLogout(); return; }
+    _sessionTimer = setTimeout(() => {
+      showToast('⏰ Sesi habis. Silakan login kembali.');
+      doLogout();
+    }, remaining);
+  }
+
+  function doLogout() {
+    try { localStorage.removeItem(SESSION_KEY); } catch(_) {}
+    if (_sessionTimer) clearTimeout(_sessionTimer);
+    _selectedRole    = null;
+    _adminUnlocked   = false;
+    // Reset UI
+    TOKEN_ROLES.forEach(r => { const el = document.getElementById('rp_' + r.id); if(el) el.classList.remove('selected'); });
+    document.getElementById('tokenInput').value = '';
+    document.getElementById('pinMsg').textContent = 'Pilih divisi lalu masukkan token 6 karakter';
+    document.getElementById('pinMsg').className = 'pin-msg neutral';
+    document.getElementById('adminPanel').classList.remove('open');
+    document.getElementById('adminUnlockWrap').style.display  = 'flex';
+    document.getElementById('adminTokenList').style.display   = 'none';
+    document.getElementById('adminUnlockInput').value = '';
+    document.getElementById('pinScreen').classList.add('active');
+    document.getElementById('sessionBar').classList.remove('active');
+    document.body.classList.remove('has-session');
+  }
+
+  // ── Init token auth ─────────────────────────────────────
+  (async function _initTokenAuth() {
+    await _ensureTokens();  // pastikan semua role sudah punya token
+    // Check existing session
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (raw) {
+        const session = JSON.parse(raw);
+        if (session && session.loginAt && (Date.now() - session.loginAt) < SESSION_TIMEOUT_MS) {
+          _applySession(session);
+          return;
+        }
+      }
+    } catch(_) {}
+    document.getElementById('pinScreen').classList.add('active');
+  })();
 
   // ── Init: IDB + queue UI (katalog sudah siap sejak load) ──
   _openIDB().then(() => {
