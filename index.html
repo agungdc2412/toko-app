@@ -1822,9 +1822,10 @@
     document.getElementById('activityBadge').innerHTML =
       `<span class="activity-badge ${cfg.badgeClass}">${cfg.label}</span>`;
 
-    // Generate Collect ID (hanya jika belum ada atau beda activity)
+    // Generate Collect ID — selalu generate ulang jika activity berubah atau CID kosong
     if (!currentCollectId || currentActivity !== type) {
       currentCollectId = _genCollectId(type);
+      // Jika Site ID belum diisi, simpan sementara dengan 'NOSITE' — akan diupdate saat Site ID diisi
     }
     currentActivity = type;
     _renderCollectId(currentCollectId, type);
@@ -3185,6 +3186,13 @@ map.on('click',function(e){
       showValModal([{ icon: '🔖', msg: 'Jenis kegiatan belum dipilih', sub: 'Pilih salah satu tab aktivitas di bagian atas form.' }]);
       return false;
     }
+
+    // Pastikan Collect ID selalu ada sebelum validasi lanjut
+    if (!currentCollectId || !currentCollectId.trim()) {
+      currentCollectId = _genCollectId(currentActivity);
+      _renderCollectId(currentCollectId, currentActivity);
+    }
+
     const f = getFormData();
     const errors = [];
 
@@ -3930,11 +3938,12 @@ ${sigSection}
     el.addEventListener('input',  _autoSave);
   });
 
-  // Update Collect ID saat Site ID berubah (karena format pakai Site ID)
+  // Update Collect ID saat Site ID berubah — selalu generate ulang agar Site ID masuk ke CID
   document.getElementById('fSiteId').addEventListener('input', function() {
-    if (currentActivity && this.value.trim()) {
+    if (currentActivity) {
       currentCollectId = _genCollectId(currentActivity);
       _renderCollectId(currentCollectId, currentActivity);
+      _autoSave();
     }
   });
 
@@ -4017,9 +4026,24 @@ ${sigSection}
   async function saveToIDB() {
     if (!validateForm()) return;
     const f = getFormData();
+
+    // Pastikan collectId selalu ada — generate jika kosong
+    let collectId = (f.collectId && f.collectId.trim()) ? f.collectId.trim() : null;
+    if (!collectId) {
+      // Coba generate dari activity & siteId
+      if (currentActivity) {
+        collectId = _genCollectId(currentActivity);
+        currentCollectId = collectId;
+        _renderCollectId(currentCollectId, currentActivity);
+      } else {
+        collectId = 'CID-' + Date.now();
+        currentCollectId = collectId;
+      }
+    }
+
     // Bangun record lengkap termasuk semua foto
     const record = {
-      collectId:        f.collectId || ('CID-' + Date.now()),
+      collectId:        collectId,
       activity:        f.activity,
       activityLabel:   (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity,
       date:            f.date,
