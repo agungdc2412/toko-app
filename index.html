@@ -26,6 +26,45 @@
     .app { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
 
     .app-header { display: flex; align-items: center; gap: 14px; margin-bottom: 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+
+    /* ── Guidelines Download Button ─────────────────── */
+    .guidelines-wrap { position: relative; }
+    .guidelines-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: var(--radius-md);
+      background: var(--fs-blue); color: white; border: none;
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s; white-space: nowrap;
+    }
+    .guidelines-btn:hover { background: #0F4D8A; }
+    .guidelines-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .guidelines-btn .chevron-icon { width: 12px; height: 12px; transition: transform 0.2s; }
+    .guidelines-btn.open .chevron-icon { transform: rotate(180deg); }
+    .guidelines-dropdown {
+      display: none; position: absolute; top: calc(100% + 6px); right: 0;
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 300; min-width: 210px; overflow: hidden;
+    }
+    .guidelines-dropdown.open { display: block; }
+    .guidelines-dropdown-header {
+      padding: 8px 14px; font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-secondary); border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+    .guidelines-dl-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; text-decoration: none; color: var(--text-primary);
+      font-size: 13px; transition: background 0.12s; border-bottom: 1px solid var(--border);
+    }
+    .guidelines-dl-item:last-child { border-bottom: none; }
+    .guidelines-dl-item:hover { background: var(--fs-blue-light); color: var(--fs-blue); }
+    .guidelines-dl-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .guidelines-dl-item .gdl-info { display: flex; flex-direction: column; }
+    .guidelines-dl-item .gdl-name { font-weight: 600; font-size: 13px; }
+    .guidelines-dl-item .gdl-type { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+    .guidelines-dl-item:hover .gdl-type { color: var(--fs-blue-mid); }
     .app-logo { width: 44px; height: 44px; background: var(--fs-blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .app-logo svg { width: 24px; height: 24px; fill: none; stroke: white; stroke-width: 2; }
     .app-title { font-size: 18px; font-weight: 600; color: var(--text-primary); }
@@ -1053,7 +1092,55 @@
       <div class="app-title">Collect Data Asset</div>
       <div class="app-subtitle">Network Asset Management</div>
     </div>
-    <div style="margin-left:auto;">
+    <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+      <!-- Guidelines Download Button -->
+      <div class="guidelines-wrap">
+        <button class="guidelines-btn" id="guidelinesBtn" onclick="toggleGuidelinesDropdown()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+          Guidelines
+          <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <div class="guidelines-dropdown" id="guidelinesDropdown">
+          <div class="guidelines-dropdown-header">Download Guidelines</div>
+          <a class="guidelines-dl-item"
+             href="https://drive.google.com/uc?export=download&id=GANTI_DENGAN_FILE_ID_DOCS"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <div class="gdl-info">
+              <span class="gdl-name">Guideline Dokumen</span>
+              <span class="gdl-type">Word Document (.docx)</span>
+            </div>
+          </a>
+          <a class="guidelines-dl-item"
+             href="https://drive.google.com/uc?export=download&id=GANTI_DENGAN_FILE_ID_EXCEL"
+             target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+            <div class="gdl-info">
+              <span class="gdl-name">Guideline Excel</span>
+              <span class="gdl-type">Spreadsheet (.xlsx)</span>
+            </div>
+          </a>
+        </div>
+      </div>
       <span class="status-badge status-pending" id="formStatus">&#9679; Draft</span>
     </div>
   </div>
@@ -1808,6 +1895,31 @@
       addBtnLabel: 'Tambah Pasangan Replace',
     },
   };
+
+  // ── Guidelines Dropdown ───────────────────────────────
+  function toggleGuidelinesDropdown() {
+    const btn = document.getElementById('guidelinesBtn');
+    const dd  = document.getElementById('guidelinesDropdown');
+    const isOpen = dd.classList.contains('open');
+    if (isOpen) {
+      dd.classList.remove('open');
+      btn.classList.remove('open');
+    } else {
+      dd.classList.add('open');
+      btn.classList.add('open');
+      // Close when clicking outside
+      setTimeout(() => {
+        document.addEventListener('click', function _closeGdl(e) {
+          if (!document.getElementById('guidelinesBtn').contains(e.target) &&
+              !document.getElementById('guidelinesDropdown').contains(e.target)) {
+            document.getElementById('guidelinesDropdown').classList.remove('open');
+            document.getElementById('guidelinesBtn').classList.remove('open');
+          }
+          document.removeEventListener('click', _closeGdl);
+        });
+      }, 0);
+    }
+  }
 
   function setActivity(type) {
     const cfg = ACTIVITY_CONFIG[type];
