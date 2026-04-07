@@ -1391,10 +1391,10 @@
     <div class="sync-header">
       <div class="sync-title">
         <span class="sync-title-dot"></span>
-        Simpan & Sinkronisasi Data
+        Simpan &amp; Sinkronisasi Data
         <span id="sheetsStatusIndicator" title="Google Sheets belum dikonfigurasi">
           <span class="sheets-status-dot off" id="sheetsDot"></span>
-          <span id="sheetsStatusText" style="font-size:10px;font-weight:500;">Sheets: belum setup</span>
+          <span id="sheetsStatusText" style="font-size:10px;font-weight:500;display:none;">Sheets: belum setup</span>
         </span>
       </div>
       <span class="sync-queue-count empty" id="queueBadge">
@@ -1405,9 +1405,9 @@
     <div class="sync-actions">
       <button class="btn-save-idb" onclick="saveToIDB()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Simpan ke Antrian Lokal
+        Save Data
       </button>
-      <button class="btn-sync-sheets" id="btnSyncSheets" onclick="syncToSheets()">
+      <button class="btn-sync-sheets" id="btnSyncSheets" onclick="syncToSheets()" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Sync ke Google Sheets
       </button>
@@ -3817,9 +3817,18 @@ ${sigSection}
         addNotes: f.addNotes, dismantleReason: f.dismantleReason,
         warehouse: f.warehouse, replaceReason: f.replaceReason,
         devices: devices.map(d => ({
-          id: d.id, deviceName: d.deviceName,
+          id: d.id, type: d.type || 'single',
+          deviceName: d.deviceName,
           serialNumber: d.serialNumber, partNumber: d.partNumber,
+          statusDevice: d.statusDevice || '',
           collapsed: d.collapsed,
+          subModules: (d.subModules || []).map(sm => ({
+            id: sm.id, moduleName: sm.moduleName || '',
+            serialNumber: sm.serialNumber || '', partNumber: sm.partNumber || '',
+            collapsed: sm.collapsed || false,
+            photos: sm.photos || { sn: null, pn: null },
+            exts:   sm.exts   || { sn: null, pn: null },
+          })),
         })),
         deviceCounter,
         savedAt: new Date().toISOString()
@@ -3827,7 +3836,10 @@ ${sigSection}
       // Cek ukuran — coba simpan foto jika muat
       try {
         const withPhotos = JSON.parse(JSON.stringify(draft));
-        withPhotos.devices = devices.map(d => ({...d}));
+        withPhotos.devices = devices.map(d => ({
+          ...d,
+          subModules: (d.subModules || []).map(sm => ({...sm}))
+        }));
         const str = JSON.stringify(withPhotos);
         if (str.length < 4 * 1024 * 1024) {
           localStorage.setItem(SAVE_KEY, str);
@@ -4044,7 +4056,7 @@ ${sigSection}
       await _refreshQueueUI();
 
       btn.disabled = false;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan ke Antrian Lokal`;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Data`;
 
       _syncLog(`✓ CID ${record.collectId} disimpan ke IndexedDB (${record.devices.length} device)`, 'ok');
       showToast(`✅ Data CID ${record.collectId} berhasil disimpan ke antrian lokal!`, 4000);
@@ -4062,7 +4074,7 @@ ${sigSection}
     } catch (err) {
       console.error('[IDB Save]', err);
       document.querySelector('.btn-save-idb').disabled = false;
-      document.querySelector('.btn-save-idb').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan ke Antrian Lokal`;
+      document.querySelector('.btn-save-idb').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Data`;
       _syncLog('✗ Gagal simpan ke IndexedDB: ' + err.message, 'err');
       showToast('⚠ Gagal menyimpan. ' + err.message, 5000);
     }
@@ -4267,10 +4279,14 @@ ${sigSection}
           replaceReason:   record.replaceReason || '',
           deviceCount:     (record.devices || []).length,
           sitePhotoCount:  (record.sitePhotos || []).length,
-          // Summary device sebagai teks
-          deviceSummary: (record.devices || []).map((d, i) =>
-            `${i+1}. ${d.deviceName || '-'} | S/N: ${d.serialNumber || '-'} | P/N: ${d.partNumber || '-'} | Status: ${d.statusDevice || '-'}`
-          ).join('\n'),
+          // Summary device sebagai teks (termasuk sub-modul)
+          deviceSummary: (record.devices || []).map((d, i) => {
+            let line = `${i+1}. ${d.deviceName || '-'} | S/N: ${d.serialNumber || '-'} | P/N: ${d.partNumber || '-'} | Status: ${d.statusDevice || '-'}`;
+            (d.subModules || []).forEach((sm, si) => {
+              line += `\n   └ Modul ${si+1}: ${sm.moduleName || '-'} | S/N: ${sm.serialNumber || '-'} | P/N: ${sm.partNumber || '-'}`;
+            });
+            return line;
+          }).join('\n'),
           savedAt: record.savedAt,
           syncedAt: new Date().toISOString(),
         };
