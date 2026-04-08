@@ -195,7 +195,65 @@
     .sig-badge.empty { background: var(--fs-blue-light); color: var(--fs-blue); border-color: rgba(24,95,165,0.2); }
     .sig-badge svg { width: 14px; height: 14px; }
 
-    .add-device-btn { width: 100%; padding: 13px; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: none; font-family: inherit; font-size: 14px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; margin-bottom: 1.25rem; }
+    /* ── Photo Slot (Kamera + Upload) ────────────────── */
+    .photo-slot-group { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 4px; }
+    .photo-slot { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-primary); }
+    .photo-slot.has-photo { border-color: var(--fs-blue-mid); }
+    .photo-slot-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); padding: 6px 8px 4px; display: flex; align-items: center; gap: 5px; }
+    .photo-slot.has-photo .photo-slot-label { color: var(--fs-blue); }
+    .photo-slot-btns { display: flex; }
+    .photo-slot-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 4px; border: none; background: none; cursor: pointer; font-size: 10px; color: var(--text-secondary); font-family: inherit; border-top: 1px solid var(--border); transition: background 0.12s; }
+    .photo-slot-btn:first-child { border-right: 1px solid var(--border); }
+    .photo-slot-btn:hover { background: var(--fs-blue-light); color: var(--fs-blue); }
+    .photo-slot-btn svg { width: 16px; height: 16px; }
+    .photo-slot-thumb { position: relative; width: 100%; aspect-ratio: 4/3; overflow: hidden; cursor: pointer; }
+    .photo-slot-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.15s; }
+    .photo-slot-thumb:hover img { opacity: 0.85; }
+    .photo-slot-thumb-del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(163,45,45,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 10px; font-weight: 700; z-index: 2; }
+    .photo-slot-thumb-zoom { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.55); color: white; font-size: 10px; border-radius: 4px; padding: 2px 5px; pointer-events: none; }
+
+    /* ── Camera Modal ─────────────────────────────────── */
+    .cam-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1010; align-items: center; justify-content: center; }
+    .cam-overlay.active { display: flex; }
+    .cam-modal { background: #111; border-radius: 16px; overflow: hidden; width: min(400px, 96vw); box-shadow: 0 24px 60px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+    .cam-header { padding: 12px 16px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+    .cam-title { font-size: 14px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .cam-ctrl-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+    .cam-ctrl-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
+    .cam-ctrl-btn.flash-on { background: #FBBF24; color: #111; }
+    .cam-viewport { position: relative; width: 100%; background: #000; aspect-ratio: 4/3; overflow: hidden; }
+    #camVideo { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cam-shutter-ring { position: absolute; inset: 0; pointer-events: none; border: 3px solid transparent; border-radius: 0; transition: all 0.15s; }
+    .cam-shutter-ring.flash { border-color: white; }
+    .cam-footer { padding: 16px 20px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .cam-label-badge { font-size: 12px; font-weight: 600; color: #aaa; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 20px; white-space: nowrap; flex: 1; text-align: left; }
+    .cam-shutter { width: 60px; height: 60px; border-radius: 50%; border: 3px solid white; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.12s; }
+    .cam-shutter:active { transform: scale(0.92); }
+    .cam-shutter-inner { width: 48px; height: 48px; border-radius: 50%; background: white; transition: transform 0.12s; }
+    .cam-shutter:active .cam-shutter-inner { transform: scale(0.88); }
+    .cam-upload-alt { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; transition: all 0.15s; }
+    .cam-upload-alt:hover { background: rgba(255,255,255,0.22); color: white; }
+
+    /* ── Photo Preview Modal ──────────────────────────── */
+    .photo-preview-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1020; align-items: center; justify-content: center; }
+    .photo-preview-overlay.active { display: flex; }
+    .photo-preview-modal { background: #111; border-radius: 14px; overflow: hidden; width: min(480px, 96vw); max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
+    .photo-preview-header { padding: 12px 16px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
+    .photo-preview-header span { font-size: 13px; font-weight: 600; color: #fff; }
+    .photo-preview-del { background: rgba(163,45,45,0.8); border: none; border-radius: 8px; color: white; font-size: 12px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .photo-preview-del:hover { background: var(--fs-red); }
+    .photo-preview-close { width: 28px; height: 28px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #ccc; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+    .photo-preview-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 12px; background: #000; }
+    .photo-preview-body img { max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; }
+
+    /* ── Photo thumbs full (click to preview) ─────────── */
+    .photo-thumb-full { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); flex-shrink: 0; }
+    .photo-thumb-full img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .photo-thumb-full:hover img { opacity: 0.82; }
+    .photo-thumb-full .photo-del { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; background: rgba(163,45,45,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 10px; font-weight: 700; }
+    .photo-thumb-full .thumb-preview-ico { position: absolute; bottom: 3px; left: 3px; background: rgba(0,0,0,0.5); color: white; font-size: 9px; border-radius: 3px; padding: 1px 4px; pointer-events: none; }
+
+        .add-device-btn { width: 100%; padding: 13px; border: 1px dashed var(--border); border-radius: var(--radius-lg); background: none; font-family: inherit; font-size: 14px; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.15s; margin-bottom: 1.25rem; }
     .add-device-btn:hover { background: var(--fs-blue-light); border-color: var(--fs-blue-mid); color: var(--fs-blue); }
 
     /* ── Status Device Pills ─────────────────────────── */
@@ -1060,7 +1118,7 @@
       </div>
     </div>
   </div>
-  <div class="pin-footer">Fiberstar Network Asset Management · v1.1</div>
+  <div class="pin-footer">Fiberstar Network Asset Management · v19</div>
 </div>
 
 <!-- ── Validation Modal ──────────────────────────────────── -->
@@ -1695,6 +1753,54 @@
 </div>
 
 <input type="file" accept="image/*" capture="environment" class="file-input" id="globalFileInput">
+<input type="file" accept="image/*" class="file-input" id="globalUploadInput">
+
+<!-- ── Camera Modal with Flash ──────────────────────── -->
+<div class="cam-overlay" id="camOverlay">
+  <div class="cam-modal">
+    <div class="cam-header">
+      <span class="cam-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Ambil Foto
+      </span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="camFlashBtn" class="cam-ctrl-btn" onclick="toggleCamFlash()" title="Flash">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </button>
+        <button class="cam-ctrl-btn" onclick="closeCamModal()" title="Tutup" style="background:rgba(255,255,255,0.15);">✕</button>
+      </div>
+    </div>
+    <div class="cam-viewport">
+      <video id="camVideo" autoplay playsinline muted></video>
+      <div class="cam-shutter-ring" id="camShutterRing"></div>
+    </div>
+    <div class="cam-footer">
+      <div class="cam-label-badge" id="camLabelBadge">Foto Full</div>
+      <button class="cam-shutter" id="camShutterBtn" onclick="snapPhoto()">
+        <div class="cam-shutter-inner"></div>
+      </button>
+      <button class="cam-upload-alt" onclick="closeCamModal();triggerUpload(_currentPhotoTarget?.devId,_currentPhotoTarget?.type,_currentPhotoTarget?.smId)" title="Upload dari galeri">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Photo Preview Modal ───────────────────────────── -->
+<div class="photo-preview-overlay" id="photoPreviewOverlay" onclick="if(event.target===this)closePhotoPreview()">
+  <div class="photo-preview-modal">
+    <div class="photo-preview-header">
+      <span id="photoPreviewLabel">Preview Foto</span>
+      <div style="display:flex;gap:8px;">
+        <button class="photo-preview-del" id="photoPreviewDelBtn" onclick="deletePreviewPhoto()">🗑 Hapus</button>
+        <button class="photo-preview-close" onclick="closePhotoPreview()">✕</button>
+      </div>
+    </div>
+    <div class="photo-preview-body">
+      <img id="photoPreviewImg" src="" alt="preview">
+    </div>
+  </div>
+</div>
 <input type="file" accept="image/*" capture="environment" class="file-input" id="picPhotoInput">
 <input type="file" accept="image/*" class="file-input" id="siteFileInput" multiple>
 <div class="toast" id="toast"></div>
@@ -2594,6 +2700,7 @@ map.on('click',function(e){
       id, type,
       deviceName: '', serialNumber: '', partNumber: '',
       statusDevice: '',
+      sfpCount: null,
       photos: { full: null, zoom: null, label: null, pn: null },
       exts:   { full: null, zoom: null, label: null, pn: null },
       subModules: [],
@@ -2707,12 +2814,7 @@ map.on('click',function(e){
     if (sm) { sm.photos[type] = null; sm.exts[type] = null; renderDevices(); }
   }
 
-  function triggerSubPhoto(devId, smId, type) {
-    currentPhotoTarget = { devId, smId, type };
-    const inp = document.getElementById('globalFileInput');
-    inp.value = '';
-    inp.click();
-  }
+
 
   // ── SVG Icons helpers ─────────────────────────────────
   const _icoMic   = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
@@ -2790,21 +2892,15 @@ map.on('click',function(e){
         </div>
 
         <div class="form-label" style="margin-bottom:6px;">Foto Device</div>
-        <div class="photo-btn-group">
-          <button class="photo-btn ${d.photos.full?'has-photo':''}" onclick="triggerPhoto('${d.id}','full')">
-            ${_icoCam} Foto Full ${d.photos.full?'&#10003;':''}
-          </button>
-          <button class="photo-btn ${d.photos.zoom?'has-photo':''}" onclick="triggerPhoto('${d.id}','zoom')">
-            ${_icoZoom} Foto Type ${d.photos.zoom?'&#10003;':''}
-          </button>
-          <button class="photo-btn ${d.photos.label?'has-photo':''}" onclick="triggerPhoto('${d.id}','label')">
-            ${_icoTag} Foto S/N ${d.photos.label?'&#10003;':''}
-          </button>
+        <div class="photo-slot-group">
+          ${_photoSlot(d.id, 'full',  d.photos.full,  'Foto Full',   _icoCam)}
+          ${_photoSlot(d.id, 'zoom',  d.photos.zoom,  'Foto Type',   _icoZoom)}
+          ${_photoSlot(d.id, 'label', d.photos.label, 'Foto S/N',    _icoTag)}
         </div>
-        ${anyPhoto ? `<div class="photo-thumbs">
-          ${_photoThumb(d.photos.full,'${d.id}','full','Full')}
-          ${_photoThumb(d.photos.zoom,'${d.id}','zoom','Type')}
-          ${_photoThumb(d.photos.label,'${d.id}','label','S/N')}
+        ${anyPhoto ? `<div class="photo-thumbs" style="margin-top:8px;">
+          ${_photoThumbFull(d.photos.full,'${d.id}','full','Full')}
+          ${_photoThumbFull(d.photos.zoom,'${d.id}','zoom','Type')}
+          ${_photoThumbFull(d.photos.label,'${d.id}','label','S/N')}
         </div>` : ''}
 
         <div class="form-grid" style="margin-bottom:14px;">
@@ -2819,6 +2915,14 @@ map.on('click',function(e){
         </div>
 
         ${_statusPills(d.id, d.statusDevice)}
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Jumlah SFP</label>
+          <input type="number" class="form-input" min="0" style="width:120px;"
+            placeholder="0"
+            value="${d.sfpCount !== undefined && d.sfpCount !== null ? d.sfpCount : ''}"
+            oninput="updateDevice('${d.id}','sfpCount',this.value===''?null:parseInt(this.value)||0)">
+        </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
@@ -2850,26 +2954,18 @@ map.on('click',function(e){
           </div>
         </div>
 
-        <div class="form-label" style="margin-bottom:6px;">Foto Module (4 foto)</div>
-        <div class="photo-btn-group-4">
-          <button class="photo-btn ${d.photos.full?'has-photo':''}" onclick="triggerPhoto('${d.id}','full')">
-            ${_icoCam} Full ${d.photos.full?'&#10003;':''}
-          </button>
-          <button class="photo-btn ${d.photos.zoom?'has-photo':''}" onclick="triggerPhoto('${d.id}','zoom')">
-            ${_icoZoom} Type ${d.photos.zoom?'&#10003;':''}
-          </button>
-          <button class="photo-btn ${d.photos.label?'has-photo':''}" onclick="triggerPhoto('${d.id}','label')">
-            ${_icoTag} S/N ${d.photos.label?'&#10003;':''}
-          </button>
-          <button class="photo-btn ${d.photos.pn?'has-photo':''}" onclick="triggerPhoto('${d.id}','pn')">
-            ${_icoPn} P/N ${d.photos.pn?'&#10003;':''}
-          </button>
+        <div class="form-label" style="margin-bottom:6px;">Foto Module</div>
+        <div class="photo-slot-group">
+          ${_photoSlot(d.id, 'full',  d.photos.full,  'Foto Full',  _icoCam)}
+          ${_photoSlot(d.id, 'zoom',  d.photos.zoom,  'Foto Type',  _icoZoom)}
+          ${_photoSlot(d.id, 'label', d.photos.label, 'Foto S/N',   _icoTag)}
+          ${_photoSlot(d.id, 'pn',    d.photos.pn,    'Foto P/N',   _icoPn)}
         </div>
-        ${anyPhoto ? `<div class="photo-thumbs">
-          ${_photoThumb(d.photos.full,'${d.id}','full','Full')}
-          ${_photoThumb(d.photos.zoom,'${d.id}','zoom','Type')}
-          ${_photoThumb(d.photos.label,'${d.id}','label','S/N')}
-          ${_photoThumb(d.photos.pn,'${d.id}','pn','P/N')}
+        ${anyPhoto ? `<div class="photo-thumbs" style="margin-top:8px;">
+          ${_photoThumbFull(d.photos.full,'${d.id}','full','Full')}
+          ${_photoThumbFull(d.photos.zoom,'${d.id}','zoom','Type')}
+          ${_photoThumbFull(d.photos.label,'${d.id}','label','S/N')}
+          ${_photoThumbFull(d.photos.pn,'${d.id}','pn','P/N')}
         </div>` : ''}
 
         <div class="form-grid" style="margin-bottom:14px;">
@@ -2885,14 +2981,12 @@ map.on('click',function(e){
 
         ${_statusPills(d.id, d.statusDevice)}
 
-        <!-- Sub-Modules -->
-        <div class="submodule-list">
-          <div class="form-label" style="margin-bottom:8px;">📦 Module</div>
-          ${subMods.map((sm, si) => _renderSubModule(d.id, sm, si)).join('')}
-          <button class="add-submodule-btn" onclick="addSubModule('${d.id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            Add Module
-          </button>
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">Jumlah SFP</label>
+          <input type="number" class="form-input" min="0" style="width:120px;"
+            placeholder="0"
+            value="${d.sfpCount !== undefined && d.sfpCount !== null ? d.sfpCount : ''}"
+            oninput="updateDevice('${d.id}','sfpCount',this.value===''?null:parseInt(this.value)||0)">
         </div>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
@@ -3217,50 +3311,245 @@ map.on('click',function(e){
     renderDevices();
   }
 
-  function triggerPhoto(devId, type) {
-    currentPhotoTarget = { devId, type, smId: null };
-    const inp = document.getElementById('globalFileInput');
+  // ── Photo slot helper (kamera + upload per slot) ──────
+  const _PHOTO_LABELS = { full:'Foto Full', zoom:'Foto Type', label:'Foto S/N', pn:'Foto P/N', sn:'Foto S/N' };
+
+  function _photoSlot(devId, type, photoData, label, icon) {
+    if (photoData) {
+      return `<div class="photo-slot has-photo">
+        <div class="photo-slot-label">${icon} ${label} ✓</div>
+        <div class="photo-slot-thumb" onclick="openPhotoPreview('${devId}','${type}',null,'${label}')">
+          <img src="${photoData}">
+          <div class="photo-slot-thumb-zoom">🔍 Preview</div>
+          <div class="photo-slot-thumb-del" onclick="event.stopPropagation();clearDevicePhoto('${devId}','${type}')">✕</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="photo-slot">
+      <div class="photo-slot-label">${icon} ${label}</div>
+      <div class="photo-slot-btns">
+        <button class="photo-slot-btn" onclick="openCamModal('${devId}','${type}',null,'${label}')" title="Kamera">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Kamera
+        </button>
+        <button class="photo-slot-btn" onclick="triggerUpload('${devId}','${type}',null)" title="Upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Upload
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function _photoThumbFull(photoData, devId, type, label) {
+    if (!photoData) return '';
+    return `<div class="photo-thumb-full" onclick="openPhotoPreview('${devId}','${type}',null,'${label}')">
+      <img src="${photoData}">
+      <div class="photo-del" onclick="event.stopPropagation();clearDevicePhoto('${devId}','${type}')">✕</div>
+      <div class="thumb-preview-ico">🔍</div>
+    </div>`;
+  }
+
+  function clearDevicePhoto(devId, type) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    d.photos[type] = null; d.exts[type] = null;
+    renderDevices(); _autoSave();
+  }
+
+  // ── Photo Preview Modal ────────────────────────────────
+  let _previewTarget = null;
+  function openPhotoPreview(devId, type, smId, label) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    let src = null;
+    if (smId) {
+      const sm = (d.subModules||[]).find(s => s.id === smId);
+      if (sm) src = sm.photos[type];
+    } else {
+      src = d.photos[type];
+    }
+    if (!src) return;
+    _previewTarget = { devId, type, smId };
+    document.getElementById('photoPreviewImg').src = src;
+    document.getElementById('photoPreviewLabel').textContent = label || _PHOTO_LABELS[type] || 'Preview';
+    document.getElementById('photoPreviewOverlay').classList.add('active');
+  }
+
+  function closePhotoPreview() {
+    document.getElementById('photoPreviewOverlay').classList.remove('active');
+    _previewTarget = null;
+  }
+
+  function deletePreviewPhoto() {
+    if (!_previewTarget) return;
+    const { devId, type, smId } = _previewTarget;
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    if (smId) {
+      const sm = (d.subModules||[]).find(s => s.id === smId);
+      if (sm) { sm.photos[type] = null; sm.exts[type] = null; }
+    } else {
+      d.photos[type] = null; d.exts[type] = null;
+    }
+    closePhotoPreview();
+    renderDevices(); _autoSave();
+    showToast('Foto dihapus');
+  }
+
+  // ── Upload dari galeri ─────────────────────────────────
+  let _currentPhotoTarget = null;
+
+  function triggerUpload(devId, type, smId) {
+    _currentPhotoTarget = { devId, type, smId };
+    const inp = document.getElementById('globalUploadInput');
     inp.value = '';
     inp.click();
   }
 
-  document.getElementById('globalFileInput').addEventListener('change', async function () {
-    if (!currentPhotoTarget || !this.files[0]) return;
-    const { devId, type, smId } = currentPhotoTarget;
-    const file = this.files[0];
+  document.getElementById('globalUploadInput').addEventListener('change', async function () {
+    if (!_currentPhotoTarget || !this.files[0]) return;
+    const { devId, type, smId } = _currentPhotoTarget;
+    _processPhotoFile(this.files[0], devId, type, smId);
+  });
+
+  // ── Camera Modal with Flash ────────────────────────────
+  let _camStream = null;
+  let _camFlashOn = false;
+  let _camPhotoTarget = null;
+
+  async function openCamModal(devId, type, smId, label) {
+    _camPhotoTarget = { devId, type, smId };
+    _camFlashOn = false;
+    _currentPhotoTarget = { devId, type, smId };
+    const modal = document.getElementById('camOverlay');
+    document.getElementById('camLabelBadge').textContent = label || _PHOTO_LABELS[type] || 'Foto';
+    document.getElementById('camFlashBtn').classList.remove('flash-on');
+    modal.classList.add('active');
+    await _startCamStream();
+  }
+
+  async function _startCamStream() {
+    try {
+      if (_camStream) { _camStream.getTracks().forEach(t => t.stop()); _camStream = null; }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+      });
+      _camStream = stream;
+      const video = document.getElementById('camVideo');
+      video.srcObject = stream;
+
+      // Auto-standby flash (torch) jika tersedia
+      const track = stream.getVideoTracks()[0];
+      if (track) {
+        const caps = track.getCapabilities ? track.getCapabilities() : {};
+        if (caps.torch) {
+          // standby: nyalakan torch sebentar lalu matikan untuk "ready" state
+          try {
+            await track.applyConstraints({ advanced: [{ torch: true }] });
+            await new Promise(r => setTimeout(r, 300));
+            await track.applyConstraints({ advanced: [{ torch: false }] });
+          } catch(_) {}
+        }
+      }
+    } catch(err) {
+      showToast('⚠️ Kamera tidak bisa dibuka: ' + err.message);
+      closeCamModal();
+    }
+  }
+
+  async function toggleCamFlash() {
+    if (!_camStream) return;
+    const track = _camStream.getVideoTracks()[0];
+    if (!track) return;
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    if (!caps.torch) { showToast('⚡ Flash tidak tersedia di kamera ini'); return; }
+    _camFlashOn = !_camFlashOn;
+    try {
+      await track.applyConstraints({ advanced: [{ torch: _camFlashOn }] });
+      document.getElementById('camFlashBtn').classList.toggle('flash-on', _camFlashOn);
+      showToast(_camFlashOn ? '⚡ Flash ON' : '⚡ Flash OFF', 1500);
+    } catch(e) {
+      showToast('Flash gagal: ' + e.message);
+    }
+  }
+
+  async function snapPhoto() {
+    const video = document.getElementById('camVideo');
+    if (!video || !_camStream) return;
+    // Shutter flash effect
+    const ring = document.getElementById('camShutterRing');
+    ring.classList.add('flash');
+    setTimeout(() => ring.classList.remove('flash'), 200);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = video.videoWidth  || 1280;
+    canvas.height = video.videoHeight || 720;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    canvas.toBlob(async (blob) => {
+      if (!blob || !_camPhotoTarget) return;
+      const file = new File([blob], 'camera.jpg', { type: 'image/jpeg' });
+      const { devId, type, smId } = _camPhotoTarget;
+      closeCamModal();
+      await _processPhotoFile(file, devId, type, smId);
+    }, 'image/jpeg', 0.92);
+  }
+
+  function closeCamModal() {
+    document.getElementById('camOverlay').classList.remove('active');
+    if (_camStream) {
+      // Matikan torch dulu sebelum stop stream
+      const track = _camStream.getVideoTracks()[0];
+      if (track) {
+        try { track.applyConstraints({ advanced: [{ torch: false }] }); } catch(_) {}
+      }
+      _camStream.getTracks().forEach(t => t.stop());
+      _camStream = null;
+    }
+    _camFlashOn = false;
+    _camPhotoTarget = null;
+  }
+
+  // ── Shared photo processing ────────────────────────────
+  async function _processPhotoFile(file, devId, type, smId) {
     showToast('Memproses foto…', 1500);
     try {
       const { dataUrl, ext, origKB, finalKB, ratio } = await compressImage(file);
-      const d = devices.find(x => x.id === devId);
-      if (!d) return;
-      if (smId) {
-        const sm = (d.subModules || []).find(s => s.id === smId);
-        if (sm) { sm.photos[type] = dataUrl; sm.exts[type] = ext; }
-      } else {
-        d.photos[type] = dataUrl; d.exts[type] = ext;
-      }
-      renderDevices();
-      _autoSave();
+      _applyPhoto(dataUrl, ext, devId, type, smId);
       _toastCompress(origKB, finalKB, ratio);
     } catch (e) {
-      // Fallback ke FileReader tanpa kompresi jika canvas gagal
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const d = devices.find(x => x.id === devId);
-        if (!d) return;
         const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-        if (smId) {
-          const sm = (d.subModules || []).find(s => s.id === smId);
-          if (sm) { sm.photos[type] = ev.target.result; sm.exts[type] = ext; }
-        } else {
-          d.photos[type] = ev.target.result; d.exts[type] = ext;
-        }
-        renderDevices();
-        _autoSave();
+        _applyPhoto(ev.target.result, ext, devId, type, smId);
         showToast('Foto ditambahkan (tanpa kompresi)');
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  function _applyPhoto(dataUrl, ext, devId, type, smId) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    if (smId) {
+      const sm = (d.subModules || []).find(s => s.id === smId);
+      if (sm) { sm.photos[type] = dataUrl; sm.exts[type] = ext; }
+    } else {
+      d.photos[type] = dataUrl; d.exts[type] = ext;
+    }
+    renderDevices(); _autoSave();
+  }
+
+    function triggerPhoto(devId, type) {
+    // Legacy compat - open camera modal
+    const label = _PHOTO_LABELS[type] || type;
+    openCamModal(devId, type, null, label);
+  }
+
+  // globalFileInput: legacy capture="environment" - route through new processor
+  document.getElementById('globalFileInput').addEventListener('change', async function () {
+    if (!_currentPhotoTarget || !this.files[0]) return;
+    const { devId, type, smId } = _currentPhotoTarget;
+    await _processPhotoFile(this.files[0], devId, type, smId);
   });
 
   // ── Form Data ──────────────────────────────────────────
@@ -3726,7 +4015,7 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],  // baris kosong sebagai separator
-      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'],
+      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Jumlah SFP','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
 
     f.devices.forEach((d, i) => {
@@ -3736,11 +4025,11 @@ ${mapLink}
         d.type==='module' ? 'Module' : 'Single',
         d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-',
         d.statusDevice||'-',
+        d.sfpCount !== null && d.sfpCount !== undefined ? d.sfpCount : '-',
         d.photos.full  ? 'Ada' : '-',
         d.photos.zoom  ? 'Ada' : '-',
         d.photos.label ? 'Ada' : '-',
         d.photos.pn    ? 'Ada' : '-',
-        smSummary,
       ]);
     });
 
@@ -3796,7 +4085,7 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],
-      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'],
+      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Jumlah SFP','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
     f.devices.forEach((d, i) => {
       const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
