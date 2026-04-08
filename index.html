@@ -350,6 +350,8 @@
     .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s; }
     .btn-email { background: var(--fs-blue); color: white; grid-column: 1 / -1; }
     .btn-email:hover { background: #0F4D8A; }
+    .btn-email:disabled { opacity: 0.75; cursor: not-allowed; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .btn-pdf { background: var(--fs-red-light); color: var(--fs-red); border: 1px solid rgba(163,45,45,0.2); }
     .btn-pdf:hover { background: #F7C1C1; }
     .btn-excel { background: var(--fs-green-light); color: var(--fs-green); border: 1px solid rgba(59,109,17,0.2); }
@@ -1058,7 +1060,7 @@
       </div>
     </div>
   </div>
-  <div class="pin-footer">Fiberstar Network Asset Management · v1</div>
+  <div class="pin-footer">Fiberstar Network Asset Management · v1.1</div>
 </div>
 
 <!-- ── Validation Modal ──────────────────────────────────── -->
@@ -1511,7 +1513,7 @@
   <div class="section-card">
     <div class="section-title"><span class="section-title-dot"></span>Aksi</div>
     <div class="action-bar">
-      <button class="action-btn btn-email" onclick="sendEmail()">
+      <button class="action-btn btn-email" onclick="sendEmailWithZip()" id="btnEmail">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
@@ -1535,16 +1537,6 @@
         Generate Excel (.xlsx)
       </button>
 
-      <!-- ZIP Button -->
-      <button class="action-btn btn-zip" onclick="generateZip()" id="btnZip">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Download ZIP &mdash; Semua Foto + Data (Attach ke Email / Teams)
-      </button>
-
       <!-- Reset Button -->
       <button class="btn-reset" onclick="openResetModal()" style="grid-column:1/-1;margin-top:4px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1553,6 +1545,17 @@
         </svg>
         Reset Form
       </button>
+    </div>
+    <div class="zip-info" id="zipInfoBox">
+      &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
+      <span id="emailZipStatus">Tombol <b>Kirim Email</b> akan otomatis generate &amp; download ZIP, lalu membuka email client — attach file ZIP yang sudah ter-download ke email tersebut.</span><br>
+      Jika mengalami kendala atau butuh panduan bisa menghubungi PIC Asset Tagging Agung / 081217400905
+    </div>
+    <!-- Email+ZIP attach reminder -->
+    <div id="emailAttachReminder" style="display:none;margin-top:12px;padding:14px 16px;background:#EAF3DE;border:1px solid #3B6D11;border-radius:10px;font-size:13px;color:#3B6D11;line-height:1.7;">
+      <b>✅ ZIP berhasil di-download!</b><br>
+      Email client sudah terbuka. Silakan <b>attach file ZIP</b> yang baru saja ter-download ke email tersebut, lalu kirim.<br>
+      <span style="font-size:11px;color:#555;">Nama file: <code id="zipFileName" style="background:#f0f0f0;padding:1px 6px;border-radius:4px;font-size:11px;"></code></span>
     </div>
   </div>
 
@@ -2634,9 +2637,17 @@ map.on('click',function(e){
     if (d) { d.collapsed = !d.collapsed; renderDevices(); }
   }
 
+  // ── Strip semua spasi untuk field SN & PN ─────────────
+  function _stripSpaces(val) {
+    return String(val || '').replace(/\s+/g, '');
+  }
+  const _SN_PN_FIELDS = ['serialNumber', 'partNumber'];
+
   function updateDevice(id, field, val) {
     const d = devices.find(x => x.id === id);
-    if (d) d[field] = val;
+    if (!d) return;
+    if (_SN_PN_FIELDS.includes(field)) val = _stripSpaces(val);
+    d[field] = val;
   }
 
   function setDeviceStatus(id, status) {
@@ -2684,7 +2695,9 @@ map.on('click',function(e){
     const d = devices.find(x => x.id === devId);
     if (!d) return;
     const sm = d.subModules.find(s => s.id === smId);
-    if (sm) sm[field] = val;
+    if (!sm) return;
+    if (_SN_PN_FIELDS.includes(field)) val = _stripSpaces(val);
+    sm[field] = val;
   }
 
   function clearSubPhoto(devId, smId, type) {
@@ -2720,11 +2733,11 @@ map.on('click',function(e){
     const uid = 'sn_' + devId;
     return `<div style="display:flex;gap:6px;align-items:center;">
       <input type="text" id="${uid}" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="S/N" value="${escHtml(val)}"
-        oninput="updateDevice('${devId}','serialNumber',this.value)">
+        oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;this.setSelectionRange(c-(this.value.length<c?1:0),c-(this.value.length<c?1:0))}updateDevice('${devId}','serialNumber',this.value)">
       <button class="stt-btn" title="Ucapkan S/N"
-        onclick="startSTTInline(this,function(t){updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
+        onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
       <button class="scan-btn" title="Scan S/N"
-        onclick="openScanner(function(t){updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
+        onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${devId}','serialNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
     </div>`;
   }
 
@@ -2732,11 +2745,11 @@ map.on('click',function(e){
     const uid = 'pn_' + devId;
     return `<div style="display:flex;gap:6px;align-items:center;">
       <input type="text" id="${uid}" class="form-input ${cssClass}" style="flex:1;min-width:0;" placeholder="P/N" value="${escHtml(val)}"
-        oninput="updateDevice('${devId}','partNumber',this.value)">
+        oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;this.setSelectionRange(c-(this.value.length<c?1:0),c-(this.value.length<c?1:0))}updateDevice('${devId}','partNumber',this.value)">
       <button class="stt-btn" title="Ucapkan P/N"
-        onclick="startSTTInline(this,function(t){updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
+        onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoMic}</button>
       <button class="scan-btn" title="Scan P/N"
-        onclick="openScanner(function(t){updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
+        onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${devId}','partNumber',t);var el=document.getElementById('${uid}');if(el)el.value=t;})">${_icoScan}</button>
     </div>`;
   }
 
@@ -2932,14 +2945,16 @@ map.on('click',function(e){
               <div style="display:flex;gap:6px;align-items:center;">
                 <input type="text" id="${snUid}" class="form-input" style="flex:1;min-width:0;" placeholder="S/N"
                   value="${escHtml(sm.serialNumber||'')}"
-                  oninput="updateSubModule('${devId}','${sm.id}','serialNumber',this.value)">
+                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;}updateSubModule('${devId}','${sm.id}','serialNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan S/N"
                   onclick="startSTTInline(this,function(t){
+                    t=_stripSpaces(t);
                     updateSubModule('${devId}','${sm.id}','serialNumber',t);
                     var el=document.getElementById('${snUid}');if(el)el.value=t;
                   })">${_icoMic}</button>
                 <button class="scan-btn" title="Scan S/N"
                   onclick="openScanner(function(t){
+                    t=_stripSpaces(t);
                     updateSubModule('${devId}','${sm.id}','serialNumber',t);
                     var el=document.getElementById('${snUid}');if(el)el.value=t;
                   })">${_icoScan}</button>
@@ -2950,14 +2965,16 @@ map.on('click',function(e){
               <div style="display:flex;gap:6px;align-items:center;">
                 <input type="text" id="${pnUid}" class="form-input" style="flex:1;min-width:0;" placeholder="P/N"
                   value="${escHtml(sm.partNumber||'')}"
-                  oninput="updateSubModule('${devId}','${sm.id}','partNumber',this.value)">
+                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;}updateSubModule('${devId}','${sm.id}','partNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan P/N"
                   onclick="startSTTInline(this,function(t){
+                    t=_stripSpaces(t);
                     updateSubModule('${devId}','${sm.id}','partNumber',t);
                     var el=document.getElementById('${pnUid}');if(el)el.value=t;
                   })">${_icoMic}</button>
                 <button class="scan-btn" title="Scan P/N"
                   onclick="openScanner(function(t){
+                    t=_stripSpaces(t);
                     updateSubModule('${devId}','${sm.id}','partNumber',t);
                     var el=document.getElementById('${pnUid}');if(el)el.value=t;
                   })">${_icoScan}</button>
@@ -3361,27 +3378,183 @@ map.on('click',function(e){
   }
 
   function sendEmail() {
+    // Legacy — kept for backward compat, redirect to new function
+    sendEmailWithZip();
+  }
+
+  // ── Kirim Email + Auto-Generate ZIP ─────────────────────
+  async function sendEmailWithZip() {
     if (!validateForm()) return;
     const f = getFormData();
+    const btn = document.getElementById('btnEmail');
+    const reminder = document.getElementById('emailAttachReminder');
+    const zipFileNameEl = document.getElementById('zipFileName');
+
+    // ── Reset reminder ──
+    reminder.style.display = 'none';
+
+    // ── Disable button + show loading state ──
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="animation:spin 1s linear infinite">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+      </svg>
+      Menyiapkan ZIP... Mohon tunggu`;
+
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
-    const sub = encodeURIComponent(`Asset Tagging - ${f.siteName} (${f.siteId}) - ${f.typeSite}`);
-    const body = encodeURIComponent(
-      `Halo Tim Asset Management,\n\nBerikut laporan Asset Tagging:\n\n` +
-      `Collect ID : ${f.collectId || '-'}\n` +
-      `Jenis Kegiatan: ${(ACTIVITY_CONFIG[f.activity]||{}).label || '-'}\n` +
-      `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
-      `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
-      `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
-      `Jumlah Device : ${f.devices.length}\nFoto Site     : ${f.sitePhotos.length} foto\n\n` +
-      f.devices.map((d, i) =>
-        `Device ${i+1}: ${d.deviceName}\n  S/N : ${d.serialNumber}\n  P/N : ${d.partNumber}`
-      ).join('\n\n') +
-      '\n\n* Foto terlampir dalam file ZIP (download via tombol Download ZIP)\n\nSalam,\nFiberstar Asset Tagging App'
-    );
-    window.location.href = `mailto:Int-Asset.Management@fiberstar.co.id?subject=${sub}&body=${body}`;
-    showToast('Email dibuka! Jangan lupa attach file ZIP dari tombol Download ZIP.');
-    document.getElementById('formStatus').textContent = '✓ Sent';
-    document.getElementById('formStatus').className = 'status-badge status-done';
+    const folderName = _buildFileName(f);
+    const zipFilename = `${folderName}.zip`;
+
+    try {
+      // ── 1. Build ZIP (same logic as generateZip) ──
+      const zip = new JSZip();
+      const root = zip.folder(folderName);
+
+      // Excel XLSX
+      const xlsxB64 = _buildXlsxBase64(f);
+      if (xlsxB64) {
+        root.file('data.xlsx', xlsxB64, { base64: true });
+      } else {
+        let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
+          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nFloor Location,"${f.floorLocation||'-'}"\n\n` +
+          `No,Device Full Name,Serial Number,Part Number\n`;
+        f.devices.forEach((d, i) => { csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`; });
+        root.file('data.csv', csv);
+      }
+
+      // Laporan HTML
+      const pdfHtml = _buildPdfHtml(f);
+      root.file('laporan.html', pdfHtml);
+
+      // Site Photos
+      let totalSitePhotos = 0;
+      if (f.sitePhotos.length > 0) {
+        const siteFolder = root.folder('Site_Photos');
+        f.sitePhotos.forEach((p, i) => {
+          siteFolder.file(`site_${String(i+1).padStart(2,'0')}.${p.ext || 'jpg'}`, p.url.split(',')[1], { base64: true });
+          totalSitePhotos++;
+        });
+      }
+
+      // Foto PIC
+      if (f.picPhoto) {
+        root.file(`foto_pic.${f.picPhoto.ext || 'jpg'}`, f.picPhoto.url.split(',')[1], { base64: true });
+      }
+
+      // Signature
+      if (f.signature) {
+        root.file('ttd_pic.png', f.signature.split(',')[1], { base64: true });
+      }
+
+      // Device Photos
+      let totalDevicePhotos = 0;
+      const photoSummary = [];
+      f.devices.forEach((d, i) => {
+        const safeName = (d.deviceName || 'noname').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 24);
+        const folderLabel = `Device_${String(i+1).padStart(2,'0')}_${safeName}`;
+        const devFolder = root.folder(folderLabel);
+        const added = [];
+        if (d.photos.full)  { devFolder.file(`foto_full.${d.exts.full||'jpg'}`,   d.photos.full.split(',')[1],  {base64:true}); added.push('full');  totalDevicePhotos++; }
+        if (d.photos.zoom)  { devFolder.file(`foto_type.${d.exts.zoom||'jpg'}`,   d.photos.zoom.split(',')[1],  {base64:true}); added.push('type');  totalDevicePhotos++; }
+        if (d.photos.label) { devFolder.file(`foto_sn.${d.exts.label||'jpg'}`,    d.photos.label.split(',')[1], {base64:true}); added.push('s/n');   totalDevicePhotos++; }
+        photoSummary.push(`  ${folderLabel}/  [${added.length > 0 ? added.join(', ') : 'tidak ada foto'}]`);
+      });
+
+      const totalPhotos = totalSitePhotos + totalDevicePhotos;
+
+      // README
+      const readme =
+        `FIBERSTAR ASSET TAGGING\n${'='.repeat(50)}\n\n` +
+        `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
+        `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
+        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
+        `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
+        `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
+        `${folderName}/\n` +
+        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Asset List)\n` +
+        `  laporan.html           <- Buka di browser → Print/Save as PDF\n` +
+        `  Site_Photos/           <- Foto view site & rack (${totalSitePhotos} foto)\n` +
+        (f.picPhoto ? `  foto_pic.${f.picPhoto.ext||'jpg'}          <- Foto dokumentasi PIC\n` : '') +
+        (f.signature ? `  ttd_pic.png            <- Tanda tangan digital PIC\n` : '') +
+        `${photoSummary.join('\n')}\n\n` +
+        `Cara penggunaan:\n` +
+        `1. Buka data.xlsx di Microsoft Excel / Google Sheets\n` +
+        `2. Buka laporan.html di browser → Ctrl+P untuk print/save PDF\n` +
+        `3. Foto site tersimpan di folder Site_Photos\n` +
+        `4. Foto per device tersimpan di masing-masing folder device\n` +
+        `5. Attach file ZIP ini ke email atau upload ke Teams\n`;
+      root.file('README.txt', readme);
+
+      // ── 2. Generate & auto-download ZIP ──
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="animation:spin 1s linear infinite">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+        Mengemas file ZIP...`;
+
+      const content = await zip.generateAsync(
+        { type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } },
+        (meta) => {
+          btn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="animation:spin 1s linear infinite">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            Mengemas ZIP... ${Math.round(meta.percent)}%`;
+        }
+      );
+
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url; a.download = zipFilename; a.click();
+      URL.revokeObjectURL(url);
+
+      // ── 3. Build email body & open mailto ──
+      const sub = encodeURIComponent(`Asset Tagging - ${f.siteName} (${f.siteId}) - ${f.typeSite}`);
+      const body = encodeURIComponent(
+        `Halo Tim Asset Management,\n\nBerikut laporan Asset Tagging:\n\n` +
+        `Collect ID    : ${f.collectId || '-'}\n` +
+        `Jenis Kegiatan: ${(ACTIVITY_CONFIG[f.activity]||{}).label || '-'}\n` +
+        `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
+        `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
+        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Jumlah Device : ${f.devices.length}\nFoto Site     : ${f.sitePhotos.length} foto\n\n` +
+        f.devices.map((d, i) =>
+          `Device ${i+1}: ${d.deviceName}\n  S/N : ${d.serialNumber}\n  P/N : ${d.partNumber}`
+        ).join('\n\n') +
+        `\n\n⚠️  PENTING: Attach file ZIP berikut ke email ini sebelum dikirim:\n` +
+        `📎  ${zipFilename}\n` +
+        `(File ZIP sudah ter-download otomatis di folder Downloads Anda)\n\n` +
+        `File ZIP berisi: data.xlsx + laporan.html + ${totalPhotos} foto\n\nSalam,\nFiberstar Asset Tagging App`
+      );
+
+      // Delay sedikit agar browser sempat proses download dulu
+      setTimeout(() => {
+        window.location.href = `mailto:Int-Asset.Management@fiberstar.co.id?subject=${sub}&body=${body}`;
+      }, 800);
+
+      // ── 4. Show reminder banner ──
+      if (zipFileNameEl) zipFileNameEl.textContent = zipFilename;
+      reminder.style.display = 'block';
+      reminder.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      showToast(`✅ ZIP ter-download & email terbuka! Attach ${zipFilename} ke email.`, 7000);
+
+      document.getElementById('formStatus').textContent = '✓ Sent';
+      document.getElementById('formStatus').className = 'status-badge status-done';
+
+    } catch (err) {
+      showToast('❌ Gagal membuat ZIP: ' + err.message);
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        Kirim Email ke Asset Management`;
+    }
   }
 
   // ── Generate PDF (dengan foto device) ─────────────────
@@ -3389,6 +3562,8 @@ map.on('click',function(e){
     if (!validateForm()) return;
     const f = getFormData();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
+    const actColor = {new:'#185FA5',existing:'#3B6D11',additional:'#3730A3',dismantle:'#A32D2D',replace:'#BA7517'}[f.activity] || '#185FA5';
     const mapLink = (f.coordLat && f.coordLng)
       ? `<p style="margin:4px 0 12px;font-size:11px;">🗺️ <a href="https://www.google.com/maps?q=${f.coordLat},${f.coordLng}" target="_blank">Lihat di Google Maps</a></p>` : '';
 
@@ -3525,64 +3700,67 @@ ${mapLink}
     const wb = XLSX.utils.book_new();
     const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
     const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
-
-    // ── Sheet 1: Site Info ──
     const extraRows = [];
-    if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes]);
-    if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason]);
-    if (f.activity === 'dismantle'  && f.warehouse)   extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
-    if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason]);
+    if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes, '', '', '', '', '', '', '', '', '']);
+    if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason, '', '', '', '', '', '', '', '', '']);
+    if (f.activity === 'dismantle'  && f.warehouse)       extraRows.push(['Lokasi Penyimpanan', f.warehouse, '', '', '', '', '', '', '', '', '']);
+    if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason, '', '', '', '', '', '', '', '', '']);
 
-    const siteData = [
-      ['FIBERSTAR ASSET TAGGING REPORT'],
+    // ── Single sheet: header info dulu, lalu tabel device ──
+    const sheetData = [
+      ['FIBERSTAR ASSET TAGGING REPORT', '', '', '', '', '', '', '', '', '', ''],
       [],
-      ['Field', 'Value'],
-      ['Collect ID',  f.collectId || '-'],
-      ['Jenis Kegiatan', actLabel],
-      ['Date',            f.date || '-'],
-      ['Site Name',       f.siteName || '-'],
-      ['Site ID',         f.siteId || '-'],
-      ['Type Site',       f.typeSite || '-'],
-      ['PIC Name',        f.picName || '-'],
-      ['Division',        f.division || '-'],
+      ['Collect ID',       f.collectId || '-'],
+      ['Jenis Kegiatan',   actLabel],
+      ['Date',             f.date || '-'],
+      ['Site Name',        f.siteName || '-'],
+      ['Site ID',          f.siteId || '-'],
+      ['Type Site',        f.typeSite || '-'],
+      ['PIC Name',         f.picName || '-'],
+      ['Division',         f.division || '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
-        ['Koordinat',     coordStr],
-        ['Floor Location',f.floorLocation || '-'],
+        ['Koordinat',      coordStr],
+        ['Floor Location', f.floorLocation || '-'],
       ] : []),
       ...extraRows,
-      ['Jumlah Asset',    f.devices.length],
+      ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
+      [],  // baris kosong sebagai separator
+      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'],
     ];
-    const wsSite = XLSX.utils.aoa_to_sheet(siteData);
-    wsSite['!cols'] = [{wch:20},{wch:40}];
-    wsSite['A1'].s = { font: { bold: true, sz: 14, color: { rgb: '185FA5' } } };
-    wsSite['A3'].s = { font: { bold: true }, fill: { fgColor: { rgb: 'E6F1FB' } } };
-    wsSite['B3'].s = { font: { bold: true }, fill: { fgColor: { rgb: 'E6F1FB' } } };
-    XLSX.utils.book_append_sheet(wb, wsSite, 'Site Info');
 
-    // ── Sheet 2: Device List ──
-    const devHeaders = ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'];
-    const devRows = [];
     f.devices.forEach((d, i) => {
       const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
-      devRows.push([
-        i+1, d.type==='module'?'Module':'Single',
+      sheetData.push([
+        i+1,
+        d.type==='module' ? 'Module' : 'Single',
         d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-',
         d.statusDevice||'-',
-        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
-        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-',
+        d.photos.full  ? 'Ada' : '-',
+        d.photos.zoom  ? 'Ada' : '-',
+        d.photos.label ? 'Ada' : '-',
+        d.photos.pn    ? 'Ada' : '-',
         smSummary,
       ]);
     });
-    const wsDevices = XLSX.utils.aoa_to_sheet([devHeaders, ...devRows]);
-    wsDevices['!cols'] = [{wch:4},{wch:9},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
-    devHeaders.forEach((_, ci) => {
-      const cell = XLSX.utils.encode_cell({r:0, c:ci});
-      if (wsDevices[cell]) wsDevices[cell].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '185FA5' } } };
-    });
-    XLSX.utils.book_append_sheet(wb, wsDevices, 'Asset List');
 
-    const filename = `AssetTagging_${f.siteId || 'export'}_${f.date || 'nodate'}.xlsx`;
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{wch:20},{wch:32},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+
+    // Style header title row
+    if (ws['A1']) ws['A1'].s = { font: { bold: true, sz: 14, color: { rgb: '185FA5' } } };
+
+    // Style device table header row (find row index of header)
+    const headerRowIdx = sheetData.findIndex(r => r[0]==='No' && r[2]==='Device Name');
+    if (headerRowIdx >= 0) {
+      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'].forEach((_, ci) => {
+        const cell = XLSX.utils.encode_cell({ r: headerRowIdx, c: ci });
+        if (ws[cell]) ws[cell].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '185FA5' } } };
+      });
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Asset Tagging');
+    const filename = `${_buildFileName(f)}.xlsx`;
     XLSX.writeFile(wb, filename);
     return wb;
   }
@@ -3596,35 +3774,42 @@ ${mapLink}
     const extraRows = [];
     if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes]);
     if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason]);
-    if (f.activity === 'dismantle'  && f.warehouse)   extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
+    if (f.activity === 'dismantle'  && f.warehouse)       extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
     if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason]);
 
-    const siteData = [
-      ['FIBERSTAR ASSET TAGGING REPORT'], [],
-      ['Field', 'Value'],
-      ['Collect ID', f.collectId || '-'],
-      ['Jenis Kegiatan', actLabel], ['Date', f.date||'-'],
-      ['Site Name', f.siteName||'-'], ['Site ID', f.siteId||'-'],
-      ['Type Site', f.typeSite||'-'], ['PIC Name', f.picName||'-'],
-      ['Division', f.division||'-'],
-      ...((f.activity==='new'||f.activity==='existing') ? [['Koordinat', coordStr],['Floor Location', f.floorLocation||'-']] : []),
+    const sheetData = [
+      ['FIBERSTAR ASSET TAGGING REPORT'],
+      [],
+      ['Collect ID',       f.collectId || '-'],
+      ['Jenis Kegiatan',   actLabel],
+      ['Date',             f.date || '-'],
+      ['Site Name',        f.siteName || '-'],
+      ['Site ID',          f.siteId || '-'],
+      ['Type Site',        f.typeSite || '-'],
+      ['PIC Name',         f.picName || '-'],
+      ['Division',         f.division || '-'],
+      ...((f.activity==='new'||f.activity==='existing') ? [
+        ['Koordinat',      coordStr],
+        ['Floor Location', f.floorLocation || '-'],
+      ] : []),
       ...extraRows,
-      ['Jumlah Asset', f.devices.length], ['Jumlah Foto Site', f.sitePhotos.length],
+      ['Jumlah Asset',     f.devices.length],
+      ['Jumlah Foto Site', f.sitePhotos.length],
+      [],
+      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'],
     ];
-    const wsSite = XLSX.utils.aoa_to_sheet(siteData);
-    wsSite['!cols'] = [{wch:22},{wch:40}];
-    XLSX.utils.book_append_sheet(wb, wsSite, 'Site Info');
-
-    const devHeaders = ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'];
-    const devRows = f.devices.map((d,i) => {
-      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ')||'-';
-      return [i+1, d.type==='module'?'Module':'Single',
+    f.devices.forEach((d, i) => {
+      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
+      sheetData.push([
+        i+1, d.type==='module'?'Module':'Single',
         d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-', d.statusDevice||'-',
-        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-', d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-', smSummary];
+        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
+        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-', smSummary,
+      ]);
     });
-    const wsDevices = XLSX.utils.aoa_to_sheet([devHeaders, ...devRows]);
-    wsDevices['!cols'] = [{wch:4},{wch:9},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
-    XLSX.utils.book_append_sheet(wb, wsDevices, 'Asset List');
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [{wch:20},{wch:32},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Asset Tagging');
     return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
   }
 
@@ -3689,6 +3874,25 @@ ${sigSection}
 </body></html>`;
   }
 
+  // ── Helper: build consistent file/folder name ──────────
+  // Format: siteid_sitename_activity_date_noUrut
+  function _buildFileName(f) {
+    const safe = s => String(s || '').trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
+    const actCode = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || 'ACT';
+    // no urut: ambil 4 char terakhir dari collectId (random hex), fallback ke timestamp
+    const noUrut = f.collectId
+      ? f.collectId.split('-').pop()
+      : String(Date.now()).slice(-4);
+    const parts = [
+      safe(f.siteId)   || 'SITEID',
+      safe(f.siteName) || 'SITE',
+      safe(actCode),
+      (f.date || '').replace(/-/g, ''),
+      noUrut,
+    ];
+    return parts.join('_');
+  }
+
   // ── Generate ZIP ───────────────────────────────────────
   async function generateZip() {
     if (!validateForm()) return;
@@ -3699,7 +3903,7 @@ ${sigSection}
 
     try {
       const zip = new JSZip();
-      const folderName = `AssetTagging_${(f.siteId || 'export').replace(/[^a-zA-Z0-9_-]/g,'_')}_${f.date || 'nodate'}`;
+      const folderName = _buildFileName(f);
       const root = zip.folder(folderName);
       const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
 
