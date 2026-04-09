@@ -210,7 +210,6 @@
     .photo-slot-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.15s; }
     .photo-slot-thumb:hover img { opacity: 0.85; }
     .photo-slot-thumb-del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(163,45,45,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 10px; font-weight: 700; z-index: 2; }
-    .photo-slot-thumb-zoom { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.55); color: white; font-size: 10px; border-radius: 4px; padding: 2px 5px; pointer-events: none; }
 
     /* ── Camera Modal ─────────────────────────────────── */
     .cam-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1010; align-items: center; justify-content: center; }
@@ -234,17 +233,54 @@
     .cam-upload-alt { width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1); border: none; color: #ccc; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; transition: all 0.15s; }
     .cam-upload-alt:hover { background: rgba(255,255,255,0.22); color: white; }
 
-    /* ── Photo Preview Modal ──────────────────────────── */
-    .photo-preview-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1020; align-items: center; justify-content: center; }
+    /* ── Photo Preview Lightbox ───────────────────────── */
+    .photo-preview-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+      z-index: 1020; align-items: center; justify-content: center;
+      padding: 0;
+    }
     .photo-preview-overlay.active { display: flex; }
-    .photo-preview-modal { background: #111; border-radius: 14px; overflow: hidden; width: min(480px, 96vw); max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 24px 60px rgba(0,0,0,0.6); }
-    .photo-preview-header { padding: 12px 16px; background: #1a1a1a; display: flex; align-items: center; justify-content: space-between; }
-    .photo-preview-header span { font-size: 13px; font-weight: 600; color: #fff; }
-    .photo-preview-del { background: rgba(163,45,45,0.8); border: none; border-radius: 8px; color: white; font-size: 12px; padding: 5px 12px; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+    .photo-preview-modal {
+      position: relative; display: flex; flex-direction: column;
+      width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+      background: transparent;
+    }
+    /* Floating top bar */
+    .photo-preview-header {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 2;
+      padding: 14px 16px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .photo-preview-header span { font-size: 14px; font-weight: 600; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+    .photo-preview-header-actions { display: flex; align-items: center; gap: 8px; }
+    .photo-preview-del {
+      background: rgba(163,45,45,0.85); border: none; border-radius: 8px;
+      color: white; font-size: 12px; padding: 6px 14px; cursor: pointer;
+      font-family: inherit; font-weight: 600; transition: background 0.15s;
+      backdrop-filter: blur(4px);
+    }
     .photo-preview-del:hover { background: var(--fs-red); }
-    .photo-preview-close { width: 28px; height: 28px; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #ccc; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; }
-    .photo-preview-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 12px; background: #000; }
-    .photo-preview-body img { max-width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; }
+    .photo-preview-close {
+      width: 34px; height: 34px; background: rgba(255,255,255,0.15);
+      border: none; border-radius: 50%; color: white; cursor: pointer;
+      font-size: 18px; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; backdrop-filter: blur(4px);
+    }
+    .photo-preview-close:hover { background: rgba(255,255,255,0.3); }
+    /* Image fills screen */
+    .photo-preview-body {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      width: 100%; height: 100%; overflow: hidden; cursor: zoom-in;
+    }
+    .photo-preview-body img {
+      max-width: 100%; max-height: 100vh;
+      object-fit: contain;
+      transform-origin: center;
+      transition: transform 0.25s ease;
+      user-select: none;
+    }
+    .photo-preview-body img.zoomed { transform: scale(2); cursor: zoom-out; }
 
     /* ── Photo thumbs full (click to preview) ─────────── */
     .photo-thumb-full { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 1px solid var(--border); flex-shrink: 0; }
@@ -1865,17 +1901,17 @@
   </div>
 </div>
 
-<!-- ── Photo Preview Modal ───────────────────────────── -->
+<!-- ── Photo Preview Lightbox ────────────────────────── -->
 <div class="photo-preview-overlay" id="photoPreviewOverlay" onclick="if(event.target===this)closePhotoPreview()">
   <div class="photo-preview-modal">
     <div class="photo-preview-header">
       <span id="photoPreviewLabel">Preview Foto</span>
-      <div style="display:flex;gap:8px;">
+      <div class="photo-preview-header-actions">
         <button class="photo-preview-del" id="photoPreviewDelBtn" onclick="deletePreviewPhoto()">🗑 Hapus</button>
         <button class="photo-preview-close" onclick="closePhotoPreview()">✕</button>
       </div>
     </div>
-    <div class="photo-preview-body">
+    <div class="photo-preview-body" id="photoPreviewBody" onclick="togglePhotoZoom(event)">
       <img id="photoPreviewImg" src="" alt="preview">
     </div>
   </div>
@@ -2976,11 +3012,7 @@ map.on('click',function(e){
           ${_photoSlot(d.id, 'zoom',  d.photos.zoom,  'Foto Type',   _icoZoom)}
           ${_photoSlot(d.id, 'label', d.photos.label, 'Foto S/N',    _icoTag)}
         </div>
-        ${anyPhoto ? `<div class="photo-thumbs" style="margin-top:8px;">
-          ${_photoThumbFull(d.photos.full,'${d.id}','full','Full')}
-          ${_photoThumbFull(d.photos.zoom,'${d.id}','zoom','Type')}
-          ${_photoThumbFull(d.photos.label,'${d.id}','label','S/N')}
-        </div>` : ''}
+
 
         <div class="form-grid" style="margin-bottom:14px;">
           <div class="form-group">
@@ -3040,12 +3072,7 @@ map.on('click',function(e){
           ${_photoSlot(d.id, 'label', d.photos.label, 'Foto S/N',   _icoTag)}
           ${_photoSlot(d.id, 'pn',    d.photos.pn,    'Foto P/N',   _icoPn)}
         </div>
-        ${anyPhoto ? `<div class="photo-thumbs" style="margin-top:8px;">
-          ${_photoThumbFull(d.photos.full,'${d.id}','full','Full')}
-          ${_photoThumbFull(d.photos.zoom,'${d.id}','zoom','Type')}
-          ${_photoThumbFull(d.photos.label,'${d.id}','label','S/N')}
-          ${_photoThumbFull(d.photos.pn,'${d.id}','pn','P/N')}
-        </div>` : ''}
+
 
         <div class="form-grid" style="margin-bottom:14px;">
           <div class="form-group">
@@ -3410,8 +3437,7 @@ map.on('click',function(e){
       return `<div class="photo-slot has-photo">
         <div class="photo-slot-label">${icon} ${label} ✓</div>
         <div class="photo-slot-thumb" onclick="openPhotoPreview('${devId}','${type}',null,'${label}')">
-          <img src="${photoData}">
-          <div class="photo-slot-thumb-zoom">🔍 Preview</div>
+          <img src="${photoData}" alt="${label}">
           <div class="photo-slot-thumb-del" onclick="event.stopPropagation();clearDevicePhoto('${devId}','${type}')">✕</div>
         </div>
       </div>`;
@@ -3461,14 +3487,24 @@ map.on('click',function(e){
     }
     if (!src) return;
     _previewTarget = { devId, type, smId };
-    document.getElementById('photoPreviewImg').src = src;
+    const img = document.getElementById('photoPreviewImg');
+    img.src = src;
+    img.classList.remove('zoomed');
     document.getElementById('photoPreviewLabel').textContent = label || _PHOTO_LABELS[type] || 'Preview';
     document.getElementById('photoPreviewOverlay').classList.add('active');
   }
 
   function closePhotoPreview() {
     document.getElementById('photoPreviewOverlay').classList.remove('active');
+    document.getElementById('photoPreviewImg').classList.remove('zoomed');
     _previewTarget = null;
+  }
+
+  function togglePhotoZoom(e) {
+    // Jangan zoom kalau klik tombol hapus/close
+    if (e.target.closest('button')) return;
+    const img = document.getElementById('photoPreviewImg');
+    img.classList.toggle('zoomed');
   }
 
   function deletePreviewPhoto() {
@@ -5919,6 +5955,14 @@ function doGet(e) {
   // Keyboard shortcut rahasia Admin: Ctrl+Shift+A
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); toggleAdminPanel(); }
+    if (e.key === 'Escape') {
+      // Close lightbox first if open
+      const overlay = document.getElementById('photoPreviewOverlay');
+      if (overlay && overlay.classList.contains('active')) { closePhotoPreview(); return; }
+      // Close camera modal
+      const cam = document.getElementById('camOverlay');
+      if (cam && cam.classList.contains('active')) { closeCamModal(); return; }
+    }
   });
 
   // ── Init session check ──────────────────────────────────
