@@ -510,10 +510,7 @@
     .sync-queue-count.empty { background: var(--fs-green-light); color: var(--fs-green); }
     .sync-queue-count svg { width: 12px; height: 12px; }
     .sync-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-save-idb { flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--fs-teal); color: white; border: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-    .btn-save-idb:hover { background: #085041; }
-    .btn-save-idb:disabled { background: #aaa; cursor: not-allowed; }
-    .btn-save-idb svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .btn-sync-sheets { flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 14px; border-radius: var(--radius-md); background: var(--fs-green); color: white; border: none; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .btn-sync-sheets:hover { background: #27500A; }
     .btn-sync-sheets:disabled { background: #aaa; cursor: not-allowed; }
@@ -1765,10 +1762,7 @@
       </span>
     </div>
     <div class="sync-actions">
-      <button class="btn-save-idb" onclick="saveToIDB()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save Data
-      </button>
+
       <button class="btn-sync-sheets" id="btnSyncSheets" onclick="syncToSheets()" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         Sync ke Google Sheets
@@ -2771,7 +2765,7 @@ map.on('click',function(e){
           <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Foto View Site / Rack</b><p>Foto kondisi keseluruhan rack dan ruang server</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Tambah Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Foto PIC &amp; Tanda Tangan</b><p>Dokumentasi petugas dan tanda tangan digital</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Save Data</b><p>Tap "Save Data" → validasi → simpan → auto-sync ke Google Sheets</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Export & Sync</b><p>Gunakan tombol Export (PDF/CSV/ZIP) atau Sync ke Google Sheets untuk menyimpan data</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">8</div><div class="gdl-step-body"><b>Kirim Email</b><p>Tap "Kirim Email" → ZIP otomatis ter-download → attach ke email yang terbuka</p></div></div>
         </div>
 
@@ -2780,7 +2774,7 @@ map.on('click',function(e){
           <div class="gdl-check-item">✅ Semua device sudah punya minimal 1 foto</div>
           <div class="gdl-check-item">✅ Status device sudah dipilih (Active/Damage/Spare)</div>
           <div class="gdl-check-item">✅ S/N sudah diisi untuk setiap device</div>
-          <div class="gdl-check-item">✅ Save Data sudah sukses (status Synced)</div>
+            <div class="gdl-check-item">✅ Data sudah di-export atau ter-sync ke Google Sheets</div>
           <div class="gdl-check-item">✅ File ZIP sudah ter-download dan di-attach ke email</div>
         </div>
 
@@ -3075,7 +3069,7 @@ map.on('click',function(e){
 
         <div class="gdl-section-title">Simpan &amp; Sinkronisasi</div>
         <div class="gdl-steps" style="gap:8px;">
-          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Save Data</b><p>Tap "Save Data" → data masuk antrian lokal (IndexedDB) → otomatis sync ke Google Sheets jika online.</p></div></div>
+            <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Sync ke Google Sheets</b><p>Tap "Sync ke Google Sheets" → data otomatis sync jika online dan Sheets sudah dikonfigurasi.</p></div></div>
           <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Panel Antrian</b><p>Status: <em>Pending</em> (belum sync) · <em>Synced</em> (berhasil) · <em>Failed</em> (gagal). Tap "Retry" untuk coba ulang.</p></div></div>
           <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Pemulihan Otomatis</b><p>Jika halaman di-refresh atau perangkat mati tiba-tiba, semua data &amp; foto dipulihkan otomatis saat dibuka kembali.</p></div></div>
         </div>
@@ -3104,7 +3098,7 @@ map.on('click',function(e){
             <div class="gdl-trouble-a">Aktifkan izin kamera di browser. Gunakan Chrome versi terbaru. Pastikan halaman dibuka via HTTPS, bukan file://.</div>
           </div>
           <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">💾 Save Data gagal (IDB error)</div>
+
             <div class="gdl-trouble-a">Pastikan Jenis Kegiatan dan Site ID sudah diisi. Collect ID harus tergenerate terlebih dahulu sebelum Save.</div>
           </div>
           <div class="gdl-trouble-item">
@@ -5754,87 +5748,7 @@ ${sigSection}
     });
   }
 
-  // ── Simpan WO ke IndexedDB ─────────────────────────────
-  async function saveToIDB() {
-    if (!validateForm()) return;
-    // validateForm() sudah memastikan currentCollectId terisi
-    const f = getFormData();
 
-    // Triple-check: collectId tidak boleh kosong dalam kondisi apapun
-    let collectId = currentCollectId && currentCollectId.trim()
-      ? currentCollectId.trim()
-      : (f.collectId && String(f.collectId).trim()
-          ? String(f.collectId).trim()
-          : 'CID-' + Date.now());
-
-    // Update currentCollectId jika terpaksa di-generate di sini
-    if (collectId !== currentCollectId) {
-      currentCollectId = collectId;
-      if (currentActivity) _renderCollectId(currentCollectId, currentActivity);
-    }
-
-    // Bangun record lengkap termasuk semua foto
-    const record = {
-      collectId:        collectId,
-      activity:        f.activity,
-      activityLabel:   (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity,
-      date:            f.date,
-      siteName:        f.siteName,
-      siteId:          f.siteId,
-      typeSite:        f.typeSite,
-      picName:         f.picName,
-      division:        f.division,
-      coordLat:        f.coordLat,
-      coordLng:        f.coordLng,
-      floorLocation:   f.floorLocation,
-      addNotes:        f.addNotes,
-      dismantleReason: f.dismantleReason,
-      warehouse:       f.warehouse,
-      replaceReason:   f.replaceReason,
-      // Foto PIC & tanda tangan (sudah terkompresi)
-      picPhoto:        f.picPhoto,
-      signature:       f.signature,
-      // Site photos (sudah terkompresi)
-      sitePhotos:      f.sitePhotos,
-      // Devices lengkap dengan semua foto (sudah terkompresi)
-      devices:         f.devices,
-      syncStatus:      'pending',
-      savedAt:         new Date().toISOString(),
-      syncedAt:        null,
-    };
-
-    try {
-      const btn = document.querySelector('.btn-save-idb');
-      btn.disabled = true;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Menyimpan...`;
-
-      await _idbPut(record);
-      await _refreshQueueUI();
-
-      btn.disabled = false;
-      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Data`;
-
-      _syncLog(`✓ CID ${record.collectId} disimpan ke IndexedDB (${record.devices.length} device)`, 'ok');
-      showToast(`✅ Data CID ${record.collectId} berhasil disimpan ke antrian lokal!`, 4000);
-
-      document.getElementById('formStatus').textContent = '✓ Tersimpan';
-      document.getElementById('formStatus').className   = 'status-badge status-done';
-
-      // ── Auto-sync segera setelah save jika online & Sheets sudah dikonfigurasi ──
-      if (_sheetsUrl && navigator.onLine) {
-        _syncLog('🔄 Auto-sync dimulai setelah save...', 'info');
-        setTimeout(syncToSheets, 800);
-      } else if (!navigator.onLine) {
-        _syncLog('📴 Offline — data tersimpan lokal, sync otomatis saat koneksi kembali.', 'info');
-      }
-    } catch (err) {
-      console.error('[IDB Save]', err);
-      document.querySelector('.btn-save-idb').disabled = false;
-      document.querySelector('.btn-save-idb').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save Data`;
-      _syncLog('✗ Gagal simpan ke IndexedDB: ' + err.message, 'err');
-      showToast('⚠ Gagal menyimpan. ' + err.message, 5000);
-    }
-  }
 
   // ── Refresh tampilan antrian di panel ──────────────────
   async function _refreshQueueUI() {
