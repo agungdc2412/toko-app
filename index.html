@@ -1300,6 +1300,26 @@
     .gdl-contact { background: var(--fs-blue-light); border: 1px solid rgba(24,95,165,0.2); border-radius: var(--radius-md); padding: 14px 16px; font-size: 12px; line-height: 1.8; color: #0F3D6E; }
     .gdl-contact-title { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
     code { background: rgba(0,0,0,0.07); border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: monospace; }
+
+    /* ── Replace Device Card ──────────────────────────── */
+    .replace-arrow {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      padding: 8px 0; margin: 2px 0;
+    }
+    .req-star { color: var(--fs-red); font-size: 12px; margin-left: 2px; }
+    .replace-section { border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; }
+    .replace-section.old-device { background: var(--fs-red-light); border: 1px solid rgba(163,45,45,0.2); }
+    .replace-section.new-device { background: var(--fs-green-light); border: 1px solid rgba(59,109,17,0.2); }
+    .replace-section-header { margin-bottom: 12px; }
+    .replace-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.04em; }
+    .replace-badge.old { background: rgba(163,45,45,0.12); color: var(--fs-red); border: 1px solid rgba(163,45,45,0.25); }
+    .replace-badge.new { background: rgba(59,109,17,0.12); color: var(--fs-green); border: 1px solid rgba(59,109,17,0.25); }
+
+    /* ── Device Activity Block (additional/dismantle) ─── */
+    .device-activity-block { border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; }
+    .device-activity-block.dismantle-block { background: var(--fs-amber-light); border: 1px solid rgba(186,117,23,0.25); }
+    .dab-title { font-size: 11px; font-weight: 700; color: var(--fs-amber); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.06em; }
 </style>
 </head>
 <body>
@@ -1633,47 +1653,7 @@
         </div>
       </div>
 
-      <!-- Keterangan Penambahan — Additional -->
-      <div class="form-group ctx-field ctx-additional" id="ctxAddNotes" style="grid-column: 1 / -1;">
-        <label class="form-label">Keterangan Penambahan</label>
-        <div class="stt-wrap">
-          <input type="text" class="form-input" placeholder="e.g. Penambahan switch untuk ekspansi kapasitas" id="fAddNotes">
-          <button class="stt-btn" title="Ucapkan Keterangan" onclick="startSTT('fAddNotes', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
 
-      <!-- Alasan Dismantle -->
-      <div class="form-group ctx-field ctx-dismantle" id="ctxDismantleReason" style="grid-column: 1 / -1;">
-        <label class="form-label">Alasan Dismantle</label>
-        <div class="stt-wrap">
-          <input type="text" class="form-input" placeholder="e.g. Perangkat end-of-life, kontrak berakhir" id="fDismantleReason">
-          <button class="stt-btn" title="Ucapkan Alasan" onclick="startSTT('fDismantleReason', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="form-group ctx-field ctx-dismantle" id="ctxDismantleWarehouse">
-        <label class="form-label">Lokasi Penyimpanan / Warehouse</label>
-        <div class="stt-wrap">
-          <input type="text" class="form-input" placeholder="e.g. Gudang Jakarta Selatan, Rak B-3" id="fWarehouse">
-          <button class="stt-btn" title="Ucapkan Lokasi Penyimpanan" onclick="startSTT('fWarehouse', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Keterangan Replace -->
-      <div class="form-group ctx-field ctx-replace" id="ctxReplaceReason" style="grid-column: 1 / -1;">
-        <label class="form-label">Alasan Pergantian</label>
-        <div class="stt-wrap">
-          <input type="text" class="form-input" placeholder="e.g. Perangkat rusak, upgrade kapasitas" id="fReplaceReason">
-          <button class="stt-btn" title="Ucapkan Alasan" onclick="startSTT('fReplaceReason', this)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-          </button>
-        </div>
-      </div>
 
       <!-- Tanda Tangan PIC -->
       <div class="form-group" style="grid-column: 1 / -1;">
@@ -2257,11 +2237,14 @@
   // ── Guidelines Dropdown ───────────────────────────────
   // ── Guidelines Modal ──────────────────────────────────
   function openGuidelines() {
-    document.getElementById('gdlOverlay').classList.add('active');
+    const el = document.getElementById('gdlOverlay');
+    if (!el) { alert('Guidelines tidak tersedia. Pastikan menggunakan file versi terbaru.'); return; }
+    el.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
   function closeGuidelines() {
-    document.getElementById('gdlOverlay').classList.remove('active');
+    const el = document.getElementById('gdlOverlay');
+    if (el) el.classList.remove('active');
     document.body.style.overflow = '';
   }
   function switchGdlTab(idx) {
@@ -3363,8 +3346,21 @@ map.on('click',function(e){
       deviceName: '', serialNumber: '', partNumber: '',
       statusDevice: '',
       sfpCount: null,
-      photos: { full: null, zoom: null, label: null, pn: null },
-      exts:   { full: null, zoom: null, label: null, pn: null },
+      // Per-device activity fields
+      deviceNotes: '',      // additional: keterangan penambahan
+      dismantleReason: '',  // dismantle: alasan
+      warehouse: '',        // dismantle: lokasi penyimpanan
+      replaceReason: '',    // replace: alasan pergantian
+      snOld: '',            // replace: SN lama (existing)
+      snNew: '',            // replace: SN baru (pengganti)
+      deviceNameOld: '',    // replace: nama device lama
+      deviceNameNew: '',    // replace: nama device baru
+      pnOld: '',            // replace: P/N lama
+      pnNew: '',            // replace: P/N baru
+      photos: { full: null, zoom: null, label: null, pn: null,
+                fullOld: null, labelOld: null },
+      exts:   { full: null, zoom: null, label: null, pn: null,
+                fullOld: null, labelOld: null },
       subModules: [],
       collapsed: false
     });
@@ -3428,7 +3424,17 @@ map.on('click',function(e){
 
   function updateDeviceTitle(id, val, i) {
     const el = document.querySelector('#dc_' + id + ' .device-card-title span:last-child');
-    if (el) el.textContent = val || ('Asset ' + (i + 1));
+    if (!el) return;
+    if (currentActivity === 'replace') {
+      const d = devices.find(x => x.id === id);
+      if (d) {
+        const oldName = d.deviceNameOld || '?';
+        const newName = d.deviceNameNew || d.deviceName || '?';
+        el.textContent = oldName + ' → ' + newName;
+        return;
+      }
+    }
+    el.textContent = val || ('Asset ' + (i + 1));
   }
 
   // ── Sub-Module Functions ──────────────────────────────
@@ -3532,7 +3538,52 @@ map.on('click',function(e){
   }
 
   // ── Render Single Device Card body ─────────────────────
-  function _renderSingleBody(d, i) {
+  // ── Per-device activity-specific fields ──────────────
+  function _deviceActivityFields(d) {
+    const act = currentActivity;
+    if (act === 'additional') {
+      return `
+        <div class="form-group" style="margin-bottom:14px;">
+          <label class="form-label">➕ Keterangan Penambahan</label>
+          <div class="stt-wrap">
+            <input type="text" class="form-input" placeholder="e.g. Penambahan untuk ekspansi kapasitas"
+              value="${escHtml(d.deviceNotes||'')}"
+              oninput="updateDevice('${d.id}','deviceNotes',this.value)">
+            <button class="stt-btn" title="Ucapkan Keterangan"
+              onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNotes',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
+          </div>
+        </div>`;
+    }
+    if (act === 'dismantle') {
+      return `
+        <div class="device-activity-block dismantle-block">
+          <div class="dab-title">🗑️ Info Dismantle</div>
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Alasan Dismantle</label>
+            <div class="stt-wrap">
+              <input type="text" class="form-input" placeholder="e.g. Perangkat end-of-life, kontrak berakhir"
+                value="${escHtml(d.dismantleReason||'')}"
+                oninput="updateDevice('${d.id}','dismantleReason',this.value)">
+              <button class="stt-btn" title="Ucapkan Alasan"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','dismantleReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Lokasi Penyimpanan / Warehouse</label>
+            <div class="stt-wrap">
+              <input type="text" class="form-input" placeholder="e.g. Gudang Jakarta Selatan, Rak B-3"
+                value="${escHtml(d.warehouse||'')}"
+                oninput="updateDevice('${d.id}','warehouse',this.value)">
+              <button class="stt-btn" title="Ucapkan Lokasi"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','warehouse',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
+            </div>
+          </div>
+        </div>`;
+    }
+    return '';
+  }
+
+    function _renderSingleBody(d, i) {
     const anyPhoto = d.photos.full || d.photos.zoom || d.photos.label;
     return `
       <div class="device-card-body">
@@ -3581,6 +3632,8 @@ map.on('click',function(e){
             value="${d.sfpCount !== undefined && d.sfpCount !== null ? d.sfpCount : ''}"
             oninput="updateDevice('${d.id}','sfpCount',this.value===''?null:parseInt(this.value)||0)">
         </div>
+
+        ${_deviceActivityFields(d)}
 
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
@@ -3641,6 +3694,172 @@ map.on('click',function(e){
             value="${d.sfpCount !== undefined && d.sfpCount !== null ? d.sfpCount : ''}"
             oninput="updateDevice('${d.id}','sfpCount',this.value===''?null:parseInt(this.value)||0)">
         </div>
+
+        ${_deviceActivityFields(d)}
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+          <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
+        </div>
+      </div>`;
+  }
+
+
+  // ── Render Replace Device Card body ───────────────────
+  // Skenario: device LAMA (dilepas) → device BARU (dipasang)
+  // Masing-masing punya nama, S/N, P/N, dan foto sendiri
+  function _renderReplaceBody(d, i) {
+    const snOldId    = 'snold_'    + d.id;
+    const snNewId    = 'snnew_'    + d.id;
+    const nameOldId  = 'nameold_'  + d.id;
+    const nameNewId  = 'namenew_'  + d.id;
+    const pnOldId    = 'pnold_'    + d.id;
+    const pnNewId    = 'pnnew_'    + d.id;
+    return `
+      <div class="device-card-body">
+
+        <!-- ── DEVICE LAMA ─────────────────────────────── -->
+        <div class="replace-section old-device">
+          <div class="replace-section-header">
+            <span class="replace-badge old">📤 DEVICE LAMA — Dilepas / Dicopot</span>
+          </div>
+
+          <!-- Nama Device Lama -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Nama Device Lama <span class="req-star">*</span></label>
+            <div style="display:flex;gap:6px;align-items:flex-start;">
+              <div class="device-ac-wrap" style="flex:1;min-width:0;">
+                <input type="text" id="${nameOldId}" class="form-input" style="width:100%;" placeholder="Nama device yang dilepas..."
+                  value="${escHtml(d.deviceNameOld||d.deviceName||'')}" autocomplete="off"
+                  oninput="updateDevice('${d.id}','deviceNameOld',this.value);if(!d.deviceNameNew)updateDeviceTitle('${d.id}',this.value,${i});">
+                <div class="device-ac-dropdown" id="acold_${d.id}"></div>
+              </div>
+              <button class="stt-btn" title="Ucapkan Nama Lama"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameOld',t);var el=document.getElementById('${nameOldId}');if(el)el.value=t;}.bind(this))">${_icoMic}</button>
+            </div>
+          </div>
+
+          <!-- S/N Lama -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Serial Number Lama (S/N Out) <span class="req-star">*</span></label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="${snOldId}" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="S/N device yang dilepas"
+                value="${escHtml(d.snOld||'')}"
+                oninput="var s=_stripSpaces(this.value);if(this.value!==s)this.value=s;updateDevice('${d.id}','snOld',this.value)">
+              <button class="stt-btn" title="Ucapkan S/N Lama"
+                onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${d.id}','snOld',t);var el=document.getElementById('${snOldId}');if(el)el.value=t;})">${_icoMic}</button>
+              <button class="scan-btn" title="Scan S/N Lama"
+                onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${d.id}','snOld',t);var el=document.getElementById('${snOldId}');if(el)el.value=t;})">${_icoScan}</button>
+            </div>
+          </div>
+
+          <!-- P/N Lama -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Part Number Lama (P/N Out)</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="${pnOldId}" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="P/N device yang dilepas"
+                value="${escHtml(d.pnOld||'')}"
+                oninput="var s=_stripSpaces(this.value);if(this.value!==s)this.value=s;updateDevice('${d.id}','pnOld',this.value)">
+              <button class="stt-btn" title="Ucapkan P/N Lama"
+                onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${d.id}','pnOld',t);var el=document.getElementById('${pnOldId}');if(el)el.value=t;})">${_icoMic}</button>
+              <button class="scan-btn" title="Scan P/N Lama"
+                onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${d.id}','pnOld',t);var el=document.getElementById('${pnOldId}');if(el)el.value=t;})">${_icoScan}</button>
+            </div>
+          </div>
+
+          <!-- Foto Device Lama -->
+          <div class="form-label" style="margin-bottom:6px;font-size:11px;color:#A32D2D;">Foto Device Lama</div>
+          <div class="photo-slot-group" style="grid-template-columns:repeat(2,1fr);">
+            ${_photoSlot(d.id, 'fullOld',  d.photos.fullOld,  'Foto Full',  _icoCam)}
+            ${_photoSlot(d.id, 'labelOld', d.photos.labelOld, 'Foto S/N',   _icoTag)}
+          </div>
+
+          <!-- Alasan Pergantian -->
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label">Alasan Pergantian <span class="req-star">*</span></label>
+            <div class="stt-wrap">
+              <input type="text" class="form-input" placeholder="e.g. Perangkat rusak, upgrade kapasitas, end-of-life"
+                value="${escHtml(d.replaceReason||'')}"
+                oninput="updateDevice('${d.id}','replaceReason',this.value)">
+              <button class="stt-btn" title="Ucapkan Alasan"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','replaceReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Replace arrow indicator -->
+        <div class="replace-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+          Diganti dengan
+        </div>
+
+        <!-- ── DEVICE BARU ─────────────────────────────── -->
+        <div class="replace-section new-device">
+          <div class="replace-section-header">
+            <span class="replace-badge new">📥 DEVICE BARU — Dipasang / Pengganti</span>
+          </div>
+
+          <!-- Nama Device Baru -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Nama Device Baru <span class="req-star">*</span></label>
+            <div style="display:flex;gap:6px;align-items:flex-start;">
+              <div class="device-ac-wrap" style="flex:1;min-width:0;">
+                <input type="text" id="${nameNewId}" class="form-input" style="width:100%;" placeholder="Nama device pengganti..."
+                  value="${escHtml(d.deviceNameNew||d.deviceName||'')}" autocomplete="off"
+                  oninput="updateDevice('${d.id}','deviceNameNew',this.value);updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});">
+                <div class="device-ac-dropdown" id="acnew_${d.id}"></div>
+              </div>
+              <button class="stt-btn" title="Ucapkan Nama Baru"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameNew',t);updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var el=document.getElementById('${nameNewId}');if(el)el.value=t;}.bind(this))">${_icoMic}</button>
+            </div>
+          </div>
+
+          <!-- S/N Baru -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Serial Number Baru (S/N In) <span class="req-star">*</span></label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="${snNewId}" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="S/N device pengganti"
+                value="${escHtml(d.snNew||d.serialNumber||'')}"
+                oninput="var s=_stripSpaces(this.value);if(this.value!==s)this.value=s;updateDevice('${d.id}','snNew',this.value);updateDevice('${d.id}','serialNumber',this.value)">
+              <button class="stt-btn" title="Ucapkan S/N Baru"
+                onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${d.id}','snNew',t);updateDevice('${d.id}','serialNumber',t);var el=document.getElementById('${snNewId}');if(el)el.value=t;})">${_icoMic}</button>
+              <button class="scan-btn" title="Scan S/N Baru"
+                onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${d.id}','snNew',t);updateDevice('${d.id}','serialNumber',t);var el=document.getElementById('${snNewId}');if(el)el.value=t;})">${_icoScan}</button>
+            </div>
+          </div>
+
+          <!-- P/N Baru -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Part Number Baru (P/N In)</label>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <input type="text" id="${pnNewId}" class="form-input sn-input" style="flex:1;min-width:0;" placeholder="P/N device pengganti"
+                value="${escHtml(d.pnNew||d.partNumber||'')}"
+                oninput="var s=_stripSpaces(this.value);if(this.value!==s)this.value=s;updateDevice('${d.id}','pnNew',this.value);updateDevice('${d.id}','partNumber',this.value)">
+              <button class="stt-btn" title="Ucapkan P/N Baru"
+                onclick="startSTTInline(this,function(t){t=_stripSpaces(t);updateDevice('${d.id}','pnNew',t);updateDevice('${d.id}','partNumber',t);var el=document.getElementById('${pnNewId}');if(el)el.value=t;})">${_icoMic}</button>
+              <button class="scan-btn" title="Scan P/N Baru"
+                onclick="openScanner(function(t){t=_stripSpaces(t);updateDevice('${d.id}','pnNew',t);updateDevice('${d.id}','partNumber',t);var el=document.getElementById('${pnNewId}');if(el)el.value=t;})">${_icoScan}</button>
+            </div>
+          </div>
+
+          <!-- Jumlah SFP Baru -->
+          <div class="form-group" style="margin-bottom:10px;">
+            <label class="form-label">Jumlah SFP</label>
+            <input type="number" class="form-input" min="0" style="width:120px;" placeholder="0"
+              value="${d.sfpCount !== undefined && d.sfpCount !== null ? d.sfpCount : ''}"
+              oninput="updateDevice('${d.id}','sfpCount',this.value===''?null:parseInt(this.value)||0)">
+          </div>
+
+          <!-- Foto Device Baru -->
+          <div class="form-label" style="margin-bottom:6px;font-size:11px;color:#3B6D11;">Foto Device Baru</div>
+          <div class="photo-slot-group">
+            ${_photoSlot(d.id, 'full',  d.photos.full,  'Foto Full',  _icoCam)}
+            ${_photoSlot(d.id, 'zoom',  d.photos.zoom,  'Foto Type',  _icoZoom)}
+            ${_photoSlot(d.id, 'label', d.photos.label, 'Foto S/N',   _icoTag)}
+          </div>
+        </div>
+
+        ${_statusPills(d.id, d.statusDevice)}
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
@@ -3818,7 +4037,7 @@ map.on('click',function(e){
     const devs       = document.getElementById('chk_devices').checked;
 
     if (site) {
-      ['fDate','fSiteName','fSiteId','fFloorLocation','fAddNotes','fDismantleReason','fWarehouse','fReplaceReason'].forEach(id => {
+      ['fDate','fSiteName','fSiteId','fFloorLocation'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       ['fTypeSite','fDivision'].forEach(id => {
@@ -3879,23 +4098,28 @@ map.on('click',function(e){
       return;
     }
     list.innerHTML = devices.map((d, i) => {
-      const typeBadge = d.type === 'module'
-        ? `<span class="type-badge module">Module</span>`
-        : `<span class="type-badge single">Single</span>`;
+      const typeBadge = currentActivity === 'replace'
+        ? `<span class="type-badge" style="background:var(--fs-amber-light);color:var(--fs-amber);">Replace</span>`
+        : d.type === 'module'
+          ? `<span class="type-badge module">Module</span>`
+          : `<span class="type-badge single">Single</span>`;
       const statusLabel = d.statusDevice
         ? ` &bull; <span style="font-size:11px;color:${d.statusDevice==='Active'?'var(--fs-green)':d.statusDevice==='Damage'?'var(--fs-red)':'var(--fs-amber)'}">${d.statusDevice}</span>`
         : '';
+      const replaceTitle = currentActivity === 'replace'
+        ? `${escHtml(d.deviceNameOld||'?')} → ${escHtml(d.deviceNameNew||d.deviceName||'?')}`
+        : escHtml(d.deviceName) || 'Asset ' + (i + 1);
       return `
         <div class="device-card" id="dc_${d.id}">
           <div class="device-card-header" onclick="toggleDevice('${d.id}')">
             <div class="device-card-title">
               <span class="device-num">${i + 1}</span>
               ${typeBadge}
-              <span>${escHtml(d.deviceName) || 'Asset ' + (i + 1)}${statusLabel}</span>
+              <span>${replaceTitle}${statusLabel}</span>
             </div>
             <svg class="chevron ${d.collapsed ? '' : 'open'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
-          ${!d.collapsed ? (d.type === 'module' ? _renderModuleBody(d, i) : _renderSingleBody(d, i)) : ''}
+          ${!d.collapsed ? (currentActivity === 'replace' ? _renderReplaceBody(d, i) : d.type === 'module' ? _renderModuleBody(d, i) : _renderSingleBody(d, i)) : ''}
         </div>`;
     }).join('');
     updatePhotoProgress();
@@ -4242,10 +4466,11 @@ map.on('click',function(e){
       coordLat:        _v('fCoordLat'),
       coordLng:        _v('fCoordLng'),
       floorLocation:   _v('fFloorLocation'),
-      addNotes:        _v('fAddNotes'),
-      dismantleReason: _v('fDismantleReason'),
-      warehouse:   _v('fWarehouse'),
-      replaceReason:   _v('fReplaceReason'),
+      // Per-device fields now — site-level alasan removed
+      addNotes: '',
+      dismantleReason: '',
+      warehouse: '',
+      replaceReason: '',
       signature:       sigDataUrl,
       devices,
       sitePhotos
@@ -4304,10 +4529,29 @@ map.on('click',function(e){
     }
 
     // ── Wajib activity-specific ──
-    if (currentActivity === 'dismantle' && !f.dismantleReason)
-      errors.push({ icon: '🗑️', msg: 'Alasan Dismantle harus diisi' });
-    if (currentActivity === 'replace' && !f.replaceReason)
-      errors.push({ icon: '🔄', msg: 'Alasan Pergantian harus diisi' });
+    // Per-device validation for activity-specific fields
+    if (currentActivity === 'dismantle') {
+      f.devices.forEach((d, i) => {
+        const label = d.deviceName ? `"${d.deviceName}"` : `Asset ${i + 1}`;
+        if (!d.dismantleReason)
+          errors.push({ icon: '🗑️', msg: `${label}: Alasan Dismantle belum diisi`, warn: true });
+      });
+    }
+    if (currentActivity === 'replace') {
+      f.devices.forEach((d, i) => {
+        const label = `Pergantian ${i + 1}`;
+        if (!d.deviceNameOld && !d.deviceName)
+          errors.push({ icon: '📦', msg: `${label}: Nama Device Lama belum diisi` });
+        if (!d.snOld)
+          errors.push({ icon: '🔄', msg: `${label}: S/N Lama (device yang dilepas) belum diisi` });
+        if (!d.deviceNameNew && !d.deviceName)
+          errors.push({ icon: '📦', msg: `${label}: Nama Device Baru belum diisi` });
+        if (!d.serialNumber && !d.snNew)
+          errors.push({ icon: '🆕', msg: `${label}: S/N Baru (device pengganti) belum diisi` });
+        if (!d.replaceReason)
+          errors.push({ icon: '📋', msg: `${label}: Alasan Pergantian belum diisi`, warn: true });
+      });
+    }
 
     // ── Wajib: minimal 1 device ──
     if (f.devices.length === 0) {
@@ -4742,17 +4986,28 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],  // baris kosong sebagai separator
-      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Jumlah SFP','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
 
     f.devices.forEach((d, i) => {
       const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
+      const actNote = f.activity==='additional' ? (d.deviceNotes||'-')
+                    : f.activity==='dismantle'  ? (d.dismantleReason||'-')
+                    : f.activity==='replace'    ? (d.replaceReason||'-')
+                    : '-';
+      const locStore = f.activity==='dismantle' ? (d.warehouse||'-') : '-';
       sheetData.push([
         i+1,
-        d.type==='module' ? 'Module' : 'Single',
-        d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-',
+        f.activity==='replace' ? 'Replace' : d.type==='module' ? 'Module' : 'Single',
+        d.deviceName||'-',
+        f.activity==='replace' ? (d.snOld||'-') : (d.serialNumber||'-'),
+        f.activity==='replace' ? (d.snNew||d.serialNumber||'-') : '-',
+        d.partNumber||'-',
         d.statusDevice||'-',
         d.sfpCount !== null && d.sfpCount !== undefined ? d.sfpCount : '-',
+        f.activity==='replace'?(d.deviceNameNew||d.deviceName||'-'):'-',
+        f.activity==='replace'?(d.pnNew||d.partNumber||'-'):'-',
+        actNote, locStore,
         d.photos.full  ? 'Ada' : '-',
         d.photos.zoom  ? 'Ada' : '-',
         d.photos.label ? 'Ada' : '-',
@@ -4812,19 +5067,26 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],
-      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Jumlah SFP','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
     f.devices.forEach((d, i) => {
-      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
+      const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):'-';
+      const locStore = f.activity==='dismantle'?(d.warehouse||'-'):'-';
       sheetData.push([
-        i+1, d.type==='module'?'Module':'Single',
-        d.deviceName||'-', d.serialNumber||'-', d.partNumber||'-', d.statusDevice||'-',
+        i+1,
+        f.activity==='replace'?'Replace':d.type==='module'?'Module':'Single',
+        f.activity==='replace'?(d.deviceNameOld||d.deviceName||'-'):(d.deviceName||'-'),
+        f.activity==='replace'?(d.snOld||'-'):(d.serialNumber||'-'),
+        f.activity==='replace'?(d.snNew||d.serialNumber||'-'):'-',
+        f.activity==='replace'?(d.pnOld||d.partNumber||'-'):(d.partNumber||'-'), d.statusDevice||'-',
+        d.sfpCount!==null&&d.sfpCount!==undefined?d.sfpCount:'-',
+        actNote, locStore,
         d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
-        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-', smSummary,
+        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-',
       ]);
     });
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    ws['!cols'] = [{wch:20},{wch:32},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+    ws['!cols'] = [{wch:4},{wch:9},{wch:28},{wch:20},{wch:20},{wch:18},{wch:10},{wch:10},{wch:28},{wch:22},{wch:10},{wch:10},{wch:10},{wch:10}];
     XLSX.utils.book_append_sheet(wb, ws, 'Asset Tagging');
     return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
   }
@@ -4840,12 +5102,24 @@ ${mapLink}
       f.activity === 'dismantle'  && f.warehouse   ? `<div><span class="lbl">Lokasi Penyimpanan: </span><b>${escHtml(f.warehouse)}</b></div>` : '',
       f.activity === 'replace'    && f.replaceReason   ? `<div><span class="lbl">Alasan Pergantian: </span><b>${escHtml(f.replaceReason)}</b></div>` : '',
     ].filter(Boolean).join('');
+    const isReplace = f.activity === 'replace';
     const rows = f.devices.map((d, i) => {
-      const smList = (d.subModules||[]).length > 0
-        ? `<br><small style="color:#666">Modules: ${(d.subModules||[]).map(s=>escHtml(s.moduleName)||'(no name)').join(', ')}</small>` : '';
-      return `<tr><td>${i+1}</td><td>${d.type==='module'?'<b>Module</b>':'Single'}</td>
-        <td>${escHtml(d.deviceName)}${smList}</td>
-        <td>${escHtml(d.serialNumber)}</td><td>${escHtml(d.partNumber)}</td>
+      const snCell = isReplace
+        ? `<span style="color:#A32D2D;font-size:10px;">Lama: ${escHtml(d.snOld||'—')}</span><br><span style="color:#3B6D11;font-size:10px;">Baru: ${escHtml(d.snNew||d.serialNumber||'—')}</span>`
+        : escHtml(d.serialNumber||'—');
+      const actNote = f.activity==='additional'?(d.deviceNotes||'')
+        : f.activity==='dismantle'?((d.dismantleReason||'') + (d.warehouse ? ' → ' + d.warehouse : ''))
+        : f.activity==='replace'?(d.replaceReason||''):'';
+      const noteCell = actNote ? `<br><small style="color:#666;font-size:10px;">📋 ${escHtml(actNote)}</small>` : '';
+      const deviceNameCell = isReplace
+        ? `<span style="color:#A32D2D;font-size:11px;">📤 ${escHtml(d.deviceNameOld||d.deviceName||'—')}</span><br><span style="color:#3B6D11;font-size:11px;">📥 ${escHtml(d.deviceNameNew||d.deviceName||'—')}</span>${noteCell}`
+        : `${escHtml(d.deviceName||'—')}${noteCell}`;
+      const pnCell = isReplace
+        ? `<span style="font-size:10px;color:#A32D2D;">${escHtml(d.pnOld||d.partNumber||'—')}</span><br><span style="font-size:10px;color:#3B6D11;">${escHtml(d.pnNew||d.partNumber||'—')}</span>`
+        : escHtml(d.partNumber||'—');
+      return `<tr><td>${i+1}</td><td>${isReplace?'<b style="color:#BA7517">Replace</b>':d.type==='module'?'<b>Module</b>':'Single'}</td>
+        <td>${deviceNameCell}</td>
+        <td>${snCell}</td><td>${pnCell}</td>
         <td style="text-align:center;color:${d.statusDevice==='Active'?'green':d.statusDevice==='Damage'?'red':'#BA7517'}">${d.statusDevice||'-'}</td>
         <td style="text-align:center">${d.photos.full?'✓':'-'}</td>
         <td style="text-align:center">${d.photos.zoom?'✓':'-'}</td>
@@ -5157,7 +5431,7 @@ ${sigSection}
         date: f.date, siteName: f.siteName, siteId: f.siteId,
         typeSite: f.typeSite, picName: f.picName, division: f.division,
         coordLat: f.coordLat, coordLng: f.coordLng, floorLocation: f.floorLocation,
-        addNotes: f.addNotes, dismantleReason: f.dismantleReason,
+        addNotes: '', dismantleReason: '',
         warehouse: f.warehouse, replaceReason: f.replaceReason,
         devices: devices.map(d => ({
           id: d.id, type: d.type || 'single',
@@ -5240,8 +5514,7 @@ ${sigSection}
       _set('fCoordLat', draft.coordLat); _set('fCoordLng', draft.coordLng);
       _set('fFloorLocation', draft.floorLocation);
       // Context fields
-      _set('fAddNotes', draft.addNotes); _set('fDismantleReason', draft.dismantleReason);
-      _set('fWarehouse', draft.warehouse); _set('fReplaceReason', draft.replaceReason);
+      // per-device alasan fields restored via devices array
 
       // Restore devices
       if (draft.devices && draft.devices.length > 0) {
