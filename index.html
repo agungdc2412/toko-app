@@ -2080,25 +2080,25 @@
       label: 'New Site', badgeClass: 'badge-new', tabClass: 'active-new',
       collectTitle: 'Data Asset — New Site',
       collectHint: 'Catat semua asset yang terpasang di site baru. Lengkapi foto Full, Type, S/N, dan P/N untuk setiap device.',
-      addBtnLabel: 'Tambah Asset',
+      addBtnLabel: 'Input Asset',
     },
     existing: {
       label: 'Existing', badgeClass: 'badge-existing', tabClass: 'active-existing',
       collectTitle: 'Data Asset — Existing Site',
       collectHint: 'Catat kondisi terkini semua asset yang sudah ada di site. Update S/N, P/N, dan status setiap device.',
-      addBtnLabel: 'Tambah Asset',
+      addBtnLabel: 'Input Asset',
     },
     additional: {
       label: 'Additional', badgeClass: 'badge-additional', tabClass: 'active-additional',
       collectTitle: 'Asset yang Ditambahkan',
       collectHint: 'Catat hanya device/module yang baru ditambahkan ke site ini.',
-      addBtnLabel: 'Tambah Asset Baru',
+      addBtnLabel: 'Input Asset Baru',
     },
     dismantle: {
       label: 'Dismantle', badgeClass: 'badge-dismantle', tabClass: 'active-dismantle',
       collectTitle: 'Asset yang Di-Dismantle',
       collectHint: 'Catat device/module yang dilepas. Wajib isi S/N dan foto kondisi sebelum dilepas.',
-      addBtnLabel: 'Tambah Asset Dismantle',
+      addBtnLabel: 'Input Asset Dismantle',
     },
     replace: {
       label: 'Replace', badgeClass: 'badge-replace', tabClass: 'active-replace',
@@ -2643,7 +2643,7 @@ map.on('click',function(e){
           <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type, PIC, Koordinat GPS</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Foto View Site / Rack</b><p>Foto kondisi keseluruhan rack dan ruang server</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Tambah Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Foto PIC &amp; Tanda Tangan</b><p>Dokumentasi petugas dan tanda tangan digital</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Export & Sync</b><p>Gunakan tombol Export (PDF/CSV/ZIP) atau Sync ke Google Sheets untuk menyimpan data</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">8</div><div class="gdl-step-body"><b>Kirim Email</b><p>Tap "Kirim Email" → ZIP otomatis ter-download → attach ke email yang terbuka</p></div></div>
@@ -3967,7 +3967,7 @@ map.on('click',function(e){
   function renderDevices() {
     const list = document.getElementById('deviceList');
     if (devices.length === 0) {
-      list.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;font-size:13px;">Belum ada asset. Klik tombol "Tambah Asset" untuk menambah.</div>';
+      list.innerHTML = '<div style="text-align:center;padding:2rem;color:#888;font-size:13px;">Belum ada asset. Klik tombol "Input Asset" untuk menambah.</div>';
       updatePhotoProgress();
       return;
     }
