@@ -5949,9 +5949,13 @@ ${sigSection}
       const activeHash   = activeHashes[_selectedRole];   // token terbaru yang di-generate
       const fileHash     = ROLE_HASHES[_selectedRole];    // token lama dari file HTML
       const pendingHash  = (_pendingTokens[_selectedRole] || {}).hash; // token pending sesi ini
-      matched = (activeHash && hash === activeHash)
-             || (fileHash   && hash === fileHash)
-             || (pendingHash && hash === pendingHash);
+      if (activeHash) {
+        // Sudah pernah di-generate → hanya token baru yang berlaku, token lama/default ditolak
+        matched = (hash === activeHash) || (pendingHash && hash === pendingHash);
+      } else {
+        // Belum pernah di-generate → gunakan hash dari file HTML (termasuk default)
+        matched = (fileHash && hash === fileHash) || (pendingHash && hash === pendingHash);
+      }
     }
 
     if (matched) {
