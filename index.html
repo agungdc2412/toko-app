@@ -3375,6 +3375,7 @@ map.on('click',function(e){
       serialNumber: '',
       statusDevice: src.statusDevice || '',
       photos:       { sn: null, pn: null },
+      exts:         { sn: null, pn: null },
       collapsed:    false,
       _fromCatalog: src._fromCatalog || false,
       _isMain:      false
@@ -3900,19 +3901,11 @@ map.on('click',function(e){
             </div>
           </div>
 
-          <div class="form-label" style="margin-bottom:6px;">Foto Module (2 foto)</div>
-          <div class="photo-btn-group-2">
-            <button class="photo-btn ${sm.photos.sn?'has-photo':''}" onclick="triggerSubPhoto('${devId}','${sm.id}','sn')">
-              ${_icoTag} Foto S/N ${sm.photos.sn?'&#10003;':''}
-            </button>
-            <button class="photo-btn ${sm.photos.pn?'has-photo':''}" onclick="triggerSubPhoto('${devId}','${sm.id}','pn')">
-              ${_icoPn} Foto P/N ${sm.photos.pn?'&#10003;':''}
-            </button>
+          <div class="form-label" style="margin-bottom:6px;">Foto Komponen</div>
+          <div class="photo-slot-group">
+            ${_photoSlotSm(devId, sm.id, 'sn', sm.photos.sn, 'Foto S/N', _icoTag)}
+            ${_photoSlotSm(devId, sm.id, 'pn', sm.photos.pn, 'Foto P/N', _icoPn)}
           </div>
-          ${(sm.photos.sn||sm.photos.pn) ? `<div class="photo-thumbs">
-            ${sm.photos.sn?`<div class="photo-thumb" title="S/N"><img src="${sm.photos.sn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','sn')">&#x2715;</div></div>`:''}
-            ${sm.photos.pn?`<div class="photo-thumb" title="P/N"><img src="${sm.photos.pn}"><div class="photo-del" onclick="clearSubPhoto('${devId}','${sm.id}','pn')">&#x2715;</div></div>`:''}
-          </div>` : ''}
 
         </div>` : ''}
       </div>`;
@@ -4173,6 +4166,32 @@ map.on('click',function(e){
           Kamera
         </button>
         <button class="photo-slot-btn" onclick="triggerUpload('${devId}','${type}',null)" title="Upload">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          Upload
+        </button>
+      </div>
+    </div>`;
+  }
+
+  // ── Photo slot untuk sub-modul (pakai smId) ─────────────
+  function _photoSlotSm(devId, smId, type, photoData, label, icon) {
+    if (photoData) {
+      return `<div class="photo-slot has-photo">
+        <div class="photo-slot-label">${icon} ${label} ✓</div>
+        <div class="photo-slot-thumb" onclick="openPhotoPreview('${devId}','${type}','${smId}','${label}')">
+          <img src="${photoData}" alt="${label}">
+          <div class="photo-slot-thumb-del" onclick="event.stopPropagation();clearSubPhoto('${devId}','${smId}','${type}')">✕</div>
+        </div>
+      </div>`;
+    }
+    return `<div class="photo-slot">
+      <div class="photo-slot-label">${icon} ${label}</div>
+      <div class="photo-slot-btns">
+        <button class="photo-slot-btn" onclick="openCamModal('${devId}','${type}','${smId}','${label}')" title="Kamera">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Kamera
+        </button>
+        <button class="photo-slot-btn" onclick="triggerUpload('${devId}','${type}','${smId}')" title="Upload">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
           Upload
         </button>
@@ -4527,6 +4546,12 @@ map.on('click',function(e){
 
       if (!d.statusDevice)
         errors.push({ icon: '🔵', msg: `${label}: Status Device belum dipilih`, sub: 'Pilih Active, Damage, atau Spare.' });
+
+      // Validasi sub-modul: S/N wajib diisi
+      (d.subModules || []).forEach((sm, si) => {
+        if (!sm.serialNumber)
+          errors.push({ icon: '🔢', msg: `${label} › Komponen ${si+1} "${sm.moduleName||'?'}": S/N belum diisi`, sub: 'Serial Number wajib diisi untuk setiap komponen module.' });
+      });
     });
 
     if (errors.length > 0) {
@@ -4942,7 +4967,6 @@ ${mapLink}
     ];
 
     f.devices.forEach((d, i) => {
-      const smSummary = (d.subModules||[]).map(s=>s.moduleName||'(no name)').join(', ') || '-';
       const actNote = f.activity==='additional' ? (d.deviceNotes||'-')
                     : f.activity==='dismantle'  ? (d.dismantleReason||'-')
                     : f.activity==='replace'    ? (d.replaceReason||'-')
@@ -4965,6 +4989,22 @@ ${mapLink}
         d.photos.label ? 'Ada' : '-',
         d.photos.pn    ? 'Ada' : '-',
       ]);
+      // Tambah baris sub-modul (indented dengan ↳)
+      (d.subModules||[]).forEach((sm, si) => {
+        sheetData.push([
+          '',
+          '  ↳ Sub-Modul ' + (si+1),
+          sm.moduleName||'-',
+          sm.serialNumber||'-',
+          '-',
+          sm.partNumber||'-',
+          sm.statusDevice||'-',
+          '-', '-', '-', '-', '-',
+          '-', '-',
+          sm.photos && sm.photos.sn ? 'Ada' : '-',
+          sm.photos && sm.photos.pn ? 'Ada' : '-',
+        ]);
+      });
     });
 
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
@@ -5036,6 +5076,18 @@ ${mapLink}
         d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
         d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-',
       ]);
+      // Sub-modul rows
+      (d.subModules||[]).forEach((sm, si) => {
+        sheetData.push([
+          '', '  ↳ Sub-Modul '+(si+1),
+          sm.moduleName||'-',
+          sm.serialNumber||'-', '-',
+          sm.partNumber||'-', sm.statusDevice||'-',
+          '-', '-', '-',
+          sm.photos&&sm.photos.sn?'Ada':'-',
+          sm.photos&&sm.photos.pn?'Ada':'-',
+        ]);
+      });
     });
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
     ws['!cols'] = [{wch:4},{wch:9},{wch:28},{wch:20},{wch:20},{wch:18},{wch:10},{wch:10},{wch:28},{wch:22},{wch:10},{wch:10},{wch:10},{wch:10}];
@@ -5923,6 +5975,7 @@ ${sigSection}
         serialNumber: '',
         statusDevice: '',
         photos: { sn: null, pn: null },
+        exts:   { sn: null, pn: null },
         collapsed: false,
         _fromCatalog: true,
         _isMain: false
