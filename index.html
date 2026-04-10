@@ -3402,6 +3402,11 @@ map.on('click',function(e){
     sm[field] = val;
   }
 
+  function triggerSubPhoto(devId, smId, type) {
+    const label = type === 'sn' ? 'Foto S/N' : 'Foto P/N';
+    openCamModal(devId, type, smId, label);
+  }
+
   function clearSubPhoto(devId, smId, type) {
     const d = devices.find(x => x.id === devId);
     if (!d) return;
