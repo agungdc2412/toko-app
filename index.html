@@ -3361,6 +3361,31 @@ map.on('click',function(e){
     if (d) { d.subModules = d.subModules.filter(s => s.id !== smId); renderDevices(); }
   }
 
+  function duplicateSubModule(devId, smId) {
+    const d = devices.find(x => x.id === devId);
+    if (!d) return;
+    const src = d.subModules.find(s => s.id === smId);
+    if (!src) return;
+    const newId = 'sm_dup_' + Date.now();
+    // Duplikat semua field kecuali S/N dan foto dikosongkan
+    const dup = {
+      id: newId,
+      moduleName:   src.moduleName,
+      partNumber:   src.partNumber,
+      serialNumber: '',
+      statusDevice: src.statusDevice || '',
+      photos:       { sn: null, pn: null },
+      collapsed:    false,
+      _fromCatalog: src._fromCatalog || false,
+      _isMain:      false
+    };
+    // Sisipkan tepat setelah item yang diduplikat
+    const idx = d.subModules.findIndex(s => s.id === smId);
+    d.subModules.splice(idx + 1, 0, dup);
+    renderDevices();
+    showToast('⧉ Duplikat "' + (src.moduleName || 'Komponen') + '" ditambahkan — isi S/N baru', 3000);
+  }
+
   function toggleSubModule(devId, smId) {
     const d = devices.find(x => x.id === devId);
     if (!d) return;
@@ -3800,6 +3825,8 @@ map.on('click',function(e){
             ${(sm._fromCatalog && !sm._isMain) ? '<span style="font-size:9px;background:var(--fs-purple-light);color:var(--fs-purple);padding:1px 6px;border-radius:8px;margin-left:4px;">SUB</span>' : ''}
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
+            <button class="del-submodule-btn" onclick="event.stopPropagation();duplicateSubModule('${devId}','${sm.id}')"
+              style="color:var(--fs-blue);">⧉ Duplikat</button>
             <button class="del-submodule-btn" onclick="event.stopPropagation();removeSubModule('${devId}','${sm.id}')">✕ Hapus</button>
             <svg class="chevron ${sm.collapsed?'':'open'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </div>
