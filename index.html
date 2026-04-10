@@ -1361,6 +1361,11 @@
     </button>
     <div class="pin-msg neutral" id="pinMsg">Pilih divisi lalu masukkan token 6 karakter</div>
 
+    <!-- Peringatan token default (tampil jika token belum diganti) -->
+    <div id="defaultTokenWarning" style="display:none;margin-top:10px;padding:10px 12px;background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;font-size:11px;color:#7A4E0D;line-height:1.5;">
+      ⚠️ <b>Peringatan Keamanan:</b> Token masih menggunakan nilai <b>default</b>.<br>
+      Login sebagai <b>Asset</b> lalu buka menu <b>🔑 Kelola Token</b> di session bar.
+    </div>
     </div>
   <div class="pin-footer">Fiberstar Network Asset Management · v19</div>
 </div>
@@ -5858,7 +5863,8 @@ ${sigSection}
   ];
 
   const SESSION_KEY        = 'fs_pin_session';
-  const TOKEN_STATS_KEY    = 'fs_token_stats'; // { FOP: {lastUsed, generatedAt}, NetDev: {...} }
+  const TOKEN_STATS_KEY    = 'fs_token_stats';   // { FOP: {lastUsed, generatedAt}, NetDev: {...} }
+  const ACTIVE_HASHES_KEY  = 'fs_active_hashes'; // { FOP: 'sha256hash', NetDev: 'sha256hash' }
   const SESSION_TIMEOUT_MS = 12 * 60 * 60 * 1000;
 
   let _selectedRole  = null;
@@ -5870,6 +5876,14 @@ ${sigSection}
   // ── Token Stats (localStorage) ────────────────────────
   function _getTokenStats() {
     try { return JSON.parse(localStorage.getItem(TOKEN_STATS_KEY) || '{}'); } catch(_){ return {}; }
+  }
+  function _getActiveHashes() {
+    try { return JSON.parse(localStorage.getItem(ACTIVE_HASHES_KEY) || '{}'); } catch(_){ return {}; }
+  }
+  function _saveActiveHash(roleId, hash) {
+    const h = _getActiveHashes();
+    h[roleId] = hash;
+    try { localStorage.setItem(ACTIVE_HASHES_KEY, JSON.stringify(h)); } catch(_){}
   }
   function _saveTokenStat(roleId, field, value) {
     const stats = _getTokenStats();
@@ -5930,10 +5944,14 @@ ${sigSection}
       // Asset: token fix, bandingkan dengan ASSET_TOKEN_HASH
       matched = (hash === ASSET_TOKEN_HASH);
     } else {
-      // FOP & NetDev: bandingkan dengan ROLE_HASHES + pending token
-      const stored  = ROLE_HASHES[_selectedRole];
-      const pending = _pendingTokens[_selectedRole];
-      matched = (stored && hash === stored) || (pending && hash === pending.hash);
+      // FOP & NetDev: cek hash aktif di localStorage (prioritas), lalu fallback ke ROLE_HASHES di file
+      const activeHashes = _getActiveHashes();
+      const activeHash   = activeHashes[_selectedRole];   // token terbaru yang di-generate
+      const fileHash     = ROLE_HASHES[_selectedRole];    // token lama dari file HTML
+      const pendingHash  = (_pendingTokens[_selectedRole] || {}).hash; // token pending sesi ini
+      matched = (activeHash && hash === activeHash)
+             || (fileHash   && hash === fileHash)
+             || (pendingHash && hash === pendingHash);
     }
 
     if (matched) {
@@ -5969,7 +5987,10 @@ ${sigSection}
     const stats = _getTokenStats();
     cont.innerHTML = TOKEN_ROLES.map(r => {
       const p          = _pendingTokens[r.id];
-      const displayTok = p ? p.plain : (DEFAULT_TOKENS[r.id] || '(aktif)');
+      const activeHashes = _getActiveHashes();
+      // Tampilkan: pending (baru di-generate sesi ini) > token aktif di localStorage > default
+      const displayTok = p ? p.plain
+                       : (activeHashes[r.id] ? '••••••' : (DEFAULT_TOKENS[r.id] || '(aktif)'));
       const isNew      = !!p;
       const st         = stats[r.id] || {};
       const genAt      = p ? _fmtTime(st.generatedAt) : (st.generatedAt ? _fmtTime(st.generatedAt) : '—');
@@ -6008,10 +6029,12 @@ ${sigSection}
     const tok  = _genToken();
     const hash = await _sha256(tok);
     _pendingTokens[roleId] = { plain: tok, hash };
+    // Simpan hash ke localStorage → token langsung aktif tanpa update file HTML
+    _saveActiveHash(roleId, hash);
     // Catat waktu generate
     _saveTokenStat(roleId, 'generatedAt', Date.now());
     _renderKelolaToken();
-    showToast(`Token ${roleId} baru: ${tok} — salin kode & update file!`, 6000);
+    showToast(`✅ Token ${roleId} baru aktif: ${tok} — salin & bagikan ke tim!`, 6000);
   }
 
   function copyKelolaToken(roleId) {
@@ -6096,9 +6119,11 @@ ${sigSection}
   // Cek apakah hash yang tertanam masih sama dengan hash token default
   // Jika iya, token belum pernah diganti oleh Admin → tampilkan peringatan
   async function _checkDefaultTokens() {
-    // Asset token sengaja fix, hanya cek FOP & NetDev
+    // Jika sudah ada hash aktif di localStorage → token sudah pernah diganti, skip warning
+    const activeHashes = _getActiveHashes();
     const defaultPlain = { FOP: 'D4E5F6', NetDev: 'G7H8J9' };
     for (const [role, plain] of Object.entries(defaultPlain)) {
+      if (activeHashes[role]) continue; // sudah punya token baru
       const h = await _sha256(plain);
       if (ROLE_HASHES[role] === h) {
         const warn = document.getElementById('defaultTokenWarning');
