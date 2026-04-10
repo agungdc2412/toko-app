@@ -1277,7 +1277,47 @@
     <span style="opacity:0.6;">·</span>
     <span id="sessionTimeLabel" style="opacity:0.7;font-size:11px;"></span>
   </div>
-  <button class="btn-logout" onclick="doLogout()">⏻ Logout</button>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="btnKelolaToken" onclick="toggleKelolaToken()"
+      style="display:none;background:rgba(255,255,255,0.22);border:none;color:white;
+      padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;
+      cursor:pointer;font-family:inherit;transition:background 0.15s;"
+      onmouseover="this.style.background='rgba(255,255,255,0.36)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.22)'">
+      🔑 Kelola Token
+    </button>
+    <button class="btn-logout" onclick="doLogout()">⏻ Logout</button>
+  </div>
+</div>
+
+<!-- ── Panel Kelola Token (Asset Admin) ─────────────────── -->
+<div id="kelolaTokenPanel" style="display:none;position:fixed;top:34px;right:0;
+  width:min(340px,96vw);background:var(--bg-primary);
+  border:1px solid var(--border);border-left:3px solid var(--fs-blue);
+  border-radius:0 0 0 var(--radius-lg);box-shadow:-4px 6px 24px rgba(0,0,0,0.14);
+  z-index:490;padding:16px;">
+  <div style="font-size:11px;font-weight:700;color:var(--text-secondary);
+    text-transform:uppercase;letter-spacing:0.07em;margin-bottom:12px;
+    display:flex;align-items:center;justify-content:space-between;">
+    <span style="display:flex;align-items:center;gap:6px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--fs-blue);display:inline-block;"></span>
+      Kelola Token Divisi
+    </span>
+    <button onclick="toggleKelolaToken()"
+      style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text-secondary);line-height:1;">✕</button>
+  </div>
+  <div id="kelolaTokenRows"></div>
+  <div style="font-size:10px;color:var(--text-secondary);margin-top:10px;line-height:1.6;
+    padding:8px;background:var(--fs-amber-light);border-radius:6px;color:var(--fs-amber);">
+    ⚠️ Setelah generate, <b>salin kode hash</b> dan tempel ke file HTML bagian
+    <code>ROLE_TOKEN_HASHES</code>, lalu distribusi ulang file ke tim.
+  </div>
+  <button onclick="_copyNewHashesAsset()" id="btnCopyHashAsset"
+    style="display:none;width:100%;margin-top:10px;padding:9px;
+    background:var(--fs-blue);color:#fff;border:none;border-radius:8px;
+    font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
+    📋 Salin Kode Hash (tempel ke file HTML)
+  </button>
 </div>
 
 <!-- ── Token Login Screen ────────────────────────────────── -->
@@ -5823,6 +5863,7 @@ ${sigSection}
   ];
 
   const SESSION_KEY        = 'fs_pin_session';
+  const TOKEN_STATS_KEY    = 'fs_token_stats'; // { FOP: {lastUsed, generatedAt}, NetDev: {...} }
   const SESSION_TIMEOUT_MS = 12 * 60 * 60 * 1000;
 
   let _selectedRole  = null;
@@ -5830,6 +5871,17 @@ ${sigSection}
   let _adminUnlocked = false;
   let _tokenVisible  = false;
   let _pendingTokens = {}; // token baru yang belum disimpan ke file
+
+  // ── Token Stats (localStorage) ────────────────────────
+  function _getTokenStats() {
+    try { return JSON.parse(localStorage.getItem(TOKEN_STATS_KEY) || '{}'); } catch(_){ return {}; }
+  }
+  function _saveTokenStat(roleId, field, value) {
+    const stats = _getTokenStats();
+    if (!stats[roleId]) stats[roleId] = {};
+    stats[roleId][field] = value;
+    try { localStorage.setItem(TOKEN_STATS_KEY, JSON.stringify(stats)); } catch(_){}
+  }
 
   // ── Crypto ─────────────────────────────────────────────
   async function _sha256(str) {
@@ -5910,24 +5962,47 @@ ${sigSection}
     if (_kelolaOpen) _renderKelolaToken();
   }
 
+  function _fmtTime(ts) {
+    if (!ts) return '—';
+    const d = new Date(ts);
+    return d.toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) + ' ' +
+           d.toLocaleTimeString('id-ID', {hour:'2-digit',minute:'2-digit'});
+  }
+
   function _renderKelolaToken() {
-    const cont = document.getElementById('kelolaTokenRows');
+    const cont  = document.getElementById('kelolaTokenRows');
+    const stats = _getTokenStats();
     cont.innerHTML = TOKEN_ROLES.map(r => {
-      const p = _pendingTokens[r.id];
+      const p          = _pendingTokens[r.id];
       const displayTok = p ? p.plain : (DEFAULT_TOKENS[r.id] || '(aktif)');
-      const isNew = !!p;
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;
-        padding:10px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:8px;">
-        <span style="font-size:13px;flex:1;font-weight:500;">\${r.icon} \${r.label}</span>
-        <span style="font-family:monospace;font-size:12px;padding:3px 8px;border-radius:6px;
-          background:\${isNew?'var(--fs-green-light)':'var(--fs-blue-light)'};
-          color:\${isNew?'var(--fs-green)':'var(--fs-blue)'};">\${displayTok}</span>
-        <button onclick="copyKelolaToken('\${r.id}')" title="Salin token"
-          style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;
-          background:var(--bg-primary);cursor:pointer;font-size:12px;">📋</button>
-        <button onclick="regenKelolaToken('\${r.id}')"
-          style="padding:4px 10px;border:none;border-radius:6px;background:var(--fs-blue);
-          color:#fff;font-size:11px;font-weight:600;cursor:pointer;">↻ Baru</button>
+      const isNew      = !!p;
+      const st         = stats[r.id] || {};
+      const genAt      = p ? _fmtTime(st.generatedAt) : (st.generatedAt ? _fmtTime(st.generatedAt) : '—');
+      const lastUsed   = st.lastUsed ? _fmtTime(st.lastUsed) : '—';
+      return `<div style="margin-bottom:12px;padding:12px;background:var(--bg-secondary);
+        border:1px solid var(--border);border-radius:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:13px;flex:1;font-weight:600;">${r.icon} ${r.label}</span>
+          <span style="font-family:monospace;font-size:12px;padding:3px 8px;border-radius:6px;
+            background:${isNew?'var(--fs-green-light)':'var(--fs-blue-light)'};
+            color:${isNew?'var(--fs-green)':'var(--fs-blue)'};">${displayTok}</span>
+          <button onclick="copyKelolaToken('${r.id}')" title="Salin token"
+            style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;
+            background:var(--bg-primary);cursor:pointer;font-size:12px;">📋</button>
+          <button onclick="regenKelolaToken('${r.id}')"
+            style="padding:4px 10px;border:none;border-radius:6px;background:var(--fs-blue);
+            color:#fff;font-size:11px;font-weight:600;cursor:pointer;">↻ Baru</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+          <div style="font-size:10px;color:var(--text-secondary);">
+            🕐 <b>Di-generate</b><br>
+            <span style="color:var(--text-primary);font-size:11px;">${genAt}</span>
+          </div>
+          <div style="font-size:10px;color:var(--text-secondary);">
+            🔑 <b>Terakhir digunakan</b><br>
+            <span style="color:var(--text-primary);font-size:11px;">${lastUsed}</span>
+          </div>
+        </div>
       </div>`;
     }).join('');
     document.getElementById('btnCopyHashAsset').style.display =
@@ -5938,8 +6013,10 @@ ${sigSection}
     const tok  = _genToken();
     const hash = await _sha256(tok);
     _pendingTokens[roleId] = { plain: tok, hash };
+    // Catat waktu generate
+    _saveTokenStat(roleId, 'generatedAt', Date.now());
     _renderKelolaToken();
-    showToast(`Token \${roleId} baru: \${tok} — salin kode & update file!`, 6000);
+    showToast(`Token ${roleId} baru: ${tok} — salin kode & update file!`, 6000);
   }
 
   function copyKelolaToken(roleId) {
@@ -5947,19 +6024,16 @@ ${sigSection}
     const tok = p ? p.plain : (DEFAULT_TOKENS[roleId] || '');
     if (!tok) { showToast('Generate token baru dulu dengan ↻ Baru'); return; }
     navigator.clipboard.writeText(tok).catch(() => prompt('Salin token:', tok));
-    showToast(`📋 Token \${roleId} disalin: \${tok}`, 3000);
+    showToast(`📋 Token ${roleId} disalin: ${tok}`, 3000);
   }
 
   function _copyNewHashesAsset() {
     const lines = TOKEN_ROLES.map(r => {
       const p = _pendingTokens[r.id];
       const h = p ? p.hash : ROLE_HASHES[r.id];
-      return `    \${r.id.padEnd(7)}: '\${h}',`;
+      return `    ${r.id.padEnd(7)}: '${h}',`;
     });
-    const snippet = `  const ROLE_HASHES = {
-\${lines.join('
-')}
-  };`;
+    const snippet = `  const ROLE_HASHES = {\n${lines.join('\n')}\n  };`;
     navigator.clipboard.writeText(snippet).catch(() => prompt('Salin kode ini:', snippet));
     showToast('📋 Kode hash disalin! Paste ke file HTML pada bagian ROLE_TOKEN_HASHES', 5000);
   }
@@ -5968,6 +6042,8 @@ ${sigSection}
   function _loginSuccess(roleId) {
     const session = { name: roleId, role: roleId, loginAt: Date.now() };
     try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(_){}
+    // Catat waktu last used untuk FOP & NetDev
+    if (roleId !== 'Asset') _saveTokenStat(roleId, 'lastUsed', Date.now());
     _applySession(session);
   }
 
