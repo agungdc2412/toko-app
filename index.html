@@ -4691,9 +4691,30 @@ map.on('click',function(e){
         const folderLabel = `Device_${String(i+1).padStart(2,'0')}_${safeName}`;
         const devFolder = root.folder(folderLabel);
         const added = [];
-        if (d.photos.full)  { devFolder.file(`foto_full.${d.exts.full||'jpg'}`,   d.photos.full.split(',')[1],  {base64:true}); added.push('full');  totalDevicePhotos++; }
-        if (d.photos.zoom)  { devFolder.file(`foto_type.${d.exts.zoom||'jpg'}`,   d.photos.zoom.split(',')[1],  {base64:true}); added.push('type');  totalDevicePhotos++; }
-        if (d.photos.label) { devFolder.file(`foto_sn.${d.exts.label||'jpg'}`,    d.photos.label.split(',')[1], {base64:true}); added.push('s/n');   totalDevicePhotos++; }
+        if (d.photos.full)  { devFolder.file(`foto_full.${d.exts&&d.exts.full||'jpg'}`,   d.photos.full.split(',')[1],  {base64:true}); added.push('full');  totalDevicePhotos++; }
+        if (d.photos.zoom)  { devFolder.file(`foto_type.${d.exts&&d.exts.zoom||'jpg'}`,   d.photos.zoom.split(',')[1],  {base64:true}); added.push('type');  totalDevicePhotos++; }
+        if (d.photos.label) { devFolder.file(`foto_sn.${d.exts&&d.exts.label||'jpg'}`,    d.photos.label.split(',')[1], {base64:true}); added.push('s/n');   totalDevicePhotos++; }
+        if (d.photos.pn)    { devFolder.file(`foto_pn.${d.exts&&d.exts.pn||'jpg'}`,       d.photos.pn.split(',')[1],    {base64:true}); added.push('p/n');   totalDevicePhotos++; }
+
+        // ── Foto Sub-Modul ────────────────────────────────
+        (d.subModules || []).forEach((sm, si) => {
+          if (!sm.photos) return;
+          const smSafeName = (sm.moduleName || 'submodul').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+          const smLabel = `SubMod_${String(si+1).padStart(2,'0')}_${smSafeName}`;
+          const smAdded = [];
+          if (sm.photos.sn) {
+            const ext = (sm.exts && sm.exts.sn) || 'jpg';
+            devFolder.file(`${smLabel}_foto_sn.${ext}`, sm.photos.sn.split(',')[1], {base64:true});
+            smAdded.push('s/n'); totalDevicePhotos++;
+          }
+          if (sm.photos.pn) {
+            const ext = (sm.exts && sm.exts.pn) || 'jpg';
+            devFolder.file(`${smLabel}_foto_pn.${ext}`, sm.photos.pn.split(',')[1], {base64:true});
+            smAdded.push('p/n'); totalDevicePhotos++;
+          }
+          if (smAdded.length > 0) added.push(`${smLabel}[${smAdded.join(',')}]`);
+        });
+
         photoSummary.push(`  ${folderLabel}/  [${added.length > 0 ? added.join(', ') : 'tidak ada foto'}]`);
       });
 
