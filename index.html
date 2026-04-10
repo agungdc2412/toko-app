@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fiberstar Asset Management 1</title>
+  <title>Fiberstar Asset Management</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.6/umd/index.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -5941,19 +5941,26 @@ ${sigSection}
 
     let matched = false;
     if (_selectedRole === 'Asset') {
-      // Asset: token fix, bandingkan dengan ASSET_TOKEN_HASH
       matched = (hash === ASSET_TOKEN_HASH);
     } else {
-      // FOP & NetDev: cek hash aktif di localStorage (prioritas), lalu fallback ke ROLE_HASHES di file
       const activeHashes = _getActiveHashes();
-      const activeHash   = activeHashes[_selectedRole];   // token terbaru yang di-generate
-      const fileHash     = ROLE_HASHES[_selectedRole];    // token lama dari file HTML
-      const pendingHash  = (_pendingTokens[_selectedRole] || {}).hash; // token pending sesi ini
+      const activeHash   = activeHashes[_selectedRole];
+      const fileHash     = ROLE_HASHES[_selectedRole];
+      const pendingHash  = (_pendingTokens[_selectedRole] || {}).hash;
+
+      // DEBUG — buka F12 Console untuk lihat nilai ini
+      console.log('[TOKEN DEBUG]', {
+        role: _selectedRole,
+        inputHash: hash,
+        activeHash: activeHash || '(kosong)',
+        fileHash: fileHash || '(kosong)',
+        pendingHash: pendingHash || '(kosong)',
+        activeHashesRaw: JSON.stringify(activeHashes)
+      });
+
       if (activeHash) {
-        // Sudah pernah di-generate → hanya token baru yang berlaku, token lama/default ditolak
         matched = (hash === activeHash) || (pendingHash && hash === pendingHash);
       } else {
-        // Belum pernah di-generate → gunakan hash dari file HTML (termasuk default)
         matched = (fileHash && hash === fileHash) || (pendingHash && hash === pendingHash);
       }
     }
