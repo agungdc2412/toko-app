@@ -1360,8 +1360,14 @@
       Masuk
     </button>
     <div class="pin-msg neutral" id="pinMsg">Pilih divisi lalu masukkan token 6 karakter</div>
+
+    <!-- Peringatan token default (tampil jika token belum diganti) -->
+    <div id="defaultTokenWarning" style="display:none;margin-top:10px;padding:10px 12px;background:#FAEEDA;border:1px solid #BA7517;border-radius:8px;font-size:11px;color:#7A4E0D;line-height:1.5;">
+      ⚠️ <b>Peringatan Keamanan:</b> Token masih menggunakan nilai <b>default</b>.<br>
+      Login sebagai <b>Asset</b> lalu buka menu <b>🔑 Kelola Token</b> di session bar.
     </div>
-  <div class="pin-footer">Fiberstar Network Asset Management · v1</div>
+    </div>
+  <div class="pin-footer">Fiberstar Network Asset Management · v19</div>
 </div>
 
 <!-- ── Validation Modal ──────────────────────────────────── -->
@@ -3545,19 +3551,21 @@ map.on('click',function(e){
     return `
       <div class="device-card-body">
         <div class="form-group" style="margin-bottom:14px;">
-          <label class="form-label">Module Device Name</label>
+          <label class="form-label">Module Device Name
+            <span style="font-size:10px;color:var(--fs-purple);font-weight:400;margin-left:6px;">✦ Pilih dari dropdown → sub-modul auto ter-generate</span>
+          </label>
           <div style="display:flex;gap:6px;align-items:flex-start;">
             <div class="device-ac-wrap">
               <input type="text" class="form-input" style="width:100%;" placeholder="Ketik nama device..."
                 value="${escHtml(d.deviceName)}"
                 autocomplete="off"
-                oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});_acFilter('${d.id}',this.value,this)"
-                onfocus="_acFilter('${d.id}',this.value,this)"
+                oninput="updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});_acFilterModule('${d.id}',this.value,this)"
+                onfocus="_acFilterModule('${d.id}',this.value,this)"
                 onkeydown="_acKeyNav(event,'${d.id}')">
               <div class="device-ac-dropdown" id="ac_${d.id}"></div>
             </div>
             <button class="stt-btn" title="Ucapkan Nama"
-              onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var inp=this.parentElement.querySelector('input');inp.value=t;_acFilter('${d.id}',t,inp);}.bind(this.parentElement))">${_icoMic}</button>
+              onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var inp=this.parentElement.querySelector('input');inp.value=t;_acFilterModule('${d.id}',t,inp);}.bind(this.parentElement))">${_icoMic}</button>
           </div>
         </div>
 
@@ -3592,6 +3600,20 @@ map.on('click',function(e){
         </div>
 
         ${_deviceActivityFields(d)}
+
+        <!-- ── Sub-Modul List ──────────────────────────────── -->
+        ${subMods.length > 0 ? `
+          <div class="submodule-list">
+            <div class="form-label" style="margin-bottom:8px;color:var(--fs-purple);display:flex;align-items:center;gap:6px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--fs-purple);display:inline-block;"></span>
+              Komponen Module (${subMods.length})
+            </div>
+            ${subMods.map((sm, si) => _renderSubModule(d.id, sm, si)).join('')}
+          </div>` : ''}
+
+        <button class="add-submodule-btn" onclick="addSubModule('${d.id}')">
+          + Tambah Komponen Manual
+        </button>
 
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
@@ -3774,6 +3796,8 @@ map.on('click',function(e){
           <div class="submodule-title">
             <span class="submodule-num">${si + 1}</span>
             <span>${escHtml(sm.moduleName) || 'Module ' + (si + 1)}</span>
+            ${sm._isMain ? '<span style="font-size:9px;background:var(--fs-blue);color:white;padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;">UTAMA</span>' : ''}
+            ${(sm._fromCatalog && !sm._isMain) ? '<span style="font-size:9px;background:var(--fs-purple-light);color:var(--fs-purple);padding:1px 6px;border-radius:8px;margin-left:4px;">SUB</span>' : ''}
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
             <button class="del-submodule-btn" onclick="event.stopPropagation();removeSubModule('${devId}','${sm.id}')">✕ Hapus</button>
@@ -5656,7 +5680,7 @@ ${sigSection}
   // ── Device Catalog Engine — Data Hardcoded dari Excel ─
   // ══════════════════════════════════════════════════════
   // Katalog 173 device — update: embed ulang dari file DEVICE_KATALOG.xlsx
-  const _CATALOG_RAW = [{"n":"AC DAIKIN 0.5 PK FTC15NV14","p":"FTC15NV14","k":"AC","m":"","r":""},{"n":"AC DAIKIN 0.5 PK FTV15BXV14","p":"FTV15BXV14","k":"AC","m":"","r":""},{"n":"AC DAIKIN 2 PK FTV50BXV14","p":"FTV50BXV14","k":"AC","m":"","r":""},{"n":"AC PANASONIC CS-YN9AKJ","p":"YN9AKJ","k":"AC","m":"","r":""},{"n":"AC PANASONIC CS-YN9WKJ","p":"YN9WKJ","k":"AC","m":"","r":""},{"n":"APAR 3 KG","p":"","k":"APAR","m":"","r":""},{"n":"APAR CITIFIRE 2KG","p":"","k":"APAR","m":"","r":""},{"n":"BATTERY FIAM 12FIT/100M","p":"","k":"BATTERY","m":"","r":""},{"n":"BATTERY GENESIS 12TD100F4","p":"","k":"BATTERY","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - AUX - TMF2AUX02","p":"TMF2AUX02","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - FAN DWDM - TNG1FAN05","p":"TNG1FAN05","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - FILTER ROADM BOARD - TNG2WSMD90","p":"TNG2WSMD90","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - M60 - TNG1M608D","p":"TNG1M608D","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - OPT. SPV. CHANNEL - TNG2OPM801","p":"TNG2OPM801","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - OPTICAL AMPLIFIER - TNG2DAP","p":"TNG2DAP","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - PDU - TMF1PIU01","p":"TMF1PIU01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - QCP - TNG2QCP01","p":"TNG2QCP01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - RACK","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - SYS. COMM. CTRL - TME3CTU01","p":"TME3CTU01","k":"DWDM","m":"","r":""},{"n":"DWDM HUAWEI OPTIX OSN 9800 M12 - TNG20H9L01","p":"TNG20H9L01","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - AHPHG - OPTICAL AMPLIFIER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - AHPLG - OPTICAL AMPLIFIER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - FAN","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - INVERTER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - ITLU - INTERLEAVER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - POWER","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - RED EC - SYS. COMM. CTRL","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - S13X100R - OPT. TRANSPONDER UNIT","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - SFD44 - SFD/MUX-DEMUX","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32 - WR8-88AF - FILTER ROADM BOARD","p":"","k":"DWDM","m":"","r":""},{"n":"DWDM NOKIA 1830 PSS-32- 260SCX2 - OPT. TRANSPONDER UNIT","p":"","k":"DWDM","m":"","r":""},{"n":"FAN OLT","p":"","k":"FAN","m":"","r":""},{"n":"FAN OLT HUAWEI EA5800_X2 H90F1FMSA","p":"","k":"FAN","m":"","r":""},{"n":"FAN ROUTER HUAWEI FAN 036A-B","p":"","k":"FAN","m":"","r":""},{"n":"GENSET YAMAHA EF7200","p":"","k":"GENSET","m":"","r":""},{"n":"INVERTER","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER COTEX SRT1000T-248","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER EVADA XMI 10HR CE 1000VA","p":"","k":"INVERTER","m":"","r":""},{"n":"INVERTER EVEREXCEED 1 KVA","p":"","k":"INVERTER","m":"","r":""},{"n":"LINE CARD IO OLT HUAWEI MPSFE-G","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE GFGH C620","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE GTGH C320","p":"","k":"LINE","m":"","r":""},{"n":"LINE CARD IO OLT ZTE HFTL C620","p":"","k":"LINE","m":"","r":""},{"n":"MIKROBITS AINOS","p":"","k":"MIKROBITS","m":"","r":""},{"n":"MIKROTIK RB92","p":"","k":"MIKROTIK","m":"","r":""},{"n":"MIKROTIK RB95","p":"","k":"MIKROTIK","m":"","r":""},{"n":"MODUL RECTIFIER EATON NPR48 ES","p":"","k":"MODUL","m":"","r":""},{"n":"MODULE RECTIFIER ELTEK FLATPACK2 48/2000 SHE","p":"","k":"MODULE","m":"","r":""},{"n":"MODULE RECTIFIER SMART POWER III 48","p":"","k":"MODULE","m":"","r":""},{"n":"OLT BDCOM","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI EA5800","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI EA5800 X2","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI MA5801S","p":"","k":"OLT","m":"","r":""},{"n":"OLT HUAWEI SMARTAX EA5800_X2","p":"","k":"OLT","m":"","r":""},{"n":"OLT ZTE C320","p":"","k":"OLT","m":"","r":""},{"n":"OLT ZTE C620","p":"","k":"OLT","m":"","r":""},{"n":"OPTIX OSN 1800","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800 M12","p":"","k":"OPTIX","m":"","r":""},{"n":"OPTIX OSN 9800 M24","p":"","k":"OPTIX","m":"","r":""},{"n":"OS6900 C32E","p":"","k":"OS6900","m":"","r":""},{"n":"OS6900 X20","p":"","k":"OS6900","m":"","r":""},{"n":"OTB 96 CORE LITECH","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE NWC","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE PAZ","p":"","k":"OTB","m":"","r":""},{"n":"OTB 96 CORE PAZ","p":"","k":"OTB","m":"","r":""},{"n":"POWER OLT HUAWEI H901PISC","p":"","k":"POWER","m":"","r":""},{"n":"POWER OLT ZTE PRSF C620","p":"","k":"POWER","m":"","r":""},{"n":"POWER ROUTER HUAWEI PAC1K2S12-B","p":"","k":"POWER","m":"","r":""},{"n":"RACK","p":"","k":"RACK","m":"","r":""},{"n":"RACK BATTERY","p":"","k":"RACK","m":"","r":""},{"n":"RACK OLT","p":"","k":"RACK","m":"","r":""},{"n":"RACK OTB","p":"","k":"RACK","m":"","r":""},{"n":"RACK RECTIFIER","p":"","k":"RACK","m":"","r":""},{"n":"RECTIFIER","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER DPC SP SERIES 48V","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER EATON SC200","p":"","k":"RECTIFIER","m":"","r":""},{"n":"RECTIFIER ELTEK FLATPACK CABINET","p":"","k":"RECTIFIER","m":"","r":""},{"n":"ROUTER ARISTA","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO 2950","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO 3850","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9006","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 920","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9300","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9901","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR 9903","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO ASR920","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 540","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 540","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5500","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5501","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5501","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 5504","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1 24H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO NCS 55A1 36H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER CISCO XRV9000","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CE 6730","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6730","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6730 H48X6C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900 X20","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE S6900 X72","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI CLOUD ENGINE SC503","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 40","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F1A 8H20Q","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2A 8H20Q","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2A 8K36H","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 F2C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 X 4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000 X4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE 8000E F2C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE40E F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE40E SERIES","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NE8000 F2A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI NETENGINE 8000 M1D","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S5736 S24S4XC","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUAWEI S6750 H36C","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER HUWAEI NE 8000 F1A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER ISCOM2624G 4GE AC","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA 7750 SR-A4","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA CPM-A","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA FILTER UDARA","p":"","k":"ROUTER","m":"","r":""},{"n":"ROUTER NOKIA MDA-A","p":"","k":"ROUTER","m":"","r":""},{"n":"SFP OLT","p":"","k":"SFP","m":"","r":""},{"n":"SFP SWITCH","p":"","k":"SFP","m":"","r":""},{"n":"SWITCH ALCATEL 2950","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6224","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6250","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450 10","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6450 24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6860","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6860 24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL 6900","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT 0S6540-24","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT 0S6540-P10","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT OS6860-U28","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL LUCENT OS6860E-U28","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ALCATEL OS6900 X72","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH ARISTA","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH BDCOM","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 2950","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 2960","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH CISCO 3850","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH EDGECORE","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 2600G","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 2624 4GE","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM 551E 4G AC","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX700","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX701","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAISECOM RAX711","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH RAX700 MOI MDF","p":"","k":"SWITCH","m":"","r":""},{"n":"SWITCH SEIMENS","p":"","k":"SWITCH","m":"","r":""},{"n":"SYS. CONTROL RECTIFIER EATON SC200","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROL RECTIFIER EATON SC300","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT HUAWEI FLHFE","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT ZTE SMXA C320","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER OLT ZTE SPUF C620","p":"","k":"SYS.","m":"","r":""},{"n":"SYS. CONTROLLER RECTIFIER SC503","p":"","k":"SYS.","m":"","r":""},{"n":"TANGGA","p":"","k":"TANGGA","m":"","r":""},{"n":"UPS APC","p":"","k":"UPS","m":"","r":""},{"n":"UPS GAMATECH","p":"","k":"UPS","m":"","r":""}];
+  const _CATALOG_RAW = [{"n": "AC DAIKIN 0.5 PK FTC15NV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 0.5 PK FTV15BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 2 PK FTV50BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9AKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9WKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR 3 KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR CITIFIRE 2KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY FIAM 12FIT/100M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY GENESIS 12TD100F4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN ROUTER HUAWEI FAN 036A-B", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "GENSET YAMAHA EF7200", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER COTEX SRT1000T-248", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVADA XMI 10HR CE 1000VA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVEREXCEED 1 KVA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROBITS AINOS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB92", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB95", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 1800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 C32E", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK BATTERY", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OTB", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9006", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9300", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9901", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9903", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5500", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5504", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 24H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO XRV9000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CE 6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730 H48X6C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE SC503", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 40", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8K36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X 4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000E F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E SERIES", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE8000 F2A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NETENGINE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736 S24S4XC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S6750 H36C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUWAEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ISCOM2624G 4GE AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA 7750 SR-A4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA CPM-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA FILTER UDARA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA MDA-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP SWITCH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6224", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6250", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-P10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860E-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL OS6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH BDCOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2960", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH EDGECORE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2600G", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2624 4GE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 551E 4G AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX700", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX701", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX711", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAX700 MOI MDF", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH SIEMENS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "TANGGA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS APC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS GAMATECH", "p": "", "k": "", "m": "", "r": "Device"}];
 
   // Normalisasi ke format internal
   let _catalog = _CATALOG_RAW.map(function(x) {
@@ -5671,6 +5695,9 @@ ${sigSection}
   let _catalogLoaded = true;
   let _acFocusIdx = {};
 
+  // ── Module Sub-Katalog dari DEVICE_KATALOG.xlsx (sheet MODUL) ──
+  const _MODULE_CATALOG = {"OLT HUAWEI SMARTAX EA5800_X2": [{"name": "OLT HUAWEI SMARTAX EA5800_X2", "pn": "", "remark": "Modul"}, {"name": "FAN OLT HUAWEI EA5800_X2", "pn": "H90F1FMSA", "remark": "Sub-Modul"}, {"name": "LINE CARD IO OLT HUAWEI MPSFE-G", "pn": "", "remark": "Sub-Modul"}, {"name": "POWER OLT HUAWEI", "pn": "H901PISC", "remark": "Sub-Modul"}, {"name": "SYS. CONTROLLER OLT HUAWEI FLHFE", "pn": "", "remark": "Sub-Modul"}], "OLT ZTE C320": [{"name": "OLT ZTE C320", "pn": "", "remark": "Modul"}, {"name": "LINE CARD IO OLT ZTE GTGH C320", "pn": "", "remark": "Sub-Modul"}, {"name": "SYS. CONTROLLER OLT ZTE SMXA C320", "pn": "", "remark": "Sub-Modul"}], "OLT ZTE C620": [{"name": "OLT ZTE C620", "pn": "", "remark": "Modul"}, {"name": "LINE CARD IO OLT ZTE GFGH C620", "pn": "", "remark": "Sub-Modul"}, {"name": "LINE CARD IO OLT ZTE HFTL C620", "pn": "", "remark": "Sub-Modul"}, {"name": "POWER OLT ZTE PRSF C620", "pn": "", "remark": "Sub-Modul"}, {"name": "SYS. CONTROLLER OLT ZTE SPUF C620", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER EATON APR48 ES": [{"name": "RECTIFIER EATON APR48 ES", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER EATON APR48 ES", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER EATON NPR48 ES": [{"name": "RECTIFIER EATON NPR48 ES", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER EATON NPR48 ES", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER ELTEK FLATPACK2 48/2000 SHE": [{"name": "RECTIFIER ELTEK FLATPACK2 48/2000 SHE", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER ELTEK FLATPACK2 48/2000 SHE", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER SMART POWER III 48": [{"name": "RECTIFIER SMART POWER III 48", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER SMART POWER III 48", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER EATON SC300": [{"name": "RECTIFIER EATON SC300", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER EATON SC300", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER EATON SC200": [{"name": "RECTIFIER EATON SC200", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER EATON SC200", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER ELTEK FLATPACK": [{"name": "RECTIFIER ELTEK FLATPACK", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER ELTEK FLATPACK", "pn": "", "remark": "Sub-Modul"}], "RECTIFIER DPC SP SERIES 48V": [{"name": "RECTIFIER DPC SP SERIES 48V", "pn": "", "remark": "Modul"}, {"name": "MODULE RECTIFIER DPC SP SERIES 48V", "pn": "", "remark": "Sub-Modul"}], "DWDM NOKIA 1830 PSS-32": [{"name": "DWDM NOKIA 1830 PSS-32", "pn": "", "remark": "Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - AHPHG - OPTICAL AMPLIFIER", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - AHPLG - OPTICAL AMPLIFIER", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - FAN", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - INVERTER", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - ITLU - INTERLEAVER", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - POWER", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - RED EC - SYS. COMM. CTRL", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - S13X100R - OPT. TRANSPONDER UNIT", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - SFD44 - SFD/MUX-DEMUX", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32 - WR8-88AF - FILTER ROADM BOARD", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM NOKIA 1830 PSS-32- 260SCX2 - OPT. TRANSPONDER UNIT", "pn": "", "remark": "Sub-Modul"}], "DWDM HUAWEI OPTIX OSN 9800 M12": [{"name": "DWDM HUAWEI OPTIX OSN 9800 M12", "pn": "", "remark": "Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - AUX", "pn": "TMF2AUX02", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - FAN DWDM", "pn": "TNG1FAN05", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - FILTER ROADM BOARD", "pn": "TNG2WSMD90", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - M60", "pn": "TNG1M608D", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - OPT. SPV. CHANNEL", "pn": "TNG2OPM801", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - OPTICAL AMPLIFIER", "pn": "TNG2DAP", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - PDU", "pn": "TMF1PIU01", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - QCP", "pn": "TNG2QCP01", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - RACK", "pn": "", "remark": "Sub-Modul"}, {"name": "DWDM HUAWEI OPTIX OSN 9800 M12 - SYS. COMM. CTRL", "pn": "TME3CTU01", "remark": "Sub-Modul"}]};
+
   // _fetchCatalog tidak diperlukan — data sudah embedded
   async function _fetchCatalog() {
     _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog');
@@ -5681,6 +5708,58 @@ ${sigSection}
     el.className = 'catalog-status ' + type;
     const icon = type === 'ok' ? '✓' : type === 'loading' ? '⏳' : '✗';
     el.textContent = icon + ' ' + msg;
+  }
+
+  // ── Filter dropdown MODULE (13 group dari sheet MODUL) ─────
+  function _acFilterModule(devId, query, inputEl) {
+    const dd = document.getElementById('ac_' + devId);
+    if (!dd) return;
+    _acFocusIdx[devId] = -1;
+    const q = (query || '').toLowerCase().trim();
+    const keys = Object.keys(_MODULE_CATALOG);
+    const results = q.length === 0 ? keys : keys.filter(k => k.toLowerCase().includes(q));
+
+    if (results.length === 0) {
+      dd.innerHTML = '<div class="device-ac-empty">Tidak ada module yang cocok</div>';
+    } else {
+      dd.innerHTML = results.map(function(k, i) {
+        const subCount = _MODULE_CATALOG[k].length;
+        const safeK = escHtml(k);
+        return '<div class="device-ac-item" onmousedown="_acSelectModule(\'' + devId + '\',' + i + ',event)">' +
+          '<div class="device-ac-name">' + safeK + '</div>' +
+          '<div class="device-ac-meta"><span class="device-ac-badge">Module</span>' +
+          '<span>' + subCount + ' komponen</span></div></div>';
+      }).join('');
+    }
+    dd.classList.add('show');
+    const _closeModAc = function(e) {
+      if (!dd.contains(e.target) && e.target !== inputEl) {
+        dd.classList.remove('show');
+        document.removeEventListener('mousedown', _closeModAc);
+      }
+    };
+    document.removeEventListener('mousedown', _closeModAc);
+    document.addEventListener('mousedown', _closeModAc);
+  }
+
+    function _acSelectModule(devId, idx, e) {
+    if (e) e.preventDefault();
+    const dd = document.getElementById('ac_' + devId);
+    if (!dd) return;
+    const keys = Object.keys(_MODULE_CATALOG);
+    const name = keys[idx];
+    if (!name) return;
+    const d = devices.find(x => x.id === devId);
+    if (d) d.deviceName = name;
+    const wrap = dd.closest('.device-ac-wrap');
+    if (wrap) { const inp = wrap.querySelector('input'); if (inp) inp.value = name; }
+    const d2 = devices.find(x => x.id === devId);
+    const idx2 = devices.indexOf(d2);
+    updateDeviceTitle(devId, name, idx2);
+    dd.classList.remove('show');
+    _acFocusIdx[devId] = -1;
+    // Auto-generate sub-modul dari katalog
+    _autoGenerateSubModules(devId, name);
   }
 
   // ── Filter dan render dropdown ─────────────────────────
@@ -5780,9 +5859,50 @@ ${sigSection}
 
     dd.classList.remove('show');
     _acFocusIdx[devId] = -1;
+    // Auto-generate sub-modul jika device type=module
+    const dChk = devices.find(x => x.id === devId);
+    if (dChk && dChk.type === 'module') _autoGenerateSubModules(devId, name);
   }
 
-  // ── Navigasi keyboard (↑ ↓ Enter Escape) ──────────────
+  // ── Auto-generate sub-modul dari katalog ────────────────
+  function _autoGenerateSubModules(devId, deviceName) {
+    const d = devices.find(x => x.id === devId);
+    if (!d || d.type !== 'module') return;
+    const groupKey = Object.keys(_MODULE_CATALOG).find(k =>
+      deviceName.trim().toUpperCase() === k.toUpperCase()
+    );
+    if (!groupKey) return;
+    const items = _MODULE_CATALOG[groupKey];
+    if (!items || items.length === 0) return;
+    if (d._catalogGenerated === groupKey) return;
+    const hasUserData = (d.subModules || []).some(sm =>
+      sm.moduleName || sm.serialNumber || sm.partNumber
+    );
+    if (!hasUserData) d.subModules = [];
+    let smC = (window._smCounter || 2000);
+    items.forEach(item => {
+      // Lewati item utama (Modul), hanya generate Sub-Modul
+      if (item.remark !== 'Sub-Modul') return;
+      smC++;
+      d.subModules.push({
+        id: 'sm_cat_' + smC,
+        moduleName: item.name,
+        partNumber: item.pn || '',
+        serialNumber: '',
+        statusDevice: '',
+        photos: { sn: null, pn: null },
+        collapsed: false,
+        _fromCatalog: true,
+        _isMain: false
+      });
+    });
+    window._smCounter = smC;
+    d._catalogGenerated = groupKey;
+    renderDevices();
+    showToast('\u2705 ' + items.length + ' modul dari katalog "' + groupKey + '" berhasil di-generate!', 4000);
+  }
+
+  // ── Navigasi keyboard (\u2191 \u2193 Enter Escape) ──────────────
   function _acKeyNav(e, devId) {
     const dd = document.getElementById('ac_' + devId);
     if (!dd || !dd.classList.contains('show')) return;
