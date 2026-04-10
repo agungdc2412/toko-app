@@ -5880,9 +5880,9 @@ ${sigSection}
   function _getActiveHashes() {
     try { return JSON.parse(localStorage.getItem(ACTIVE_HASHES_KEY) || '{}'); } catch(_){ return {}; }
   }
-  function _saveActiveHash(roleId, hash) {
+  function _saveActiveHash(roleId, hash, plain) {
     const h = _getActiveHashes();
-    h[roleId] = hash;
+    h[roleId] = { hash, plain }; // simpan hash + plaintext agar bisa ditampilkan & disalin
     try { localStorage.setItem(ACTIVE_HASHES_KEY, JSON.stringify(h)); } catch(_){}
   }
   function _saveTokenStat(roleId, field, value) {
@@ -5997,12 +5997,14 @@ ${sigSection}
     const cont  = document.getElementById('kelolaTokenRows');
     const stats = _getTokenStats();
     cont.innerHTML = TOKEN_ROLES.map(r => {
-      const p          = _pendingTokens[r.id];
+      const p            = _pendingTokens[r.id];
       const activeHashes = _getActiveHashes();
-      // Tampilkan: pending (baru di-generate sesi ini) > token aktif di localStorage > default
+      const activeEntry  = activeHashes[r.id];
+      const activePlain  = activeEntry ? (activeEntry.plain || null) : null;
+      // Tampilkan: pending sesi ini > plaintext dari localStorage > masked > default
       const displayTok = p ? p.plain
-                       : (activeHashes[r.id] ? '••••••' : (DEFAULT_TOKENS[r.id] || '(aktif)'));
-      const isNew      = !!p;
+                       : (activePlain ? activePlain : (activeEntry ? '••••••' : (DEFAULT_TOKENS[r.id] || '(aktif)')));
+      const isNew      = !!(p || activeEntry);
       const st         = stats[r.id] || {};
       const genAt      = p ? _fmtTime(st.generatedAt) : (st.generatedAt ? _fmtTime(st.generatedAt) : '—');
       const lastUsed   = st.lastUsed ? _fmtTime(st.lastUsed) : '—';
@@ -6032,16 +6034,16 @@ ${sigSection}
         </div>
       </div>`;
     }).join('');
-    document.getElementById('btnCopyHashAsset').style.display =
-      Object.keys(_pendingTokens).length ? 'block' : 'none';
+    const _hasAny = Object.keys(_pendingTokens).length || Object.keys(_getActiveHashes()).length;
+    document.getElementById('btnCopyHashAsset').style.display = _hasAny ? 'block' : 'none';
   }
 
   async function regenKelolaToken(roleId) {
     const tok  = _genToken();
     const hash = await _sha256(tok);
     _pendingTokens[roleId] = { plain: tok, hash };
-    // Simpan hash ke localStorage → token langsung aktif tanpa update file HTML
-    _saveActiveHash(roleId, hash);
+    // Simpan hash + plain ke localStorage → token langsung aktif tanpa update file HTML
+    _saveActiveHash(roleId, hash, tok);
     // Catat waktu generate
     _saveTokenStat(roleId, 'generatedAt', Date.now());
     _renderKelolaToken();
@@ -6049,17 +6051,22 @@ ${sigSection}
   }
 
   function copyKelolaToken(roleId) {
-    const p = _pendingTokens[roleId];
-    const tok = p ? p.plain : (DEFAULT_TOKENS[roleId] || '');
+    const p           = _pendingTokens[roleId];
+    const activeEntry = _getActiveHashes()[roleId];
+    const tok = p ? p.plain
+              : (activeEntry ? (activeEntry.plain || '') : (DEFAULT_TOKENS[roleId] || ''));
     if (!tok) { showToast('Generate token baru dulu dengan ↻ Baru'); return; }
     navigator.clipboard.writeText(tok).catch(() => prompt('Salin token:', tok));
     showToast(`📋 Token ${roleId} disalin: ${tok}`, 3000);
   }
 
   function _copyNewHashesAsset() {
+    const activeHashes = _getActiveHashes();
     const lines = TOKEN_ROLES.map(r => {
-      const p = _pendingTokens[r.id];
-      const h = p ? p.hash : ROLE_HASHES[r.id];
+      const p           = _pendingTokens[r.id];
+      const activeEntry = activeHashes[r.id];
+      const h = p ? p.hash
+              : (activeEntry ? (activeEntry.hash || activeEntry) : ROLE_HASHES[r.id]);
       return `    ${r.id.padEnd(7)}: '${h}',`;
     });
     const snippet = `  const ROLE_HASHES = {\n${lines.join('\n')}\n  };`;
