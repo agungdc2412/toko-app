@@ -1486,11 +1486,11 @@
 
     <div class="form-grid">
       <div class="form-group">
-        <label class="form-label">Date</label>
-        <input type="date" class="form-input" id="fDate">
+        <label class="form-label">Date <span style="color:var(--fs-red);font-size:11px;">*</span></label>
+        <input type="date" class="form-input" id="fDate" required>
       </div>
       <div class="form-group">
-        <label class="form-label">Site Name</label>
+        <label class="form-label">Site Name <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. APT GREENLAKE" id="fSiteName">
           <button class="stt-btn" title="Ucapkan Site Name" onclick="startSTT('fSiteName', this)">
@@ -1499,7 +1499,7 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Site ID</label>
+        <label class="form-label">Site ID <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. KYB001" id="fSiteId">
           <button class="stt-btn" title="Ucapkan Site ID" onclick="startSTT('fSiteId', this)">
@@ -1508,14 +1508,14 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Type Site</label>
+        <label class="form-label">Type Site <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <select class="form-select" id="fTypeSite">
           <option value="">— Pilih Type —</option>
           <option>POP</option><option>HUB</option><option>BDF</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">PIC Name</label>
+        <label class="form-label">PIC Name <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="Nama PIC" id="fPicName">
           <button class="stt-btn" title="Ucapkan Nama PIC" onclick="startSTT('fPicName', this)">
@@ -1541,16 +1541,31 @@
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Division</label>
+        <label class="form-label">Division <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <select class="form-select" id="fDivision">
           <option value="">— Pilih Division —</option>
           <option>Asset</option><option>FOP</option><option>Network Development</option>
         </select>
       </div>
+      <div class="form-group">
+        <label class="form-label">Subregion <span style="color:var(--fs-red);font-size:11px;">*</span></label>
+        <select class="form-select" id="fSubregion">
+          <option value="">— Pilih Subregion —</option>
+          <option value="1011">1011 | Northern Sumatra (Aceh-Medan-Riau-Padang)</option>
+          <option value="1021">1021 | Southern Sumatra (Bengkulu-Jambi-Bangka-Palembang-Lampung)</option>
+          <option value="2031">2031 | Central Java</option>
+          <option value="2041">2041 | West Java</option>
+          <option value="2051">2051 | East Java</option>
+          <option value="3061">3061 | Bali-Nusa Tenggara</option>
+          <option value="3071">3071 | Kalimantan</option>
+          <option value="3081">3081 | Sulawesi-Maluku-Papua</option>
+          <option value="4091">4091 | Jabodetabek</option>
+        </select>
+      </div>
 
       <!-- Coordinate — tampil untuk semua activity -->
       <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxCoord" style="grid-column: 1 / -1;">
-        <label class="form-label">Coordinate Site</label>
+        <label class="form-label">Coordinate Site <span style="color:var(--fs-red);font-size:11px;">*</span></label>
 
         <!-- Mode selector -->
         <div class="coord-mode-tabs">
@@ -1614,7 +1629,7 @@
 
       <!-- Floor Location — New, Existing -->
       <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxFloor">
-        <label class="form-label">Floor Location</label>
+        <label class="form-label">Floor Location <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
           <button class="stt-btn" title="Ucapkan Floor Location" onclick="startSTT('fFloorLocation', this)">
@@ -1759,6 +1774,7 @@
     </div>
     <div class="zip-info" id="zipInfoBox">
       &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
+      📂 Format nama file ZIP: <b>SubregionCode_SiteID_SiteName_Activity_YYYYMMDD_xxxx.zip</b> — contoh: <code style="background:#ede9fe;padding:1px 5px;border-radius:4px;">3081_MKS_Adiyaksa_Additional_20260410_815B.zip</code><br>
       <span id="emailZipStatus">Tombol <b>Kirim Email</b> akan otomatis generate &amp; download ZIP, lalu membuka email client — attach file ZIP yang sudah ter-download ke email tersebut.</span><br>
       Jika mengalami kendala atau butuh panduan bisa menghubungi PIC Asset Tagging Agung / 081217400905
     </div>
@@ -4434,6 +4450,7 @@ map.on('click',function(e){
       picName:         _v('fPicName'),
       picPhoto:        picPhotoData,
       division:        _v('fDivision'),
+      subregion:       _v('fSubregion'),
       coordLat:        _v('fCoordLat'),
       coordLng:        _v('fCoordLng'),
       floorLocation:   _v('fFloorLocation'),
@@ -4487,12 +4504,14 @@ map.on('click',function(e){
     const errors = [];
 
     // ── Wajib: Data Site ──
-    if (!f.date)     errors.push({ icon: '📅', msg: 'Tanggal (Date) harus diisi' });
-    if (!f.siteName) errors.push({ icon: '🏢', msg: 'Site Name harus diisi' });
-    if (!f.siteId)   errors.push({ icon: '🆔', msg: 'Site ID harus diisi' });
-    if (!f.typeSite) errors.push({ icon: '🏷️', msg: 'Type Site harus dipilih' });
-    if (!f.picName)  errors.push({ icon: '👤', msg: 'PIC Name harus diisi' });
-    if (!f.division) errors.push({ icon: '🏬', msg: 'Division harus dipilih' });
+    if (!f.date)       errors.push({ icon: '📅', msg: 'Tanggal (Date) harus diisi' });
+    if (!f.siteName)   errors.push({ icon: '🏢', msg: 'Site Name harus diisi' });
+    if (!f.siteId)     errors.push({ icon: '🆔', msg: 'Site ID harus diisi' });
+    if (!f.typeSite)   errors.push({ icon: '🏷️', msg: 'Type Site harus dipilih' });
+    if (!f.picName)    errors.push({ icon: '👤', msg: 'PIC Name harus diisi' });
+    if (!f.division)   errors.push({ icon: '🏬', msg: 'Division harus dipilih' });
+    if (!f.subregion)  errors.push({ icon: '🗺️', msg: 'Subregion harus dipilih' });
+    if (!f.floorLocation) errors.push({ icon: '🏗️', msg: 'Floor Location harus diisi' });
 
     // ── Wajib: Koordinat ──
     if (!f.coordLat || !f.coordLng) {
@@ -4725,6 +4744,7 @@ map.on('click',function(e){
         `FIBERSTAR ASSET TAGGING\n${'='.repeat(50)}\n\n` +
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
+        `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
         `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
         `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
@@ -4775,6 +4795,7 @@ map.on('click',function(e){
         `Jenis Kegiatan: ${(ACTIVITY_CONFIG[f.activity]||{}).label || '-'}\n` +
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
+        `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
         `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
         `Jumlah Device : ${f.devices.length}\nFoto Site     : ${f.sitePhotos.length} foto\n\n` +
         f.devices.map((d, i) =>
@@ -4909,6 +4930,7 @@ map.on('click',function(e){
   <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
+  <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
   <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
   <div><span class="lbl">Floor Location: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
 </div>
@@ -4976,10 +4998,13 @@ ${mapLink}
       ['Type Site',        f.typeSite || '-'],
       ['PIC Name',         f.picName || '-'],
       ['Division',         f.division || '-'],
+      ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
         ['Floor Location', f.floorLocation || '-'],
-      ] : []),
+      ] : [
+        ['Floor Location', f.floorLocation || '-'],
+      ]),
       ...extraRows,
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
@@ -5072,10 +5097,13 @@ ${mapLink}
       ['Type Site',        f.typeSite || '-'],
       ['PIC Name',         f.picName || '-'],
       ['Division',         f.division || '-'],
+      ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
         ['Floor Location', f.floorLocation || '-'],
-      ] : []),
+      ] : [
+        ['Floor Location', f.floorLocation || '-'],
+      ]),
       ...extraRows,
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
@@ -5179,7 +5207,9 @@ tr:nth-child(even) td{background:#f9f9f9;}
   <div><span class="lbl">Date: </span><b>${escHtml(f.date)}</b></div>
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
-  ${(f.activity==='new'||f.activity==='existing') ? `<div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div><div><span class="lbl">Floor: </span><b>${escHtml(f.floorLocation||'—')}</b></div>` : ''}
+  <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
+  <div><span class="lbl">Floor Location: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
+  ${(f.activity==='new'||f.activity==='existing') ? `<div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>` : ''}
   ${extraInfo}
 </div>
 ${mapLink}
@@ -5189,8 +5219,24 @@ ${sigSection}
 </body></html>`;
   }
 
+  // ── Helper: get subregion label from code ─────────────
+  function _subregionLabel(code) {
+    const map = {
+      '1011': 'Northern Sumatra (Aceh-Medan-Riau-Padang)',
+      '1021': 'Southern Sumatra (Bengkulu-Jambi-Bangka-Palembang-Lampung)',
+      '2031': 'Central Java',
+      '2041': 'West Java',
+      '2051': 'East Java',
+      '3061': 'Bali-Nusa Tenggara',
+      '3071': 'Kalimantan',
+      '3081': 'Sulawesi-Maluku-Papua',
+      '4091': 'Jabodetabek',
+    };
+    return map[String(code)] || code;
+  }
+
   // ── Helper: build consistent file/folder name ──────────
-  // Format: siteid_sitename_activity_date_noUrut
+  // Format: subregion_siteid_sitename_activity_date_noUrut
   function _buildFileName(f) {
     const safe = s => String(s || '').trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
     const actCode = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || 'ACT';
@@ -5198,7 +5244,10 @@ ${sigSection}
     const noUrut = f.collectId
       ? f.collectId.split('-').pop()
       : String(Date.now()).slice(-4);
+    // subregionCode: ambil 4 digit kode numerik dari nilai subregion (e.g. "3081")
+    const subregionCode = f.subregion ? f.subregion.replace(/\D/g,'').substring(0,4) : '0000';
     const parts = [
+      subregionCode,
       safe(f.siteId)   || 'SITEID',
       safe(f.siteName) || 'SITE',
       safe(actCode),
@@ -5280,6 +5329,7 @@ ${sigSection}
         `FIBERSTAR ASSET TAGGING\n${'='.repeat(50)}\n\n` +
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
+        `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
         `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
         `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
@@ -5455,6 +5505,7 @@ ${sigSection}
         activity: currentActivity,
         date: f.date, siteName: f.siteName, siteId: f.siteId,
         typeSite: f.typeSite, picName: f.picName, division: f.division,
+        subregion: f.subregion,
         coordLat: f.coordLat, coordLng: f.coordLng, floorLocation: f.floorLocation,
         addNotes: '', dismantleReason: '',
         warehouse: f.warehouse, replaceReason: f.replaceReason,
@@ -5536,6 +5587,7 @@ ${sigSection}
       const _set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
       _set('fDate', draft.date); _set('fSiteName', draft.siteName); _set('fSiteId', draft.siteId);
       _set('fTypeSite', draft.typeSite); _set('fPicName', draft.picName); _set('fDivision', draft.division);
+      _set('fSubregion', draft.subregion);
       _set('fCoordLat', draft.coordLat); _set('fCoordLng', draft.coordLng);
       _set('fFloorLocation', draft.floorLocation);
       // Context fields
@@ -5568,7 +5620,7 @@ ${sigSection}
   }
 
   // Auto-save setiap perubahan input
-  document.querySelectorAll('#fDate,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fFloorLocation,#fAddNotes,#fDismantleReason,#fWarehouse,#fReplaceReason').forEach(el => {
+  document.querySelectorAll('#fDate,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fSubregion,#fFloorLocation,#fAddNotes,#fDismantleReason,#fWarehouse,#fReplaceReason').forEach(el => {
     el.addEventListener('change', _autoSave);
     el.addEventListener('input',  _autoSave);
   });
