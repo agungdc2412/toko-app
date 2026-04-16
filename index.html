@@ -1707,7 +1707,7 @@
       </button>
     </div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;" id="collectSectionHint"></div>
-    <div class="catalog-status ok" id="catalogStatusBar">✓ 173 device tersedia dari katalog</div>
+    <div class="catalog-status ok" id="catalogStatusBar">✓ Device dan Modul Device tersedia di katalog</div>
     <div id="deviceList"></div>
     <!-- Add Device Button with Popup -->
     <div class="add-type-popup-wrap" id="addTypeWrap">
@@ -3320,9 +3320,9 @@ map.on('click',function(e){
     if (d) { d.collapsed = !d.collapsed; renderDevices(); }
   }
 
-  // ── Strip semua spasi untuk field SN & PN ─────────────
+  // ── Strip semua spasi + auto UPPERCASE untuk field SN & PN ─────────────
   function _stripSpaces(val) {
-    return String(val || '').replace(/\s+/g, '');
+    return String(val || '').replace(/\s+/g, '').toUpperCase();
   }
   const _SN_PN_FIELDS = ['serialNumber', 'partNumber'];
 
@@ -5515,10 +5515,26 @@ ${sigSection}
           serialNumber: d.serialNumber, partNumber: d.partNumber,
           statusDevice: d.statusDevice || '',
           collapsed: d.collapsed,
+          // Activity-specific per-device fields
+          deviceNotes:    d.deviceNotes    || '',
+          dismantleReason: d.dismantleReason || '',
+          warehouse:      d.warehouse      || '',
+          replaceReason:  d.replaceReason  || '',
+          snOld:          d.snOld          || '',
+          snNew:          d.snNew          || '',
+          deviceNameOld:  d.deviceNameOld  || '',
+          deviceNameNew:  d.deviceNameNew  || '',
+          pnOld:          d.pnOld          || '',
+          pnNew:          d.pnNew          || '',
+          sfpCount:       d.sfpCount !== undefined ? d.sfpCount : null,
+          _catalogGenerated: d._catalogGenerated || null,
           subModules: (d.subModules || []).map(sm => ({
             id: sm.id, moduleName: sm.moduleName || '',
             serialNumber: sm.serialNumber || '', partNumber: sm.partNumber || '',
+            statusDevice: sm.statusDevice || '',
             collapsed: sm.collapsed || false,
+            _fromCatalog: sm._fromCatalog || false,
+            _isMain: sm._isMain || false,
             photos: sm.photos || { sn: null, pn: null },
             exts:   sm.exts   || { sn: null, pn: null },
           })),
@@ -5599,10 +5615,47 @@ ${sigSection}
           id: d.id, type: d.type || 'single',
           deviceName: d.deviceName || '', serialNumber: d.serialNumber || '',
           partNumber: d.partNumber || '', statusDevice: d.statusDevice || '',
-          photos: d.photos || { full: null, zoom: null, label: null, pn: null },
-          exts:   d.exts   || { full: null, zoom: null, label: null, pn: null },
-          subModules: d.subModules || [],
           collapsed: d.collapsed || false,
+          // Activity-specific fields
+          deviceNotes:    d.deviceNotes    || '',
+          dismantleReason: d.dismantleReason || '',
+          warehouse:      d.warehouse      || '',
+          replaceReason:  d.replaceReason  || '',
+          snOld:          d.snOld          || '',
+          snNew:          d.snNew          || '',
+          deviceNameOld:  d.deviceNameOld  || '',
+          deviceNameNew:  d.deviceNameNew  || '',
+          pnOld:          d.pnOld          || '',
+          pnNew:          d.pnNew          || '',
+          sfpCount:       d.sfpCount !== undefined ? d.sfpCount : null,
+          // Photos — IDB akan override nanti jika ada foto tersimpan
+          photos: {
+            full:     (d.photos && d.photos.full)     || null,
+            zoom:     (d.photos && d.photos.zoom)     || null,
+            label:    (d.photos && d.photos.label)    || null,
+            pn:       (d.photos && d.photos.pn)       || null,
+            fullOld:  (d.photos && d.photos.fullOld)  || null,
+            labelOld: (d.photos && d.photos.labelOld) || null,
+          },
+          exts: {
+            full:     (d.exts && d.exts.full)     || null,
+            zoom:     (d.exts && d.exts.zoom)     || null,
+            label:    (d.exts && d.exts.label)    || null,
+            pn:       (d.exts && d.exts.pn)       || null,
+            fullOld:  (d.exts && d.exts.fullOld)  || null,
+            labelOld: (d.exts && d.exts.labelOld) || null,
+          },
+          subModules: (d.subModules || []).map(sm => ({
+            id: sm.id, moduleName: sm.moduleName || '',
+            serialNumber: sm.serialNumber || '', partNumber: sm.partNumber || '',
+            statusDevice: sm.statusDevice || '',
+            collapsed: sm.collapsed || false,
+            _fromCatalog: sm._fromCatalog || false,
+            _isMain: sm._isMain || false,
+            photos: sm.photos || { sn: null, pn: null },
+            exts:   sm.exts   || { sn: null, pn: null },
+          })),
+          _catalogGenerated: d._catalogGenerated || null,
         }));
         deviceCounter = draft.deviceCounter || devices.length;
         renderDevices();
@@ -5729,8 +5782,22 @@ ${sigSection}
         signature: sigDataUrl,
         devices: devices.map(d => ({
           id: d.id,
-          photos: d.photos || {},
-          exts:   d.exts   || {},
+          photos: {
+            full:     d.photos ? (d.photos.full     || null) : null,
+            zoom:     d.photos ? (d.photos.zoom     || null) : null,
+            label:    d.photos ? (d.photos.label    || null) : null,
+            pn:       d.photos ? (d.photos.pn       || null) : null,
+            fullOld:  d.photos ? (d.photos.fullOld  || null) : null,
+            labelOld: d.photos ? (d.photos.labelOld || null) : null,
+          },
+          exts: {
+            full:     d.exts ? (d.exts.full     || null) : null,
+            zoom:     d.exts ? (d.exts.zoom     || null) : null,
+            label:    d.exts ? (d.exts.label    || null) : null,
+            pn:       d.exts ? (d.exts.pn       || null) : null,
+            fullOld:  d.exts ? (d.exts.fullOld  || null) : null,
+            labelOld: d.exts ? (d.exts.labelOld || null) : null,
+          },
           subModules: (d.subModules || []).map(sm => ({
             id: sm.id,
             photos: sm.photos || {},
@@ -5758,45 +5825,81 @@ ${sigSection}
       });
       if (!record) return false;
 
+      let anyRestored = false;
+
       // Restore site photos
       if (record.sitePhotos && record.sitePhotos.length > 0) {
         sitePhotos = record.sitePhotos;
         _renderSitePhotos();
+        anyRestored = true;
       }
       // Restore foto PIC
       if (record.picPhoto) {
         picPhotoData = record.picPhoto;
         _applyPicPhoto(picPhotoData.url);
+        anyRestored = true;
       }
       // Restore tanda tangan
       if (record.signature) {
         sigDataUrl = record.signature;
-        document.getElementById('sigThumb').src = sigDataUrl;
-        document.getElementById('sigThumbWrap').style.display = '';
+        const sigThumbEl = document.getElementById('sigThumb');
+        const sigThumbWrapEl = document.getElementById('sigThumbWrap');
         const badge = document.getElementById('sigBadge');
-        badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Ubah Tanda Tangan`;
-        badge.className = 'sig-badge';
+        if (sigThumbEl) sigThumbEl.src = sigDataUrl;
+        if (sigThumbWrapEl) sigThumbWrapEl.style.display = '';
+        if (badge) {
+          badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Ubah Tanda Tangan`;
+          badge.className = 'sig-badge';
+        }
+        anyRestored = true;
       }
       // Restore foto per device — merge ke devices array yang sudah ada
       if (record.devices && record.devices.length > 0) {
+        let devPhotosRestored = false;
         record.devices.forEach(photoRec => {
           const d = devices.find(x => x.id === photoRec.id);
           if (d) {
-            if (photoRec.photos) { d.photos = { ...d.photos, ...photoRec.photos }; }
-            if (photoRec.exts)   { d.exts   = { ...d.exts,   ...photoRec.exts };   }
+            if (photoRec.photos) {
+              // Merge tiap field satu-per-satu, prioritaskan IDB jika ada
+              const p = photoRec.photos;
+              if (p.full)     { d.photos.full     = p.full;     devPhotosRestored = true; }
+              if (p.zoom)     { d.photos.zoom     = p.zoom;     devPhotosRestored = true; }
+              if (p.label)    { d.photos.label    = p.label;    devPhotosRestored = true; }
+              if (p.pn)       { d.photos.pn       = p.pn;       devPhotosRestored = true; }
+              if (p.fullOld)  { d.photos.fullOld  = p.fullOld;  devPhotosRestored = true; }
+              if (p.labelOld) { d.photos.labelOld = p.labelOld; devPhotosRestored = true; }
+            }
+            if (photoRec.exts) {
+              const ex = photoRec.exts;
+              if (ex.full)     d.exts.full     = ex.full;
+              if (ex.zoom)     d.exts.zoom     = ex.zoom;
+              if (ex.label)    d.exts.label    = ex.label;
+              if (ex.pn)       d.exts.pn       = ex.pn;
+              if (ex.fullOld)  d.exts.fullOld  = ex.fullOld;
+              if (ex.labelOld) d.exts.labelOld = ex.labelOld;
+            }
             (photoRec.subModules || []).forEach(smRec => {
               const sm = (d.subModules || []).find(s => s.id === smRec.id);
               if (sm) {
-                if (smRec.photos) sm.photos = { ...sm.photos, ...smRec.photos };
-                if (smRec.exts)   sm.exts   = { ...sm.exts,   ...smRec.exts   };
+                if (smRec.photos) {
+                  if (smRec.photos.sn) { sm.photos.sn = smRec.photos.sn; devPhotosRestored = true; }
+                  if (smRec.photos.pn) { sm.photos.pn = smRec.photos.pn; devPhotosRestored = true; }
+                }
+                if (smRec.exts) {
+                  if (smRec.exts.sn) sm.exts.sn = smRec.exts.sn;
+                  if (smRec.exts.pn) sm.exts.pn = smRec.exts.pn;
+                }
               }
             });
           }
         });
-        renderDevices();
-        updatePhotoProgress();
+        if (devPhotosRestored) {
+          renderDevices();
+          updatePhotoProgress();
+          anyRestored = true;
+        }
       }
-      return true;
+      return anyRestored;
     } catch(e) { console.warn('[PhotoDraft load]', e); return false; }
   }
 
@@ -5837,7 +5940,7 @@ ${sigSection}
   // ── Device Catalog Engine — Data Hardcoded dari Excel ─
   // ══════════════════════════════════════════════════════
   // Katalog 173 device — update: embed ulang dari file DEVICE_KATALOG.xlsx
-  const _CATALOG_RAW = [{"n": "AC DAIKIN 0.5 PK FTC15NV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 0.5 PK FTV15BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 2 PK FTV50BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9AKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9WKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR 3 KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR CITIFIRE 2KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY FIAM 12FIT/100M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY GENESIS 12TD100F4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN ROUTER HUAWEI FAN 036A-B", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "GENSET YAMAHA EF7200", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER COTEX SRT1000T-248", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVADA XMI 10HR CE 1000VA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVEREXCEED 1 KVA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROBITS AINOS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB92", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB95", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 1800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 C32E", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK BATTERY", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OTB", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9006", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9300", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9901", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9903", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5500", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5504", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 24H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO XRV9000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CE 6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730 H48X6C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE SC503", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 40", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8K36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X 4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000E F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E SERIES", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE8000 F2A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NETENGINE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736 S24S4XC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S6750 H36C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUWAEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ISCOM2624G 4GE AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA 7750 SR-A4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA CPM-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA FILTER UDARA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA MDA-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP SWITCH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6224", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6250", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-P10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860E-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL OS6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH BDCOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2960", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH EDGECORE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2600G", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2624 4GE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 551E 4G AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX700", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX701", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX711", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAX700 MOI MDF", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH SIEMENS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "TANGGA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS APC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS GAMATECH", "p": "", "k": "", "m": "", "r": "Device"}];
+  const _CATALOG_RAW = [{"n": "AC DAIKIN 0.5 PK FTC15NV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 0.5 PK FTV15BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC DAIKIN 2 PK FTV50BXV14", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9AKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "AC PANASONIC CS-YN9WKJ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR 3 KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "APAR CITIFIRE 2KG", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY FIAM 12FIT/100M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "BATTERY GENESIS 12TD100F4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "FAN ROUTER HUAWEI FAN 036A-B", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "GENSET YAMAHA EF7200", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER COTEX SRT1000T-248", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVADA XMI 10HR CE 1000VA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "INVERTER EVEREXCEED 1 KVA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROBITS AINOS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB92", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MIKROTIK RB95", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 1800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OPTIX OSN 9800 M24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 C32E", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OS6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 8 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 12 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 24 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 48 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE LITECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE NWC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE PAZ", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "OTB 96 CORE 3M", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK BATTERY", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK OTB", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RACK RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "RECTIFIER", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9006", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9300", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9901", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR 9903", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO ASR920", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 540", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5500", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5501", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 5504", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 24H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO NCS 55A1 36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER CISCO XRV9000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CE 6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6730 H48X6C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X20", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE S6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI CLOUD ENGINE SC503", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 40", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F1A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8H20Q", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2A 8K36H", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X 4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000 X4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE 8000E F2C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE40E SERIES", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NE8000 F2A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI NETENGINE 8000 M1D", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S5736 S24S4XC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUAWEI S6750 H36C", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER HUWAEI NE 8000 F1A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER ISCOM2624G 4GE AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA 7750 SR-A4", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA CPM-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA FILTER UDARA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "ROUTER NOKIA MDA-A", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP OLT", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SFP SWITCH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6224", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6250", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6450 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6860 24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL 6900", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-24", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT 0S6540-P10", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL LUCENT OS6860E-U28", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ALCATEL OS6900 X72", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH ARISTA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH BDCOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2950", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 2960", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH CISCO 3850", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH EDGECORE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2600G", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 2624 4GE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM 551E 4G AC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX700", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX701", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAISECOM RAX711", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH RAX700 MOI MDF", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "SWITCH SIEMENS", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "TANGGA", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS APC", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS GAMATECH", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "MEDIA CONVERTER OPTONE", "p": "", "k": "", "m": "", "r": "Device"}, {"n": "UPS", "p": "", "k": "", "m": "", "r": "Device"}];
 
   // Normalisasi ke format internal
   let _catalog = _CATALOG_RAW.map(function(x) {
@@ -5857,7 +5960,7 @@ ${sigSection}
 
   // _fetchCatalog tidak diperlukan — data sudah embedded
   async function _fetchCatalog() {
-    _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog');
+    _renderCatalogStatus('ok', 'Device dan Modul Device tersedia di katalog');
   }
   function _renderCatalogStatus(type, msg) {
     const el = document.getElementById('catalogStatusBar');
@@ -6091,7 +6194,7 @@ ${sigSection}
   // ── Refresh katalog manual (admin) ────────────────────
   window.refreshCatalog = async function() {
     // Katalog sudah embedded — tidak perlu fetch. Tampilkan ulang status saja.
-    _renderCatalogStatus('ok', _catalog.length + ' device tersedia dari katalog (embedded)');
+    _renderCatalogStatus('ok', 'Device dan Modul Device tersedia di katalog (embedded)');
     showToast('✅ Katalog sudah up-to-date (' + _catalog.length + ' device)', 3000);
   };
 
