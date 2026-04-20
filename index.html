@@ -6358,8 +6358,12 @@ ${sigSection}
         activeHashesRaw: JSON.stringify(activeHashes)
       });
 
-      if (activeHash) {
-        matched = (hash === activeHash) || (pendingHash && hash === pendingHash);
+      // activeHash bisa berupa object {hash, plain} atau string (format lama)
+      const activeHashStr = activeHash
+        ? (typeof activeHash === 'object' ? activeHash.hash : activeHash)
+        : null;
+      if (activeHashStr) {
+        matched = (hash === activeHashStr) || (pendingHash && hash === pendingHash);
       } else {
         matched = (fileHash && hash === fileHash) || (pendingHash && hash === pendingHash);
       }
