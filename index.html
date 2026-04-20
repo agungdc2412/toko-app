@@ -6494,10 +6494,16 @@ ${sigSection}
     const btnKelola = document.getElementById('btnKelolaToken');
     if (btnKelola) btnKelola.style.display = (session.role === 'Asset') ? 'inline-flex' : 'none';
     const divEl = document.getElementById('fDivision');
-    if (divEl && !divEl.value) {
-      const map = { Asset:'Asset', FOP:'FOP', NetDev:'Network Development' };
-      if (map[session.role]) { divEl.value = map[session.role]; _autoSave(); }
+    // Selalu update Division sesuai role login (bukan hanya kalau kosong)
+    // supaya ganti user di device yang sama langsung ter-reflect
+    const divMap = { Asset:'Asset', FOP:'FOP', NetDev:'Network Development' };
+    if (divEl && divMap[session.role]) { divEl.value = divMap[session.role]; }
+    // Regen Collect ID agar kode divisi (AM/FOP/ND) langsung diperbarui
+    // Dipanggil setelah divisi di-set, tanpa perlu klik manual
+    if (typeof _regenCollectIdIfActive === 'function') {
+      _regenCollectIdIfActive();
     }
+    _autoSave();
     if (_sessionTimer) clearTimeout(_sessionTimer);
     const rem = SESSION_TIMEOUT_MS - (Date.now() - session.loginAt);
     if (rem <= 0) { doLogout(); return; }
