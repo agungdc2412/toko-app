@@ -5255,21 +5255,32 @@ ${sigSection}
   }
 
   // ── Helper: build consistent file/folder name ──────────
-  // Format: subregion_siteid_sitename_activity_date_noUrut
+  // Format: subregion_divisi_siteid_sitename_actcode_date_noUrut
+  // Contoh:  4091_AM_KYB054_Grand_Rubina_Tower_EXI_20260420_1989
   function _buildFileName(f) {
     const safe = s => String(s || '').trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-    const actCode = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || 'ACT';
-    // no urut: ambil 4 char terakhir dari collectId (random hex), fallback ke timestamp
+    // Kode aktivitas pendek (sama dengan prefix Collect ID)
+    const ACT_CODE_MAP = { new:'NEW', existing:'EXI', additional:'ADD', dismantle:'DIS', replace:'REP' };
+    const actCode = ACT_CODE_MAP[f.activity] || (f.activity || 'ACT').toUpperCase();
+    // no urut: ambil segment terakhir dari collectId (random hex), fallback ke timestamp
     const noUrut = f.collectId
       ? f.collectId.split('-').pop()
       : String(Date.now()).slice(-4);
-    // subregionCode: ambil 4 digit kode numerik dari nilai subregion (e.g. "3081")
+    // subregionCode: ambil 4 digit kode numerik dari nilai subregion (e.g. "4091")
     const subregionCode = f.subregion ? f.subregion.replace(/\D/g,'').substring(0,4) : '0000';
+    // Kode divisi dari session login
+    const ROLE_DIV_MAP = { Asset:'AM', FOP:'FOP', NetDev:'ND' };
+    let divCode = 'XX';
+    try {
+      const sess = JSON.parse(localStorage.getItem('fs_pin_session') || '{}');
+      divCode = ROLE_DIV_MAP[sess.role] || 'XX';
+    } catch(_) {}
     const parts = [
       subregionCode,
+      divCode,
       safe(f.siteId)   || 'SITEID',
       safe(f.siteName) || 'SITE',
-      safe(actCode),
+      actCode,
       (f.date || '').replace(/-/g, ''),
       noUrut,
     ];
