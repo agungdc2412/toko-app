@@ -2069,23 +2069,31 @@
   // ── Collect ID Engine ───────────────────────────────
   const ACT_CODE = { new: 'NEW', existing: 'EXI', additional: 'ADD', dismantle: 'DIS', replace: 'REP' };
 
-  // ── Collect ID Generator — unik, tidak bisa duplikat ──────────
-  // Format: {ACT}-{SITEID}-{YYYYMMDD}-{HHmm}-{RND4}
-  // Contoh:  NEW-CKG014-20260407-0856-A3F2
-  // Keunikan dijamin oleh kombinasi waktu (menit) + 4 char random hex
+  // Mapping role login ke kode divisi pendek untuk Collect ID
+  const ROLE_DIV_CODE = { Asset: 'AM', FOP: 'FOP', NetDev: 'ND' };
+
+  // ── Collect ID Generator ───────────────────────────────────────
+  // Format: {ACT}-{SUBREGION}-{SITEID}-{DIVISI}-{YYYYMMDD}-{RND4}
+  // Contoh:  NEW-4091-KYB032-AM-20260420-258E
   function _genCollectId(actType) {
-    const code   = ACT_CODE[actType] || 'UNK';
+    const code = ACT_CODE[actType] || 'UNK';
     const siteId = (document.getElementById('fSiteId')?.value || 'SITE')
                      .trim().replace(/[^a-zA-Z0-9]/g, '').toUpperCase() || 'SITE';
-    const now    = new Date();
-    const ymd    = now.getFullYear().toString() +
-                   String(now.getMonth() + 1).padStart(2, '0') +
-                   String(now.getDate()).padStart(2, '0');
-    const hhmm   = String(now.getHours()).padStart(2, '0') +
-                   String(now.getMinutes()).padStart(2, '0');
-    // 4 karakter hex random — kombinasi dengan timestamp → praktis unik
-    const rnd    = Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    return `${code}-${siteId}-${ymd}-${hhmm}-${rnd}`;
+    // 4 digit kode subregion dari field fSubregion
+    const subregionRaw = document.getElementById('fSubregion')?.value || '';
+    const subregion = subregionRaw.replace(/\D/g, '').substring(0, 4) || '0000';
+    // Kode divisi dari session login
+    let divCode = 'XX';
+    try {
+      const sess = JSON.parse(localStorage.getItem('fs_pin_session') || '{}');
+      divCode = ROLE_DIV_CODE[sess.role] || 'XX';
+    } catch(_) {}
+    const now = new Date();
+    const ymd = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0');
+    const rnd = Math.floor(Math.random() * 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    return `${code}-${subregion}-${siteId}-${divCode}-${ymd}-${rnd}`;
   }
 
   function _renderCollectId(id, actType) {
@@ -5690,13 +5698,17 @@ ${sigSection}
   });
 
   // Update Collect ID saat Site ID berubah — selalu generate ulang agar Site ID masuk ke CID
-  document.getElementById('fSiteId').addEventListener('input', function() {
+  // Regen Collect ID saat Site ID atau Subregion berubah
+  // (keduanya masuk ke format ID baru)
+  function _regenCollectIdIfActive() {
     if (currentActivity) {
       currentCollectId = _genCollectId(currentActivity);
       _renderCollectId(currentCollectId, currentActivity);
       _autoSave();
     }
-  });
+  }
+  document.getElementById('fSiteId').addEventListener('input', _regenCollectIdIfActive);
+  document.getElementById('fSubregion').addEventListener('change', _regenCollectIdIfActive);
 
   // ══════════════════════════════════════════════════════
   // ── IndexedDB Engine ──────────────────────────────────
