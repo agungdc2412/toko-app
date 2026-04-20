@@ -5687,14 +5687,16 @@ ${sigSection}
     }
   });
 
-  // Restore draft saat load
-  _restoreDraft();
-  // Setelah text draft di-restore, muat foto dari IDB (async)
-  _openIDB().then(() => {
-    _idbLoadPhotoDraft().then(restored => {
-      if (restored) showToast('🖼️ Foto draft dipulihkan dari penyimpanan lokal', 3000);
-    });
-  }).catch(() => {});
+  // ══════════════════════════════════════════════════════
+  // ── IndexedDB Engine ──────────────────────────────────
+  // ══════════════════════════════════════════════════════
+  // PENTING: const/let harus dideklarasikan SEBELUM dipakai,
+  // karena tidak di-hoist seperti function declaration.
+  const IDB_NAME    = 'FiberstarAssetTagging';
+  const IDB_VERSION = 2;
+  const IDB_STORE   = 'workorders';
+  const IDB_DRAFT   = 'photodraft';
+  let _idb = null;
 
   // Helper alias untuk dipakai oleh _idbLoadPhotoDraft
   function _renderSitePhotos() { renderSitePhotos(); }
@@ -5705,14 +5707,14 @@ ${sigSection}
     document.getElementById('btnFotoPic').classList.add('has-photo');
   }
 
-  // ══════════════════════════════════════════════════════
-  // ── IndexedDB Engine ──────────────────────────────────
-  // ══════════════════════════════════════════════════════
-  const IDB_NAME    = 'FiberstarAssetTagging';
-  const IDB_VERSION = 2;          // naik ke 2 — tambah store photodraft
-  const IDB_STORE   = 'workorders';
-  const IDB_DRAFT   = 'photodraft'; // store khusus simpan foto draft
-  let _idb = null;
+  // Restore draft saat load
+  _restoreDraft();
+  // Setelah text draft di-restore, muat foto dari IDB (async)
+  _openIDB().then(() => {
+    _idbLoadPhotoDraft().then(restored => {
+      if (restored) showToast('🖼️ Foto draft dipulihkan dari penyimpanan lokal', 3000);
+    });
+  }).catch(() => {});
 
   function _openIDB() {
     return new Promise((resolve, reject) => {
