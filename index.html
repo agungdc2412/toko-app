@@ -4518,6 +4518,17 @@ map.on('click',function(e){
       errors.push({ icon: '📍', msg: 'Koordinat Site belum diisi', sub: 'Gunakan GPS Otomatis, Input Manual, atau Klik Peta.' });
     }
 
+    // ── Wajib: Foto PIC, TTD PIC, Foto Site/Rack ──
+    if (!f.picPhoto) {
+      errors.push({ icon: '🤳', msg: 'Foto PIC (Dokumentasi) belum diambil', sub: 'Ambil foto dokumentasi petugas di bagian Form Checked.' });
+    }
+    if (!f.signature) {
+      errors.push({ icon: '✍️', msg: 'Tanda Tangan PIC belum diisi', sub: 'Tap tombol "Tambah Tanda Tangan" di bagian Form Checked.' });
+    }
+    if (!f.sitePhotos || f.sitePhotos.length === 0) {
+      errors.push({ icon: '🏢', msg: 'Foto View Site / Rack belum diupload', sub: 'Upload minimal 1 foto kondisi keseluruhan rack/ruangan.' });
+    }
+
     // ── Wajib activity-specific ──
     // Per-device validation for activity-specific fields
     if (currentActivity === 'dismantle') {
