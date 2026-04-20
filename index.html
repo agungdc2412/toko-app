@@ -1657,7 +1657,7 @@
   </div>
 
   <!-- Form View Site / Rack — hanya New & Existing -->
-  <div class="section-card ctx-field ctx-new ctx-existing" id="sectionRack">
+  <div class="section-card ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="sectionRack">
     <div class="section-title"><span class="section-title-dot"></span>View Site / Rack</div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
       Upload foto kondisi site secara keseluruhan beserta rack. Bisa lebih dari satu foto.
@@ -2215,15 +2215,10 @@
       if (el.classList.contains('ctx-field')) el.dataset.gridCol = el.style.gridColumn;
     });
 
-    // Show/hide Rack section
+    // Foto Site/Rack tampil di semua jenis activity (mandatory)
     const rack = document.getElementById('sectionRack');
-    rack.classList.toggle('show', type === 'new' || type === 'existing');
-    // ctx-field on section needs special handling
-    if (type === 'new' || type === 'existing') {
-      rack.style.display = '';
-    } else {
-      rack.style.display = 'none';
-    }
+    rack.classList.add('show');
+    rack.style.display = '';
 
     // Update collect section title & hint
     document.getElementById('collectSectionTitle').textContent = cfg.collectTitle;
@@ -5621,7 +5616,7 @@ ${sigSection}
             el.classList.toggle('show', el.classList.contains('ctx-' + draft.activity));
           });
           const rack = document.getElementById('sectionRack');
-          rack.style.display = (draft.activity === 'new' || draft.activity === 'existing') ? '' : 'none';
+          rack.style.display = ''; // tampil di semua activity
           document.getElementById('collectSectionTitle').textContent = cfg.collectTitle;
           document.getElementById('collectSectionHint').textContent = cfg.collectHint;
           // Tampilkan Collect ID yang sudah disimpan (jangan regen)
