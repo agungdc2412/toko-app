@@ -2655,418 +2655,7 @@ map.on('click',function(e){
     iframe.srcdoc = html;
   }
 
-<!-- ══════════════════════════════════════════════════════════
-     GUIDELINES MODAL — Panduan Lengkap Built-in
-     ══════════════════════════════════════════════════════════ -->
-<div class="gdl-overlay" id="gdlOverlay" onclick="if(event.target===this)closeGuidelines()">
-  <div class="gdl-modal">
 
-    <!-- Header -->
-    <div class="gdl-header">
-      <div class="gdl-header-left">
-        <div class="gdl-header-logo">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div>
-          <div class="gdl-header-title">Fiberstar Asset Tagging</div>
-          <div class="gdl-header-sub">User Guidelines &amp; Panduan Foto · v1 · Asset Management 2026</div>
-        </div>
-      </div>
-      <button class="gdl-close" onclick="closeGuidelines()">✕</button>
-    </div>
-
-    <!-- Tab Bar -->
-    <div class="gdl-tabs">
-      <button class="gdl-tab active" onclick="switchGdlTab(0)">🚀 Mulai Cepat</button>
-      <button class="gdl-tab" onclick="switchGdlTab(1)">📋 Pengisian Form</button>
-      <button class="gdl-tab" onclick="switchGdlTab(2)">📷 Panduan Foto</button>
-      <button class="gdl-tab" onclick="switchGdlTab(3)">📦 Export &amp; Simpan</button>
-      <button class="gdl-tab" onclick="switchGdlTab(4)">🔧 Troubleshooting</button>
-    </div>
-
-    <!-- Body -->
-    <div class="gdl-body">
-
-      <!-- ─── TAB 0: MULAI CEPAT ─────────────────────────── -->
-      <div class="gdl-pane active" id="gdlPane0">
-
-        <div class="gdl-section-title">Alur Kerja Singkat</div>
-        <div class="gdl-steps">
-          <div class="gdl-step"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Login</b><p>Pilih divisi → masukkan token → klik Login</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type, PIC, Koordinat GPS</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Foto View Site / Rack</b><p>Foto kondisi keseluruhan rack dan ruang server</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Foto PIC &amp; Tanda Tangan</b><p>Dokumentasi petugas dan tanda tangan digital</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Export & Sync</b><p>Gunakan tombol Export (PDF/CSV/ZIP) atau Sync ke Google Sheets untuk menyimpan data</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">8</div><div class="gdl-step-body"><b>Kirim Email</b><p>Tap "Kirim Email" → ZIP otomatis ter-download → attach ke email yang terbuka</p></div></div>
-        </div>
-
-        <div class="gdl-section-title" style="margin-top:20px;">Checklist Sebelum Selesai</div>
-        <div class="gdl-checklist">
-          <div class="gdl-check-item">✅ Semua device sudah punya minimal 1 foto</div>
-          <div class="gdl-check-item">✅ Status device sudah dipilih (Active/Damage/Spare)</div>
-          <div class="gdl-check-item">✅ S/N sudah diisi untuk setiap device</div>
-            <div class="gdl-check-item">✅ Data sudah di-export atau ter-sync ke Google Sheets</div>
-          <div class="gdl-check-item">✅ File ZIP sudah ter-download dan di-attach ke email</div>
-        </div>
-
-        <div class="gdl-callout info">
-          <b>ℹ️ Fitur Utama App</b>
-          <div class="gdl-feature-grid">
-            <div class="gdl-feature"><span>📋</span><span>Form Digital lengkap</span></div>
-            <div class="gdl-feature"><span>📍</span><span>GPS Otomatis</span></div>
-            <div class="gdl-feature"><span>📷</span><span>Multi Foto per device</span></div>
-            <div class="gdl-feature"><span>🎤</span><span>Speech-to-Text S/N &amp; P/N</span></div>
-            <div class="gdl-feature"><span>📊</span><span>Barcode / QR Scanner</span></div>
-            <div class="gdl-feature"><span>✍️</span><span>Tanda Tangan Digital</span></div>
-            <div class="gdl-feature"><span>☁️</span><span>Sync ke Google Sheets</span></div>
-            <div class="gdl-feature"><span>📦</span><span>Export ZIP semua data</span></div>
-          </div>
-        </div>
-
-        <div class="gdl-callout warn">
-          <b>🔐 Login &amp; Token</b><br>
-          Aplikasi dilindungi sistem token per divisi. Setiap divisi (Asset, FOP, NetDev) memiliki token berbeda yang didistribusikan oleh admin. Sesi aktif beberapa jam — jika habis, login ulang. Data yang sudah tersimpan <b>tidak akan hilang</b>.
-        </div>
-
-        <div class="gdl-contact">
-          <div class="gdl-contact-title">📞 Kontak Support</div>
-          <div><b>Teams:</b> ✉️ Collect Data Asset - All Region</div>
-          <div><b>Email:</b> ✉️ Int-Asset.Management@fiberstar.co.id</div>
-          <div><b>PIC Asset Tagging:</b> Agung · 081217400905</div>
-        </div>
-      </div>
-
-      <!-- ─── TAB 1: PENGISIAN FORM ──────────────────────── -->
-      <div class="gdl-pane" id="gdlPane1">
-
-        <div class="gdl-section-title">Jenis Kegiatan</div>
-        <div class="gdl-activity-grid">
-          <div class="gdl-act new"><div class="gdl-act-icon">🆕</div><div><b>New Site</b><p>Instalasi aset di site baru yang belum pernah tercatat</p></div></div>
-          <div class="gdl-act existing"><div class="gdl-act-icon">📌</div><div><b>Existing</b><p>Pendataan ulang aset yang sudah ada di site lama</p></div></div>
-          <div class="gdl-act additional"><div class="gdl-act-icon">➕</div><div><b>Additional</b><p>Penambahan device baru di site yang sudah ada</p></div></div>
-          <div class="gdl-act dismantle"><div class="gdl-act-icon">🗑️</div><div><b>Dismantle</b><p>Pelepasan/pembongkaran aset dari site</p></div></div>
-          <div class="gdl-act replace"><div class="gdl-act-icon">🔄</div><div><b>Replace</b><p>Penggantian device lama dengan device baru</p></div></div>
-        </div>
-
-        <div class="gdl-callout info" style="margin-top:12px;">
-          <b>ℹ️ Collect ID</b><br>
-          Setelah memilih jenis kegiatan dan mengisi Site ID, sistem otomatis membuat Collect ID unik (contoh: <code>NEW-JKT001-20260407-0856-A3F2</code>) sebagai nomor referensi. Tidak dapat diubah manual.
-        </div>
-
-        <div class="gdl-section-title">Site Information</div>
-        <div class="gdl-field-table">
-          <div class="gdl-field-row"><div class="gdl-field-name">Tanggal</div><div class="gdl-field-desc">Tanggal pelaksanaan kegiatan</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Site Name</div><div class="gdl-field-desc">Nama site/lokasi · contoh: <em>Gedung Sudirman Lt.3</em></div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Site ID</div><div class="gdl-field-desc">ID unik site dari sistem Fiberstar · contoh: <em>JKT-001</em></div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Type Site</div><div class="gdl-field-desc">Tipe site: POP, BTS, DC, NOC, ODC, dll.</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">PIC Name</div><div class="gdl-field-desc">Nama teknisi/penanggung jawab kegiatan</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Division</div><div class="gdl-field-desc">Divisi yang mengerjakan — terisi otomatis dari login</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Floor Location</div><div class="gdl-field-desc">Lokasi spesifik di dalam gedung · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
-        </div>
-
-        <div class="gdl-section-title">Koordinat GPS</div>
-        <div class="gdl-steps" style="gap:8px;">
-          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>GPS Otomatis (Disarankan)</b><p>Tap "Capture Location" → izinkan akses lokasi → koordinat terisi otomatis beserta akurasi meter.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Input Manual</b><p>Pindah ke tab "Input Manual" → ketik Latitude &amp; Longitude → klik "Terapkan".</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Klik Peta</b><p>Pindah ke tab "Klik Peta" → tap titik lokasi di peta interaktif.</p></div></div>
-        </div>
-
-        <div class="gdl-section-title">Input S/N &amp; P/N</div>
-        <div class="gdl-input-methods">
-          <div class="gdl-input-method"><span class="gdl-im-icon">⌨️</span><div><b>Ketik Manual</b><p>Spasi otomatis dihapus — tidak perlu khawatir typo dari keyboard.</p></div></div>
-          <div class="gdl-input-method"><span class="gdl-im-icon">🎤</span><div><b>Speech-to-Text</b><p>Tap ikon mikrofon, ucapkan S/N huruf per huruf. Spasi dari speech otomatis dihapus. Gunakan Chrome/Edge.</p></div></div>
-          <div class="gdl-input-method"><span class="gdl-im-icon">📊</span><div><b>Scan Barcode/QR</b><p>Tap ikon scan, arahkan kamera ke label perangkat. Mendukung QR Code, Code 128, Code 39, EAN, Data Matrix.</p></div></div>
-        </div>
-      </div>
-
-      <!-- ─── TAB 2: PANDUAN FOTO ────────────────────────── -->
-      <div class="gdl-pane" id="gdlPane2">
-
-        <div class="gdl-callout info">
-          <b>📸 Wajib menggunakan aplikasi timestamp</b><br>
-          Pastikan GPS timestamp aktif dan keterangan rack/device sudah diset di "Display Custom Text" sebelum mengambil foto.
-        </div>
-
-        <div class="gdl-section-title">Setting Timestamp (Langkah Pertama)</div>
-        <div class="gdl-steps" style="gap:8px;">
-          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Pastikan GPS timestamp sesuai lokasi site</b></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Set keterangan di "Display Custom Text"</b><p>Tulis posisi rack yang akan difoto · contoh: <em>Rack-3 Lt.2</em> atau cukup <em>Rack-1</em> jika single floor</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Update custom text setiap ganti rack/device</b></div></div>
-        </div>
-
-        <div class="gdl-photo-tab-bar">
-          <button class="gdl-photo-tab active" onclick="switchPhotoTab(0)">🏢 POP / ODC / BDF</button>
-          <button class="gdl-photo-tab" onclick="switchPhotoTab(1)">📡 DWDM Huawei</button>
-        </div>
-
-        <!-- POP Sheet -->
-        <div class="gdl-photo-pane active" id="gdlPhotoPane0">
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">1</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">📦 Setting Timestamp</div>
-              <div class="gdl-photo-steps">
-                <p>1. Pastikan GPS timestamp sesuai lokasi site</p>
-                <p>2. Tulis keterangan rack di "Display Custom Text"</p>
-                <p>3. Contoh penulisan: posisi rack ke-3 di lt.2 → <code>Rack-3 Lt.2</code></p>
-                <p>4. Jika site hanya 1 lantai, cukup <code>Rack-1</code>, <code>Rack-2</code>, dst.</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">2</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🗄️ Foto Rack</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto rack dengan seluruh device terlihat</p>
-                <p>2. Pastikan display custom text sesuai urutan rack</p>
-                <p>3. <b>Semua rack dalam 1 POP/HUB harus difoto</b></p>
-                <p>4. Foto identifikasi rack: merek, type, Serial Number rack (jika ada)</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">3</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🔌 OLT (ZTE / Huawei)</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto device secara keseluruhan (perhatikan timestamp)</p>
-                <p>2. Foto SN device — lokasi SN per model:</p>
-                <ul class="gdl-ul">
-                  <li><b>ZTE C320</b> — sisi kanan perangkat</li>
-                  <li><b>ZTE C620</b> — atas kanan atau sisi kanan (awalan SN: 7xxx)</li>
-                  <li><b>Huawei EA5800-X2</b> — body perangkat</li>
-                </ul>
-                <p>3. Foto SN masing-masing modul:</p>
-                <ul class="gdl-ul">
-                  <li><b>C320:</b> modul GTGH dan SMXA</li>
-                  <li><b>C620:</b> modul HFTL/GFGH, SPUF, PRSF</li>
-                  <li><b>EA5800-X2:</b> modul MPSFE, PISC, FLHFE</li>
-                </ul>
-                <p>4. Catat Qty SFP terpasang di field <b>"Jumlah SFP"</b></p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">4</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🔀 Switch Alcatel</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto keseluruhan device</p>
-                <p>2. Foto SN device — <b>SN berada di bagian belakang</b></p>
-                <p>3. Foto type switch di bagian depan (terlihat kondisi menyala/tidak)</p>
-                <p>4. Catat Qty SFP terpasang</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">5</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🖥️ Router/Switch Huawei</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto keseluruhan device</p>
-                <p>2. Foto SN device — lokasi SN per model:</p>
-                <ul class="gdl-ul">
-                  <li><b>Huawei S6730</b> — bagian belakang device</li>
-                  <li><b>Huawei NE8000</b> — body atas atau depan device</li>
-                </ul>
-                <p>3. Foto type switch di bagian depan (kondisi menyala/tidak)</p>
-                <p>4. Foto masing-masing modul di bagian belakang device</p>
-                <p>5. Catat Qty SFP terpasang</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">6</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">⚡ Rectifier</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto keseluruhan unit rectifier beserta modul</p>
-                <p>2. Klik SN dalam sistem, lalu foto</p>
-                <p>3. Foto modul dengan SN terlihat jelas</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">7</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🔋 Inverter</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto keseluruhan unit, terlihat merek, type, dan timestamp</p>
-                <p>2. Foto SN — biasanya di body belakang</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">8</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🔦 OTB</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto OTB keseluruhan dengan timestamp (perhatikan label merah)</p>
-                <p>2. Foto OTB kondisi terbuka dengan seluruh core yang digunakan terlihat</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">9</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🔋 Battery</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto battery keseluruhan dengan timestamp</p>
-                <p>2. Foto SN — biasanya di depan atau belakang body battery</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">10</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">❄️ AC (Air Conditioning)</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto AC keseluruhan dengan timestamp</p>
-                <p>2. Foto SN AC Indoor — biasanya di body bawah atau samping kanan</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">11</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">🏢 Foto View POP</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto lokasi/area POP dari luar</p>
-                <p>2. Foto view dalam POP — seluruh rack harus terlihat</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-callout note">
-            <b>📝 Note:</b> Tata cara pengerjaan ini berlaku untuk semua asset <b>ODC / POP / BDF</b>. Step pengerjaan semua sama.
-          </div>
-        </div>
-
-        <!-- DWDM Sheet -->
-        <div class="gdl-photo-pane" id="gdlPhotoPane1">
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">1</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">📡 DWDM Huawei — Rack &amp; Shelf</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto keseluruhan rack DWDM dengan timestamp — <em>(dalam 1 rack bisa terdapat 2 Shelf/Subrack)</em></p>
-                <p>2. Foto masing-masing Shelf/Subrack secara terpisah</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-photo-item">
-            <div class="gdl-photo-num">2</div>
-            <div class="gdl-photo-content">
-              <div class="gdl-photo-title">📡 DWDM Huawei — Modul</div>
-              <div class="gdl-photo-steps">
-                <p>1. Foto SN masing-masing modul pada DWDM:</p>
-                <ul class="gdl-ul">
-                  <li>Mulai dari <b>FAN</b>, kemudian <b>Subrack/Shelf</b></li>
-                  <li>Lanjutkan ke semua modul di dalamnya</li>
-                </ul>
-                <p>2. Setiap modul memiliki SN — <b>nama modul dan SN harus difoto satu per satu</b></p>
-                <p>3. Susunan slot modul DWDM (referensi nomor slot): CTU, PIU, OH9S, OH9L, OPM8, WSMD9, DAP, DWSS20</p>
-              </div>
-            </div>
-          </div>
-          <div class="gdl-callout note">
-            <b>📝 Note:</b> Tata cara ini berlaku untuk semua DWDM. Letak modul setiap jenis berbeda — sesuaikan dengan model yang ada di lapangan.
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ─── TAB 3: EXPORT & SIMPAN ─────────────────────── -->
-      <div class="gdl-pane" id="gdlPane3">
-
-        <div class="gdl-section-title">Tombol Aksi</div>
-        <div class="gdl-action-list">
-          <div class="gdl-action-item email"><div class="gdl-action-icon">📧</div><div><b>Kirim Email</b><p>Otomatis generate &amp; download file ZIP, lalu membuka email client dengan subject &amp; body terisi. Attach file ZIP yang ter-download ke email sebelum mengirim. <b>Sistem akan memperingatkan jika ada S/N duplikat.</b></p></div></div>
-          <div class="gdl-action-item pdf"><div class="gdl-action-icon">📄</div><div><b>Generate PDF</b><p>Membuka jendela baru berisi laporan lengkap siap di-print. Gunakan Ctrl+P untuk save sebagai PDF.</p></div></div>
-          <div class="gdl-action-item excel"><div class="gdl-action-icon">📊</div><div><b>Generate Excel</b><p>Download file .xlsx berisi Site Information dan Device List dalam 1 sheet.</p></div></div>
-        </div>
-
-        <div class="gdl-section-title">Isi File ZIP</div>
-        <div class="gdl-zip-tree">
-          <div class="gdl-zip-row root">📦 <b>AssetTagging_[SiteID]_[Kegiatan]_[Tanggal]_[ID].zip</b></div>
-          <div class="gdl-zip-row">📊 <b>data.xlsx</b> — Site info + daftar device lengkap</div>
-          <div class="gdl-zip-row">📄 <b>laporan.html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
-          <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto view site dan rack</div>
-          <div class="gdl-zip-row">🖼️ <b>foto_pic.jpg</b> — Foto dokumentasi PIC</div>
-          <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital</div>
-          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto Full, Type, S/N per device</div>
-          <div class="gdl-zip-row">📝 <b>README.txt</b> — Panduan isi ZIP</div>
-        </div>
-
-        <div class="gdl-section-title">Simpan &amp; Sinkronisasi</div>
-        <div class="gdl-steps" style="gap:8px;">
-            <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Sync ke Google Sheets</b><p>Tap "Sync ke Google Sheets" → data otomatis sync jika online dan Sheets sudah dikonfigurasi.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Panel Antrian</b><p>Status: <em>Pending</em> (belum sync) · <em>Synced</em> (berhasil) · <em>Failed</em> (gagal). Tap "Retry" untuk coba ulang.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Pemulihan Otomatis</b><p>Jika halaman di-refresh atau perangkat mati tiba-tiba, semua data &amp; foto dipulihkan otomatis saat dibuka kembali.</p></div></div>
-        </div>
-
-        <div class="gdl-callout danger">
-          <b>⚠️ Jangan hapus cache browser</b><br>
-          Foto disimpan di IndexedDB browser. Menggunakan fitur "Clear Site Data" atau "Hapus Data Browser" <b>akan menghapus semua foto yang belum ter-ZIP</b> dan tidak bisa dikembalikan. Pastikan data sudah di-Save dan ter-Sync sebelum membersihkan cache.
-        </div>
-      </div>
-
-      <!-- ─── TAB 4: TROUBLESHOOTING ─────────────────────── -->
-      <div class="gdl-pane" id="gdlPane4">
-
-        <div class="gdl-section-title">Masalah Umum &amp; Solusi</div>
-        <div class="gdl-trouble-list">
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">📍 GPS tidak akurat atau tidak muncul</div>
-            <div class="gdl-trouble-a">Pastikan Location Permission diizinkan di browser. Coba di luar ruangan atau gunakan mode Input Manual / Klik Peta.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">🎤 Mikrofon tidak merespons</div>
-            <div class="gdl-trouble-a">Aktifkan izin mikrofon di pengaturan browser. Pastikan tidak ada aplikasi lain yang menggunakan mikrofon. Gunakan Chrome atau Edge.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">📷 Kamera scanner / kamera foto tidak terbuka</div>
-            <div class="gdl-trouble-a">Aktifkan izin kamera di browser. Gunakan Chrome versi terbaru. Pastikan halaman dibuka via HTTPS, bukan file://.</div>
-          </div>
-          <div class="gdl-trouble-item">
-
-            <div class="gdl-trouble-a">Pastikan Jenis Kegiatan dan Site ID sudah diisi. Collect ID harus tergenerate terlebih dahulu sebelum Save.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">☁️ Sync ke Google Sheets gagal</div>
-            <div class="gdl-trouble-a">Cek koneksi internet. Pastikan URL Apps Script sudah dikonfigurasi (Shift+Ctrl+S). Data tersimpan di antrian lokal — akan sync otomatis saat online kembali.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">🖼️ Foto tidak muncul setelah refresh</div>
-            <div class="gdl-trouble-a">Jangan hapus data browser/cache. Foto disimpan di IndexedDB. Jika sudah terhapus, foto tidak bisa dipulihkan — selalu download ZIP dulu sebelum clear cache.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">📦 File ZIP tidak bisa di-download</div>
-            <div class="gdl-trouble-a">Izinkan pop-up dan download otomatis di browser. Di mobile, buka menggunakan Chrome. Pastikan storage device tidak penuh.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">🔑 Token salah / tidak bisa login</div>
-            <div class="gdl-trouble-a">Hubungi Admin untuk mendapatkan token yang benar. Token bersifat <b>case-sensitive</b>. Jangan ada spasi di awal/akhir.</div>
-          </div>
-          <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">⚠️ Muncul peringatan S/N duplikat</div>
-            <div class="gdl-trouble-a">Periksa device yang disebutkan — pastikan tidak ada S/N yang sama pada dua device berbeda. Perbaiki dulu sebelum kirim email, atau pilih "Tetap Kirim" jika memang disengaja.</div>
-          </div>
-        </div>
-
-        <div class="gdl-contact">
-          <div class="gdl-contact-title">📞 Kontak Support</div>
-          <div><b>Teams:</b> ✉️ Collect Data Asset - All Region</div>
-          <div><b>Email:</b> ✉️ Int-Asset.Management@fiberstar.co.id</div>
-          <div><b>PIC Asset Tagging:</b> Agung · 081217400905</div>
-        </div>
-      </div>
-
-    </div><!-- end gdl-body -->
-  </div><!-- end gdl-modal -->
-</div><!-- end gdl-overlay -->
 
   // Terima pesan koordinat dari iframe Leaflet
   window.addEventListener('message', function(e) {
@@ -6587,5 +6176,419 @@ ${sigSection}
   // ── Init: IDB ──
   _openIDB().catch(e => console.warn('[IDB Init]', e));
 </script>
+
+<!-- ══════════════════════════════════════════════════════════
+     GUIDELINES MODAL — Panduan Lengkap Built-in
+     ══════════════════════════════════════════════════════════ -->
+<div class="gdl-overlay" id="gdlOverlay" onclick="if(event.target===this)closeGuidelines()">
+  <div class="gdl-modal">
+
+    <!-- Header -->
+    <div class="gdl-header">
+      <div class="gdl-header-left">
+        <div class="gdl-header-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div>
+          <div class="gdl-header-title">Fiberstar Asset Tagging</div>
+          <div class="gdl-header-sub">User Guidelines &amp; Panduan Foto · v1 · Asset Management 2026</div>
+        </div>
+      </div>
+      <button class="gdl-close" onclick="closeGuidelines()">✕</button>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="gdl-tabs">
+      <button class="gdl-tab active" onclick="switchGdlTab(0)">🚀 Mulai Cepat</button>
+      <button class="gdl-tab" onclick="switchGdlTab(1)">📋 Pengisian Form</button>
+      <button class="gdl-tab" onclick="switchGdlTab(2)">📷 Panduan Foto</button>
+      <button class="gdl-tab" onclick="switchGdlTab(3)">📦 Export &amp; Simpan</button>
+      <button class="gdl-tab" onclick="switchGdlTab(4)">🔧 Troubleshooting</button>
+    </div>
+
+    <!-- Body -->
+    <div class="gdl-body">
+
+      <!-- ─── TAB 0: MULAI CEPAT ─────────────────────────── -->
+      <div class="gdl-pane active" id="gdlPane0">
+
+        <div class="gdl-section-title">Alur Kerja Singkat</div>
+        <div class="gdl-steps">
+          <div class="gdl-step"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Login</b><p>Pilih divisi → masukkan token → klik Login</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type, PIC, Koordinat GPS</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Foto View Site / Rack</b><p>Foto kondisi keseluruhan rack dan ruang server</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Foto PIC &amp; Tanda Tangan</b><p>Dokumentasi petugas dan tanda tangan digital</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Export & Sync</b><p>Gunakan tombol Export (PDF/CSV/ZIP) atau Sync ke Google Sheets untuk menyimpan data</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">8</div><div class="gdl-step-body"><b>Kirim Email</b><p>Tap "Kirim Email" → ZIP otomatis ter-download → attach ke email yang terbuka</p></div></div>
+        </div>
+
+        <div class="gdl-section-title" style="margin-top:20px;">Checklist Sebelum Selesai</div>
+        <div class="gdl-checklist">
+          <div class="gdl-check-item">✅ Semua device sudah punya minimal 1 foto</div>
+          <div class="gdl-check-item">✅ Status device sudah dipilih (Active/Damage/Spare)</div>
+          <div class="gdl-check-item">✅ S/N sudah diisi untuk setiap device</div>
+            <div class="gdl-check-item">✅ Data sudah di-export atau ter-sync ke Google Sheets</div>
+          <div class="gdl-check-item">✅ File ZIP sudah ter-download dan di-attach ke email</div>
+        </div>
+
+        <div class="gdl-callout info">
+          <b>ℹ️ Fitur Utama App</b>
+          <div class="gdl-feature-grid">
+            <div class="gdl-feature"><span>📋</span><span>Form Digital lengkap</span></div>
+            <div class="gdl-feature"><span>📍</span><span>GPS Otomatis</span></div>
+            <div class="gdl-feature"><span>📷</span><span>Multi Foto per device</span></div>
+            <div class="gdl-feature"><span>🎤</span><span>Speech-to-Text S/N &amp; P/N</span></div>
+            <div class="gdl-feature"><span>📊</span><span>Barcode / QR Scanner</span></div>
+            <div class="gdl-feature"><span>✍️</span><span>Tanda Tangan Digital</span></div>
+            <div class="gdl-feature"><span>☁️</span><span>Sync ke Google Sheets</span></div>
+            <div class="gdl-feature"><span>📦</span><span>Export ZIP semua data</span></div>
+          </div>
+        </div>
+
+        <div class="gdl-callout warn">
+          <b>🔐 Login &amp; Token</b><br>
+          Aplikasi dilindungi sistem token per divisi. Setiap divisi (Asset, FOP, NetDev) memiliki token berbeda yang didistribusikan oleh admin. Sesi aktif beberapa jam — jika habis, login ulang. Data yang sudah tersimpan <b>tidak akan hilang</b>.
+        </div>
+
+        <div class="gdl-contact">
+          <div class="gdl-contact-title">📞 Kontak Support</div>
+          <div><b>Teams:</b> ✉️ Collect Data Asset - All Region</div>
+          <div><b>Email:</b> ✉️ Int-Asset.Management@fiberstar.co.id</div>
+          <div><b>PIC Asset Tagging:</b> Agung · 081217400905</div>
+        </div>
+      </div>
+
+      <!-- ─── TAB 1: PENGISIAN FORM ──────────────────────── -->
+      <div class="gdl-pane" id="gdlPane1">
+
+        <div class="gdl-section-title">Jenis Kegiatan</div>
+        <div class="gdl-activity-grid">
+          <div class="gdl-act new"><div class="gdl-act-icon">🆕</div><div><b>New Site</b><p>Instalasi aset di site baru yang belum pernah tercatat</p></div></div>
+          <div class="gdl-act existing"><div class="gdl-act-icon">📌</div><div><b>Existing</b><p>Pendataan ulang aset yang sudah ada di site lama</p></div></div>
+          <div class="gdl-act additional"><div class="gdl-act-icon">➕</div><div><b>Additional</b><p>Penambahan device baru di site yang sudah ada</p></div></div>
+          <div class="gdl-act dismantle"><div class="gdl-act-icon">🗑️</div><div><b>Dismantle</b><p>Pelepasan/pembongkaran aset dari site</p></div></div>
+          <div class="gdl-act replace"><div class="gdl-act-icon">🔄</div><div><b>Replace</b><p>Penggantian device lama dengan device baru</p></div></div>
+        </div>
+
+        <div class="gdl-callout info" style="margin-top:12px;">
+          <b>ℹ️ Collect ID</b><br>
+          Setelah memilih jenis kegiatan dan mengisi Site ID, sistem otomatis membuat Collect ID unik (contoh: <code>NEW-JKT001-20260407-0856-A3F2</code>) sebagai nomor referensi. Tidak dapat diubah manual.
+        </div>
+
+        <div class="gdl-section-title">Site Information</div>
+        <div class="gdl-field-table">
+          <div class="gdl-field-row"><div class="gdl-field-name">Tanggal</div><div class="gdl-field-desc">Tanggal pelaksanaan kegiatan</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Site Name</div><div class="gdl-field-desc">Nama site/lokasi · contoh: <em>Gedung Sudirman Lt.3</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Site ID</div><div class="gdl-field-desc">ID unik site dari sistem Fiberstar · contoh: <em>JKT-001</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Type Site</div><div class="gdl-field-desc">Tipe site: POP, BTS, DC, NOC, ODC, dll.</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">PIC Name</div><div class="gdl-field-desc">Nama teknisi/penanggung jawab kegiatan</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Division</div><div class="gdl-field-desc">Divisi yang mengerjakan — terisi otomatis dari login</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Floor Location</div><div class="gdl-field-desc">Lokasi spesifik di dalam gedung · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
+        </div>
+
+        <div class="gdl-section-title">Koordinat GPS</div>
+        <div class="gdl-steps" style="gap:8px;">
+          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>GPS Otomatis (Disarankan)</b><p>Tap "Capture Location" → izinkan akses lokasi → koordinat terisi otomatis beserta akurasi meter.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Input Manual</b><p>Pindah ke tab "Input Manual" → ketik Latitude &amp; Longitude → klik "Terapkan".</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Klik Peta</b><p>Pindah ke tab "Klik Peta" → tap titik lokasi di peta interaktif.</p></div></div>
+        </div>
+
+        <div class="gdl-section-title">Input S/N &amp; P/N</div>
+        <div class="gdl-input-methods">
+          <div class="gdl-input-method"><span class="gdl-im-icon">⌨️</span><div><b>Ketik Manual</b><p>Spasi otomatis dihapus — tidak perlu khawatir typo dari keyboard.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">🎤</span><div><b>Speech-to-Text</b><p>Tap ikon mikrofon, ucapkan S/N huruf per huruf. Spasi dari speech otomatis dihapus. Gunakan Chrome/Edge.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">📊</span><div><b>Scan Barcode/QR</b><p>Tap ikon scan, arahkan kamera ke label perangkat. Mendukung QR Code, Code 128, Code 39, EAN, Data Matrix.</p></div></div>
+        </div>
+      </div>
+
+      <!-- ─── TAB 2: PANDUAN FOTO ────────────────────────── -->
+      <div class="gdl-pane" id="gdlPane2">
+
+        <div class="gdl-callout info">
+          <b>📸 Wajib menggunakan aplikasi timestamp</b><br>
+          Pastikan GPS timestamp aktif dan keterangan rack/device sudah diset di "Display Custom Text" sebelum mengambil foto.
+        </div>
+
+        <div class="gdl-section-title">Setting Timestamp (Langkah Pertama)</div>
+        <div class="gdl-steps" style="gap:8px;">
+          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Pastikan GPS timestamp sesuai lokasi site</b></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Set keterangan di "Display Custom Text"</b><p>Tulis posisi rack yang akan difoto · contoh: <em>Rack-3 Lt.2</em> atau cukup <em>Rack-1</em> jika single floor</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Update custom text setiap ganti rack/device</b></div></div>
+        </div>
+
+        <div class="gdl-photo-tab-bar">
+          <button class="gdl-photo-tab active" onclick="switchPhotoTab(0)">🏢 POP / ODC / BDF</button>
+          <button class="gdl-photo-tab" onclick="switchPhotoTab(1)">📡 DWDM Huawei</button>
+        </div>
+
+        <!-- POP Sheet -->
+        <div class="gdl-photo-pane active" id="gdlPhotoPane0">
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">1</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">📦 Setting Timestamp</div>
+              <div class="gdl-photo-steps">
+                <p>1. Pastikan GPS timestamp sesuai lokasi site</p>
+                <p>2. Tulis keterangan rack di "Display Custom Text"</p>
+                <p>3. Contoh penulisan: posisi rack ke-3 di lt.2 → <code>Rack-3 Lt.2</code></p>
+                <p>4. Jika site hanya 1 lantai, cukup <code>Rack-1</code>, <code>Rack-2</code>, dst.</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">2</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🗄️ Foto Rack</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto rack dengan seluruh device terlihat</p>
+                <p>2. Pastikan display custom text sesuai urutan rack</p>
+                <p>3. <b>Semua rack dalam 1 POP/HUB harus difoto</b></p>
+                <p>4. Foto identifikasi rack: merek, type, Serial Number rack (jika ada)</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">3</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🔌 OLT (ZTE / Huawei)</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto device secara keseluruhan (perhatikan timestamp)</p>
+                <p>2. Foto SN device — lokasi SN per model:</p>
+                <ul class="gdl-ul">
+                  <li><b>ZTE C320</b> — sisi kanan perangkat</li>
+                  <li><b>ZTE C620</b> — atas kanan atau sisi kanan (awalan SN: 7xxx)</li>
+                  <li><b>Huawei EA5800-X2</b> — body perangkat</li>
+                </ul>
+                <p>3. Foto SN masing-masing modul:</p>
+                <ul class="gdl-ul">
+                  <li><b>C320:</b> modul GTGH dan SMXA</li>
+                  <li><b>C620:</b> modul HFTL/GFGH, SPUF, PRSF</li>
+                  <li><b>EA5800-X2:</b> modul MPSFE, PISC, FLHFE</li>
+                </ul>
+                <p>4. Catat Qty SFP terpasang di field <b>"Jumlah SFP"</b></p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">4</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🔀 Switch Alcatel</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto keseluruhan device</p>
+                <p>2. Foto SN device — <b>SN berada di bagian belakang</b></p>
+                <p>3. Foto type switch di bagian depan (terlihat kondisi menyala/tidak)</p>
+                <p>4. Catat Qty SFP terpasang</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">5</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🖥️ Router/Switch Huawei</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto keseluruhan device</p>
+                <p>2. Foto SN device — lokasi SN per model:</p>
+                <ul class="gdl-ul">
+                  <li><b>Huawei S6730</b> — bagian belakang device</li>
+                  <li><b>Huawei NE8000</b> — body atas atau depan device</li>
+                </ul>
+                <p>3. Foto type switch di bagian depan (kondisi menyala/tidak)</p>
+                <p>4. Foto masing-masing modul di bagian belakang device</p>
+                <p>5. Catat Qty SFP terpasang</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">6</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">⚡ Rectifier</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto keseluruhan unit rectifier beserta modul</p>
+                <p>2. Klik SN dalam sistem, lalu foto</p>
+                <p>3. Foto modul dengan SN terlihat jelas</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">7</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🔋 Inverter</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto keseluruhan unit, terlihat merek, type, dan timestamp</p>
+                <p>2. Foto SN — biasanya di body belakang</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">8</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🔦 OTB</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto OTB keseluruhan dengan timestamp (perhatikan label merah)</p>
+                <p>2. Foto OTB kondisi terbuka dengan seluruh core yang digunakan terlihat</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">9</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🔋 Battery</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto battery keseluruhan dengan timestamp</p>
+                <p>2. Foto SN — biasanya di depan atau belakang body battery</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">10</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">❄️ AC (Air Conditioning)</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto AC keseluruhan dengan timestamp</p>
+                <p>2. Foto SN AC Indoor — biasanya di body bawah atau samping kanan</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">11</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">🏢 Foto View POP</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto lokasi/area POP dari luar</p>
+                <p>2. Foto view dalam POP — seluruh rack harus terlihat</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-callout note">
+            <b>📝 Note:</b> Tata cara pengerjaan ini berlaku untuk semua asset <b>ODC / POP / BDF</b>. Step pengerjaan semua sama.
+          </div>
+        </div>
+
+        <!-- DWDM Sheet -->
+        <div class="gdl-photo-pane" id="gdlPhotoPane1">
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">1</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">📡 DWDM Huawei — Rack &amp; Shelf</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto keseluruhan rack DWDM dengan timestamp — <em>(dalam 1 rack bisa terdapat 2 Shelf/Subrack)</em></p>
+                <p>2. Foto masing-masing Shelf/Subrack secara terpisah</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-photo-item">
+            <div class="gdl-photo-num">2</div>
+            <div class="gdl-photo-content">
+              <div class="gdl-photo-title">📡 DWDM Huawei — Modul</div>
+              <div class="gdl-photo-steps">
+                <p>1. Foto SN masing-masing modul pada DWDM:</p>
+                <ul class="gdl-ul">
+                  <li>Mulai dari <b>FAN</b>, kemudian <b>Subrack/Shelf</b></li>
+                  <li>Lanjutkan ke semua modul di dalamnya</li>
+                </ul>
+                <p>2. Setiap modul memiliki SN — <b>nama modul dan SN harus difoto satu per satu</b></p>
+                <p>3. Susunan slot modul DWDM (referensi nomor slot): CTU, PIU, OH9S, OH9L, OPM8, WSMD9, DAP, DWSS20</p>
+              </div>
+            </div>
+          </div>
+          <div class="gdl-callout note">
+            <b>📝 Note:</b> Tata cara ini berlaku untuk semua DWDM. Letak modul setiap jenis berbeda — sesuaikan dengan model yang ada di lapangan.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── TAB 3: EXPORT & SIMPAN ─────────────────────── -->
+      <div class="gdl-pane" id="gdlPane3">
+
+        <div class="gdl-section-title">Tombol Aksi</div>
+        <div class="gdl-action-list">
+          <div class="gdl-action-item email"><div class="gdl-action-icon">📧</div><div><b>Kirim Email</b><p>Otomatis generate &amp; download file ZIP, lalu membuka email client dengan subject &amp; body terisi. Attach file ZIP yang ter-download ke email sebelum mengirim. <b>Sistem akan memperingatkan jika ada S/N duplikat.</b></p></div></div>
+          <div class="gdl-action-item pdf"><div class="gdl-action-icon">📄</div><div><b>Generate PDF</b><p>Membuka jendela baru berisi laporan lengkap siap di-print. Gunakan Ctrl+P untuk save sebagai PDF.</p></div></div>
+          <div class="gdl-action-item excel"><div class="gdl-action-icon">📊</div><div><b>Generate Excel</b><p>Download file .xlsx berisi Site Information dan Device List dalam 1 sheet.</p></div></div>
+        </div>
+
+        <div class="gdl-section-title">Isi File ZIP</div>
+        <div class="gdl-zip-tree">
+          <div class="gdl-zip-row root">📦 <b>AssetTagging_[SiteID]_[Kegiatan]_[Tanggal]_[ID].zip</b></div>
+          <div class="gdl-zip-row">📊 <b>data.xlsx</b> — Site info + daftar device lengkap</div>
+          <div class="gdl-zip-row">📄 <b>laporan.html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
+          <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto view site dan rack</div>
+          <div class="gdl-zip-row">🖼️ <b>foto_pic.jpg</b> — Foto dokumentasi PIC</div>
+          <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital</div>
+          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto Full, Type, S/N per device</div>
+          <div class="gdl-zip-row">📝 <b>README.txt</b> — Panduan isi ZIP</div>
+        </div>
+
+        <div class="gdl-section-title">Simpan &amp; Sinkronisasi</div>
+        <div class="gdl-steps" style="gap:8px;">
+            <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Sync ke Google Sheets</b><p>Tap "Sync ke Google Sheets" → data otomatis sync jika online dan Sheets sudah dikonfigurasi.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Panel Antrian</b><p>Status: <em>Pending</em> (belum sync) · <em>Synced</em> (berhasil) · <em>Failed</em> (gagal). Tap "Retry" untuk coba ulang.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Pemulihan Otomatis</b><p>Jika halaman di-refresh atau perangkat mati tiba-tiba, semua data &amp; foto dipulihkan otomatis saat dibuka kembali.</p></div></div>
+        </div>
+
+        <div class="gdl-callout danger">
+          <b>⚠️ Jangan hapus cache browser</b><br>
+          Foto disimpan di IndexedDB browser. Menggunakan fitur "Clear Site Data" atau "Hapus Data Browser" <b>akan menghapus semua foto yang belum ter-ZIP</b> dan tidak bisa dikembalikan. Pastikan data sudah di-Save dan ter-Sync sebelum membersihkan cache.
+        </div>
+      </div>
+
+      <!-- ─── TAB 4: TROUBLESHOOTING ─────────────────────── -->
+      <div class="gdl-pane" id="gdlPane4">
+
+        <div class="gdl-section-title">Masalah Umum &amp; Solusi</div>
+        <div class="gdl-trouble-list">
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">📍 GPS tidak akurat atau tidak muncul</div>
+            <div class="gdl-trouble-a">Pastikan Location Permission diizinkan di browser. Coba di luar ruangan atau gunakan mode Input Manual / Klik Peta.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">🎤 Mikrofon tidak merespons</div>
+            <div class="gdl-trouble-a">Aktifkan izin mikrofon di pengaturan browser. Pastikan tidak ada aplikasi lain yang menggunakan mikrofon. Gunakan Chrome atau Edge.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">📷 Kamera scanner / kamera foto tidak terbuka</div>
+            <div class="gdl-trouble-a">Aktifkan izin kamera di browser. Gunakan Chrome versi terbaru. Pastikan halaman dibuka via HTTPS, bukan file://.</div>
+          </div>
+          <div class="gdl-trouble-item">
+
+            <div class="gdl-trouble-a">Pastikan Jenis Kegiatan dan Site ID sudah diisi. Collect ID harus tergenerate terlebih dahulu sebelum Save.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">☁️ Sync ke Google Sheets gagal</div>
+            <div class="gdl-trouble-a">Cek koneksi internet. Pastikan URL Apps Script sudah dikonfigurasi (Shift+Ctrl+S). Data tersimpan di antrian lokal — akan sync otomatis saat online kembali.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">🖼️ Foto tidak muncul setelah refresh</div>
+            <div class="gdl-trouble-a">Jangan hapus data browser/cache. Foto disimpan di IndexedDB. Jika sudah terhapus, foto tidak bisa dipulihkan — selalu download ZIP dulu sebelum clear cache.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">📦 File ZIP tidak bisa di-download</div>
+            <div class="gdl-trouble-a">Izinkan pop-up dan download otomatis di browser. Di mobile, buka menggunakan Chrome. Pastikan storage device tidak penuh.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">🔑 Token salah / tidak bisa login</div>
+            <div class="gdl-trouble-a">Hubungi Admin untuk mendapatkan token yang benar. Token bersifat <b>case-sensitive</b>. Jangan ada spasi di awal/akhir.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">⚠️ Muncul peringatan S/N duplikat</div>
+            <div class="gdl-trouble-a">Periksa device yang disebutkan — pastikan tidak ada S/N yang sama pada dua device berbeda. Perbaiki dulu sebelum kirim email, atau pilih "Tetap Kirim" jika memang disengaja.</div>
+          </div>
+        </div>
+
+        <div class="gdl-contact">
+          <div class="gdl-contact-title">📞 Kontak Support</div>
+          <div><b>Teams:</b> ✉️ Collect Data Asset - All Region</div>
+          <div><b>Email:</b> ✉️ Int-Asset.Management@fiberstar.co.id</div>
+          <div><b>PIC Asset Tagging:</b> Agung · 081217400905</div>
+        </div>
+      </div>
+
+    </div><!-- end gdl-body -->
+  </div><!-- end gdl-modal -->
+</div><!-- end gdl-overlay -->
+
 </body>
 </html>
