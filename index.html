@@ -2649,6 +2649,12 @@ map.on('click',function(e){
   window.parent.postMessage({type:'mapclick',lat:lat,lng:lng},'*');
 });
 <\/script>
+</body></html>`;
+
+    const iframe = document.getElementById('mapClickIframe');
+    iframe.srcdoc = html;
+  }
+
 <!-- ══════════════════════════════════════════════════════════
      GUIDELINES MODAL — Panduan Lengkap Built-in
      ══════════════════════════════════════════════════════════ -->
@@ -3061,12 +3067,6 @@ map.on('click',function(e){
     </div><!-- end gdl-body -->
   </div><!-- end gdl-modal -->
 </div><!-- end gdl-overlay -->
-
-</body></html>`;
-
-    const iframe = document.getElementById('mapClickIframe');
-    iframe.srcdoc = html;
-  }
 
   // Terima pesan koordinat dari iframe Leaflet
   window.addEventListener('message', function(e) {
