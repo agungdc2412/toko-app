@@ -483,20 +483,36 @@
     .photo-btn-group-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 14px; }
     .photo-btn-group-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
 
-    .action-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: all 0.15s; }
-    .btn-email { background: var(--fs-blue); color: white; grid-column: 1 / -1; }
-    .btn-email:hover { background: #0F4D8A; }
-    .btn-email:disabled { opacity: 0.75; cursor: not-allowed; }
+    /* ── Action Bar — redesign ───────────────────────── */
+    .action-bar { display: flex; flex-direction: column; gap: 10px; }
+    .action-bar-primary { display: block; width: 100%; }
+    .action-bar-secondary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action-bar-tertiary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; transition: all 0.18s; width: 100%; box-sizing: border-box; }
+    .action-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .btn-pdf { background: var(--fs-red-light); color: var(--fs-red); border: 1px solid rgba(163,45,45,0.2); }
-    .btn-pdf:hover { background: #F7C1C1; }
-    .btn-excel { background: var(--fs-green-light); color: var(--fs-green); border: 1px solid rgba(59,109,17,0.2); }
-    .btn-excel:hover { background: #C0DD97; }
-    .btn-zip { background: var(--fs-purple-light); color: var(--fs-purple); border: 1px solid rgba(55,48,163,0.2); grid-column: 1 / -1; font-size: 14px; padding: 14px 16px; }
+
+    /* Kirim Email — primary CTA, full width, paling menonjol */
+    .btn-email { background: linear-gradient(135deg, var(--fs-blue) 0%, #0d47a1 100%); color: white; font-size: 15px; padding: 15px 20px; box-shadow: 0 4px 14px rgba(24,90,157,0.35); letter-spacing: 0.01em; }
+    .btn-email:hover:not(:disabled) { background: linear-gradient(135deg, #0F4D8A 0%, #0a3880 100%); box-shadow: 0 6px 18px rgba(24,90,157,0.45); transform: translateY(-1px); }
+    .btn-email:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* Generate PDF & Excel — 2 kolom */
+    .btn-pdf { background: var(--fs-red-light); color: var(--fs-red); border: 1.5px solid rgba(163,45,45,0.25); }
+    .btn-pdf:hover { background: #F7C1C1; transform: translateY(-1px); }
+    .btn-excel { background: var(--fs-green-light); color: var(--fs-green); border: 1.5px solid rgba(59,109,17,0.25); }
+    .btn-excel:hover { background: #C0DD97; transform: translateY(-1px); }
+
+    /* Saran Perbaikan & Reset — 2 kolom bawah */
+    .btn-saran { background: #EAF1FB; color: #1a56c4; border: 1.5px solid #b3cef5; text-decoration: none; }
+    .btn-saran:hover { background: #d4e5f7; transform: translateY(-1px); }
+    .btn-reset-action { background: #FFF5F5; color: #c0392b; border: 1.5px solid rgba(192,57,43,0.25); }
+    .btn-reset-action:hover { background: #fde8e8; transform: translateY(-1px); }
+
+    .btn-zip { background: var(--fs-purple-light); color: var(--fs-purple); border: 1px solid rgba(55,48,163,0.2); font-size: 14px; padding: 14px 16px; }
     .btn-zip:hover { background: #E0E2FC; }
     .btn-zip:disabled { opacity: 0.6; cursor: not-allowed; }
-    .action-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
     .zip-info { font-size: 12px; color: var(--text-secondary); margin-top: 10px; padding: 10px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border); line-height: 1.6; }
     .zip-info b { color: var(--fs-purple); }
@@ -1739,38 +1755,60 @@
   <div class="section-card">
     <div class="section-title"><span class="section-title-dot"></span>Aksi</div>
     <div class="action-bar">
-      <button class="action-btn btn-email" onclick="sendEmailWithZip()" id="btnEmail">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-          <polyline points="22,6 12,13 2,6"/>
-        </svg>
-        Kirim Email ke Asset Management
-      </button>
-      <button class="action-btn btn-pdf" onclick="generatePDF()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-        Generate PDF
-      </button>
-      <button class="action-btn btn-excel" onclick="generateExcel()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="10" y1="12" x2="14" y2="16"/><line x1="14" y1="12" x2="10" y2="16"/>
-        </svg>
-        Generate Excel (.xlsx)
-      </button>
 
-      <!-- Reset Button -->
-      <button class="btn-reset" onclick="openResetModal()" style="grid-column:1/-1;margin-top:4px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
-          <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-        </svg>
-        Reset Form
-      </button>
+      <!-- Baris 1: Kirim Email — Primary CTA full width -->
+      <div class="action-bar-primary">
+        <button class="action-btn btn-email" onclick="sendEmailWithZip()" id="btnEmail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Kirim Email ke Asset Management
+        </button>
+      </div>
+
+      <!-- Baris 2: Generate PDF & Excel -->
+      <div class="action-bar-secondary">
+        <button class="action-btn btn-pdf" onclick="generatePDF()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Generate PDF
+        </button>
+        <button class="action-btn btn-excel" onclick="generateExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="10" y1="12" x2="14" y2="16"/><line x1="14" y1="12" x2="10" y2="16"/>
+          </svg>
+          Generate Excel
+        </button>
+      </div>
+
+      <!-- Baris 3: Saran Perbaikan & Reset Form -->
+      <div class="action-bar-tertiary">
+        <a  id="btnSaranPerbaikan"
+            href="SARAN_PERBAIKAN_URL_PLACEHOLDER"
+            target="_blank" rel="noopener"
+            class="action-btn btn-saran">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Saran Perbaikan
+        </a>
+        <button class="action-btn btn-reset-action" onclick="openResetModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
+            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+          </svg>
+          Reset Form
+        </button>
+      </div>
+
     </div>
     <div class="zip-info" id="zipInfoBox">
       &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
@@ -3514,9 +3552,10 @@ map.on('click',function(e){
             <div class="form-group">
               <label class="form-label">Serial Number</label>
               <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" id="${snUid}" class="form-input" style="flex:1;min-width:0;" placeholder="S/N"
+                <input type="text" id="${snUid}" class="form-input" style="flex:1;min-width:0;" placeholder=""
                   value="${escHtml(sm.serialNumber||'')}"
-                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;}updateSubModule('${devId}','${sm.id}','serialNumber',this.value)">
+                  autocomplete="off" autocorrect="off" spellcheck="false"
+                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;this.setSelectionRange(c,c);}updateSubModule('${devId}','${sm.id}','serialNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan S/N"
                   onclick="startSTTInline(this,function(t){
                     t=_stripSpaces(t);
@@ -3534,9 +3573,10 @@ map.on('click',function(e){
             <div class="form-group">
               <label class="form-label">Part Number</label>
               <div style="display:flex;gap:6px;align-items:center;">
-                <input type="text" id="${pnUid}" class="form-input" style="flex:1;min-width:0;" placeholder="P/N"
+                <input type="text" id="${pnUid}" class="form-input" style="flex:1;min-width:0;" placeholder=""
                   value="${escHtml(sm.partNumber||'')}"
-                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;}updateSubModule('${devId}','${sm.id}','partNumber',this.value)">
+                  autocomplete="off" autocorrect="off" spellcheck="false"
+                  oninput="var c=this.selectionStart,stripped=_stripSpaces(this.value);if(this.value!==stripped){this.value=stripped;this.setSelectionRange(c,c);}updateSubModule('${devId}','${sm.id}','partNumber',this.value)">
                 <button class="stt-btn" title="Ucapkan P/N"
                   onclick="startSTTInline(this,function(t){
                     t=_stripSpaces(t);
