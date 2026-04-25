@@ -2667,10 +2667,10 @@
   }
 
   async function _decodeScanUpload(file) {
-    const rb = document.getElementById('scannerResultBarUpload');
+    const rb   = document.getElementById('scannerResultBarUpload');
     const prev = document.getElementById('scanUploadPreview');
 
-    // Tampilkan preview gambar
+    // Preview gambar
     const objUrl = URL.createObjectURL(file);
     prev.src = objUrl;
     prev.style.display = 'block';
@@ -2680,56 +2680,107 @@
     rb.textContent = '⏳ Membaca barcode dari gambar...';
     rb.classList.add('show');
 
-    try {
-      if (typeof ZXing === 'undefined') throw new Error('ZXing not loaded');
+    if (typeof ZXing === 'undefined') {
+      rb.style.color = 'var(--fs-red)';
+      rb.textContent = '❌ Library ZXing belum termuat. Periksa koneksi lalu refresh.';
+      return;
+    }
 
-      const img = await createImageBitmap(file);
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width; canvas.height = img.height;
-      canvas.getContext('2d').drawImage(img, 0, 0);
+    // Buat Image element — ZXing 0.18.x decode dari HTMLImageElement
+    // dengan decodeFromImageElement (async, lebih reliable dari decodeFromCanvas)
+    const imgEl = new Image();
+    imgEl.src = objUrl;
 
-      const hints = new Map();
-      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-        ZXing.BarcodeFormat.QR_CODE,
-        ZXing.BarcodeFormat.CODE_128,
-        ZXing.BarcodeFormat.CODE_39,
-        ZXing.BarcodeFormat.EAN_13,
-        ZXing.BarcodeFormat.EAN_8,
-        ZXing.BarcodeFormat.DATA_MATRIX,
-        ZXing.BarcodeFormat.PDF_417,
-        ZXing.BarcodeFormat.ITF,
-        ZXing.BarcodeFormat.UPC_A,
-        ZXing.BarcodeFormat.UPC_E,
-        ZXing.BarcodeFormat.AZTEC,
-      ]);
-      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    // Tunggu gambar load
+    await new Promise((res, rej) => {
+      imgEl.onload  = res;
+      imgEl.onerror = rej;
+    });
 
-      const reader = new ZXing.BrowserMultiFormatReader(hints);
-      const result = await reader.decodeFromCanvas(canvas);
-      URL.revokeObjectURL(objUrl);
+    // Resize ke canvas dengan lebar max 1600px agar tidak terlalu besar
+    const MAX_W = 1600;
+    const scale = imgEl.naturalWidth > MAX_W ? MAX_W / imgEl.naturalWidth : 1;
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.round(imgEl.naturalWidth  * scale);
+    canvas.height = Math.round(imgEl.naturalHeight * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
 
-      if (result) {
-        const text = _stripSpaces(result.getText());
-        const fmt  = result.getBarcodeFormat ? result.getBarcodeFormat() : '';
-        rb.style.background = 'rgba(74,222,128,0.1)';
-        rb.style.borderColor = '#4ADE80';
-        rb.style.color       = '#4ADE80';
-        rb.textContent = '✓ ' + text + (fmt ? '  [' + fmt + ']' : '');
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        // Isi ke field & tutup modal setelah 800ms
-        setTimeout(() => {
-          if (scannerCallback) scannerCallback(text);
-          closeScanner();
-          showToast('🖼️ Barcode terbaca: "' + text + '"', 3500);
-        }, 800);
-      }
-    } catch (e) {
-      URL.revokeObjectURL(objUrl);
-      rb.style.background = 'rgba(163,45,45,0.1)';
+    // Coba decode — ZXing 0.18 decodeFromCanvas adalah sync, bungkus dengan try
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+      ZXing.BarcodeFormat.QR_CODE,
+      ZXing.BarcodeFormat.CODE_128,
+      ZXing.BarcodeFormat.CODE_39,
+      ZXing.BarcodeFormat.EAN_13,
+      ZXing.BarcodeFormat.EAN_8,
+      ZXing.BarcodeFormat.DATA_MATRIX,
+      ZXing.BarcodeFormat.PDF_417,
+      ZXing.BarcodeFormat.ITF,
+      ZXing.BarcodeFormat.UPC_A,
+      ZXing.BarcodeFormat.UPC_E,
+      ZXing.BarcodeFormat.AZTEC,
+    ]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    hints.set(ZXing.DecodeHintType.PURE_BARCODE, false);
+
+    const reader = new ZXing.BrowserMultiFormatReader(hints);
+
+    // Coba 3 variasi: original, contrast-boost, grayscale
+    // Barcode di foto lapangan sering kurang kontras
+    const canvases = [canvas, _boostContrast(canvas), _toGrayscale(canvas)];
+    let result = null;
+
+    for (const c of canvases) {
+      try {
+        // decodeFromCanvas sync di ZXing 0.18 — lempar NotFoundException jika gagal
+        const lum = new ZXing.HTMLCanvasElementLuminanceSource(c);
+        const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+        result = reader.decode(bmp);
+        if (result) break;
+      } catch (_) { /* coba variasi berikutnya */ }
+    }
+
+    URL.revokeObjectURL(objUrl);
+
+    if (result) {
+      const text = _stripSpaces(result.getText());
+      rb.style.background  = 'rgba(74,222,128,0.1)';
+      rb.style.borderColor = '#4ADE80';
+      rb.style.color       = '#4ADE80';
+      rb.textContent = '✓ ' + text;
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+      setTimeout(() => {
+        if (scannerCallback) scannerCallback(text);
+        closeScanner();
+        showToast('🖼️ Barcode terbaca: "' + text + '"', 3500);
+      }, 800);
+    } else {
+      rb.style.background  = 'rgba(163,45,45,0.1)';
       rb.style.borderColor = 'var(--fs-red)';
       rb.style.color       = 'var(--fs-red)';
-      rb.textContent = '❌ Barcode tidak terbaca. Coba foto lebih dekat, pencahayaan cukup, atau sudut lurus.';
+      rb.textContent = '❌ Barcode tidak terbaca. Tips: foto lebih dekat, cahaya cukup, sudut lurus, hindari bayangan.';
     }
+  }
+
+  // ── Helper: tingkatkan kontras canvas ────────────────
+  function _boostContrast(srcCanvas) {
+    const c = document.createElement('canvas');
+    c.width = srcCanvas.width; c.height = srcCanvas.height;
+    const ctx = c.getContext('2d');
+    ctx.filter = 'contrast(180%) brightness(110%)';
+    ctx.drawImage(srcCanvas, 0, 0);
+    return c;
+  }
+
+  // ── Helper: grayscale canvas ──────────────────────────
+  function _toGrayscale(srcCanvas) {
+    const c = document.createElement('canvas');
+    c.width = srcCanvas.width; c.height = srcCanvas.height;
+    const ctx = c.getContext('2d');
+    ctx.filter = 'grayscale(100%) contrast(160%)';
+    ctx.drawImage(srcCanvas, 0, 0);
+    return c;
   }
 
   // Close on overlay click
