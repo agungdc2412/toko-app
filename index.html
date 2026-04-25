@@ -1793,17 +1793,28 @@
   <div class="dup-sn-modal">
     <div class="dup-sn-header">
       <span>⚠️ Serial Number Duplikat</span>
-      <button class="dup-sn-close" onclick="closeDupSnModal()">✕</button>
     </div>
     <div class="dup-sn-body">
-      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
-        Ditemukan <b id="dupSnCount">0</b> Serial Number yang sama pada beberapa device. Harap periksa sebelum mengirim.
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:4px;">
+        Ditemukan <b id="dupSnCount">0</b> S/N yang sama — form <b>tidak dapat dikirim</b> sebelum diperbaiki.
+      </p>
+      <p style="font-size:12px;color:#c0392b;margin-bottom:12px;">
+        Periksa dan perbaiki S/N berikut (termasuk sub-modul) sebelum melanjutkan.
       </p>
       <div id="dupSnList"></div>
     </div>
-    <div class="dup-sn-footer">
-      <button class="dup-sn-btn-back" onclick="closeDupSnModal()">← Kembali & Perbaiki</button>
-      <button class="dup-sn-btn-proceed" onclick="closeDupSnModal(true)">Tetap Kirim →</button>
+    <div class="dup-sn-footer" style="flex-direction:column;gap:8px;">
+      <button class="dup-sn-btn-back" onclick="closeDupSnModal()" style="width:100%;">
+        ← Kembali &amp; Perbaiki S/N
+      </button>
+      <a id="dupSnSaranLink"
+         href="SARAN_PERBAIKAN_URL_PLACEHOLDER"
+         target="_blank"
+         rel="noopener"
+         class="dup-sn-btn-saran"
+         style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:9px 16px;border-radius:8px;background:#eaf1fb;color:#1a56c4;font-size:13px;font-weight:600;text-decoration:none;border:1.5px solid #b3cef5;box-sizing:border-box;">
+        📋 Lihat Panduan Saran Perbaikan
+      </a>
     </div>
   </div>
 </div>
@@ -2889,17 +2900,50 @@ map.on('click',function(e){
     if (!src) return;
     deviceCounter++;
     const newId = 'dev_' + deviceCounter;
+
+    // Deep clone semua field teks (JSON.parse/stringify)
     const newDev = JSON.parse(JSON.stringify(src));
     newDev.id = newId;
     newDev.collapsed = false;
-    // Give submodules new IDs
+
+    // Copy foto device utama dari src (foto besar ada di object langsung)
+    newDev.photos = {
+      full:     src.photos ? (src.photos.full     || null) : null,
+      zoom:     src.photos ? (src.photos.zoom     || null) : null,
+      label:    src.photos ? (src.photos.label    || null) : null,
+      pn:       src.photos ? (src.photos.pn       || null) : null,
+      fullOld:  src.photos ? (src.photos.fullOld  || null) : null,
+      labelOld: src.photos ? (src.photos.labelOld || null) : null,
+    };
+    newDev.exts = {
+      full:     src.exts ? (src.exts.full     || null) : null,
+      zoom:     src.exts ? (src.exts.zoom     || null) : null,
+      label:    src.exts ? (src.exts.label    || null) : null,
+      pn:       src.exts ? (src.exts.pn       || null) : null,
+      fullOld:  src.exts ? (src.exts.fullOld  || null) : null,
+      labelOld: src.exts ? (src.exts.labelOld || null) : null,
+    };
+
+    // Copy sub-modul dengan ID baru + copy foto sub-modul secara eksplisit
     newDev.subModules = (src.subModules || []).map((sm, si) => ({
       ...sm,
       id: newId + '_sm_' + si,
+      // Copy foto sub-modul eksplisit (hindari shared reference)
+      photos: {
+        sn: sm.photos ? (sm.photos.sn || null) : null,
+        pn: sm.photos ? (sm.photos.pn || null) : null,
+      },
+      exts: {
+        sn: sm.exts ? (sm.exts.sn || null) : null,
+        pn: sm.exts ? (sm.exts.pn || null) : null,
+      },
     }));
+
     const idx = devices.findIndex(x => x.id === id);
     devices.splice(idx + 1, 0, newDev);
     renderDevices();
+    // Simpan ke IDB agar foto hasil duplikat ikut tersimpan
+    _autoSave();
     setTimeout(() => {
       const el = document.getElementById('dc_' + newId);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4187,14 +4231,28 @@ map.on('click',function(e){
   let _dupSnProceedCallback = null;
 
   function _checkDuplicateSN(devices, onNoDup, onDup) {
-    const snMap = {}; // sn -> [device labels]
+    const snMap = {}; // sn -> [label]
+
     devices.forEach((d, i) => {
-      const sn = (d.serialNumber || '').trim();
-      if (!sn) return;
-      const label = `${escHtml(d.deviceName || ('Asset ' + (i + 1)))} (Asset ${i + 1})`;
-      if (!snMap[sn]) snMap[sn] = [];
-      snMap[sn].push(label);
+      const devLabel = `${escHtml(d.deviceName || ('Asset ' + (i+1)))} (Asset ${i+1})`;
+
+      // Cek SN device utama
+      const sn = (d.serialNumber || '').trim().toUpperCase();
+      if (sn) {
+        if (!snMap[sn]) snMap[sn] = [];
+        snMap[sn].push(devLabel);
+      }
+
+      // Cek SN sub-modul (module device)
+      (d.subModules || []).forEach((sm, si) => {
+        const smSn = (sm.serialNumber || '').trim().toUpperCase();
+        if (!smSn) return;
+        const smLabel = `${escHtml(sm.moduleName || sm.name || ('Sub-Modul ' + (si+1)))} — dalam ${devLabel}`;
+        if (!snMap[smSn]) snMap[smSn] = [];
+        snMap[smSn].push(smLabel);
+      });
     });
+
     const dups = Object.entries(snMap).filter(([, arr]) => arr.length > 1);
     if (dups.length === 0) {
       onNoDup();
@@ -4203,8 +4261,8 @@ map.on('click',function(e){
     }
   }
 
-  function _showDupSnModal(dups, proceedCallback) {
-    _dupSnProceedCallback = proceedCallback;
+  function _showDupSnModal(dups) {
+    _dupSnProceedCallback = null;
     document.getElementById('dupSnCount').textContent = dups.length;
     document.getElementById('dupSnList').innerHTML = dups.map(([sn, devs]) =>
       `<div class="dup-sn-item">
@@ -4215,15 +4273,10 @@ map.on('click',function(e){
     document.getElementById('dupSnOverlay').classList.add('active');
   }
 
-  function closeDupSnModal(proceed) {
+  function closeDupSnModal() {
     document.getElementById('dupSnOverlay').classList.remove('active');
-    if (proceed && _dupSnProceedCallback) {
-      const cb = _dupSnProceedCallback;
-      _dupSnProceedCallback = null;
-      cb();
-    } else {
-      _dupSnProceedCallback = null;
-    }
+    _dupSnProceedCallback = null;
+    // Tidak ada opsi "Tetap Kirim" — user wajib perbaiki SN dulu
   }
 
     function sendEmail() {
@@ -4236,14 +4289,14 @@ map.on('click',function(e){
     if (!validateForm()) return;
     const f = getFormData();
 
-    // ── Cek duplikat SN sebelum lanjut ──
-    const dupDone = await new Promise(resolve => {
+    // ── Cek duplikat SN sebelum lanjut (wajib diperbaiki, tidak bisa dilewati) ──
+    const hasDup = await new Promise(resolve => {
       _checkDuplicateSN(f.devices,
-        () => resolve(true),                   // tidak ada duplikat → lanjut
-        (dups) => { _showDupSnModal(dups, () => resolve(true)); resolve(false); }
+        () => resolve(false),   // tidak ada duplikat → lanjut
+        (dups) => { _showDupSnModal(dups); resolve(true); }
       );
     });
-    if (!dupDone) return; // user pilih Kembali & Perbaiki
+    if (hasDup) return; // wajib perbaiki dulu, tidak ada opsi lanjut
 
     const btn = document.getElementById('btnEmail');
     const reminder = document.getElementById('emailAttachReminder');
