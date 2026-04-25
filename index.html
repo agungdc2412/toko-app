@@ -646,6 +646,28 @@
     }
     .scanner-cam-select:focus { outline: none; border-color: #4ADE80; }
 
+    /* ── Scanner Mode Tabs ───────────────────────────── */
+    .scanner-tabs { display: flex; background: #111; padding: 0 18px; gap: 0; border-bottom: 1px solid #2a2a2a; }
+    .scanner-tab { flex: 1; padding: 10px 8px; font-size: 12px; font-weight: 600; color: #666; border: none; background: none; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .scanner-tab.active { color: #4ADE80; border-bottom-color: #4ADE80; }
+    .scanner-tab svg { width: 14px; height: 14px; }
+
+    /* ── Upload Panel ────────────────────────────────── */
+    .scanner-upload-panel { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 28px 20px; background: #0d0d0d; min-height: 200px; }
+    .scanner-upload-panel.active { display: flex; }
+    .scanner-upload-zone { width: 100%; border: 2px dashed #333; border-radius: 12px; padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.15s; }
+    .scanner-upload-zone:hover, .scanner-upload-zone.dragover { border-color: #4ADE80; background: rgba(74,222,128,0.05); }
+    .scanner-upload-zone svg { width: 40px; height: 40px; color: #444; }
+    .scanner-upload-zone p { font-size: 13px; color: #666; text-align: center; margin: 0; line-height: 1.5; }
+    .scanner-upload-zone span { font-size: 11px; color: #444; }
+    .scanner-upload-btn { width: 100%; padding: 11px; background: #4ADE80; color: #000; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .scanner-upload-btn:hover { background: #22c55e; }
+    .scanner-upload-preview { width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; display: none; border: 1px solid #333; }
+
+    /* Frame barcode landscape untuk 1D */
+    .scanner-frame-box.barcode-mode { aspect-ratio: 3/1; width: 80%; border-radius: 6px; }
+    .scanner-frame-box.barcode-mode .scan-line { left: 4%; right: 4%; }
+
     /* Coordinate field */
     .coord-input-row { display: flex; gap: 6px; align-items: center; }
     .coord-input-row .form-input { flex: 1; min-width: 0; }
@@ -1925,6 +1947,7 @@
 <!-- Barcode / QR Scanner Modal -->
 <div class="scanner-overlay" id="scannerOverlay">
   <div class="scanner-modal">
+    <!-- Header -->
     <div class="scanner-header">
       <div class="scanner-header-title">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1936,20 +1959,70 @@
       </div>
       <button class="scanner-close" onclick="closeScanner()">&#x2715;</button>
     </div>
-    <div class="scanner-viewport">
-      <video id="scannerVideo" autoplay muted playsinline></video>
-      <div class="scanner-frame">
-        <div class="scanner-frame-box">
-          <div class="scanner-frame-inner"></div>
-          <div class="scan-line"></div>
+
+    <!-- Mode Tabs -->
+    <div class="scanner-tabs">
+      <button class="scanner-tab active" id="scanTabLive" onclick="_switchScanTab('live')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        📷 Scan Live
+      </button>
+      <button class="scanner-tab" id="scanTabUpload" onclick="_switchScanTab('upload')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 16 12 12 8 16"/>
+          <line x1="12" y1="12" x2="12" y2="21"/>
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        </svg>
+        🖼️ Upload Foto
+      </button>
+    </div>
+
+    <!-- Panel: Scan Live -->
+    <div id="scanPanelLive">
+      <div class="scanner-viewport">
+        <video id="scannerVideo" autoplay muted playsinline></video>
+        <div class="scanner-frame">
+          <div class="scanner-frame-box" id="scannerFrameBox">
+            <div class="scanner-frame-inner"></div>
+            <div class="scan-line"></div>
+          </div>
         </div>
       </div>
+      <div class="scanner-footer">
+        <div class="scanner-result-bar" id="scannerResultBar"></div>
+        <div class="scanner-hint" id="scannerHint">Arahkan kamera ke barcode atau QR code perangkat</div>
+        <select class="scanner-cam-select" id="scannerCamSelect" onchange="switchCamera(this.value)"></select>
+      </div>
     </div>
-    <div class="scanner-footer">
-      <div class="scanner-result-bar" id="scannerResultBar"></div>
-      <div class="scanner-hint">Arahkan kamera ke barcode atau QR code perangkat</div>
-      <select class="scanner-cam-select" id="scannerCamSelect" onchange="switchCamera(this.value)"></select>
+
+    <!-- Panel: Upload Foto -->
+    <div class="scanner-upload-panel" id="scanPanelUpload">
+      <div class="scanner-upload-zone" id="scanUploadZone"
+           onclick="document.getElementById('scanUploadFileInput').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="_handleScanUploadDrop(event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <path d="M3 9h18M9 21V9"/>
+          <path d="M15 3l-3 3-3-3"/>
+        </svg>
+        <p>Tap untuk pilih foto dari galeri<br>atau drag &amp; drop foto ke sini</p>
+        <span>Mendukung JPG, PNG, HEIC · QR Code &amp; Barcode 1D</span>
+      </div>
+      <img id="scanUploadPreview" class="scanner-upload-preview" alt="Preview">
+      <div class="scanner-result-bar" id="scannerResultBarUpload" style="width:100%;box-sizing:border-box;"></div>
+      <button class="scanner-upload-btn" onclick="document.getElementById('scanUploadFileInput').click()">
+        📂 Pilih Foto Barcode / QR Code
+      </button>
+      <input type="file" id="scanUploadFileInput" accept="image/*" style="display:none" onchange="_handleScanUploadFile(this)">
+      <p style="font-size:11px;color:#555;text-align:center;margin:0;">
+        Foto akan diproses lokal di perangkat — tidak dikirim ke server
+      </p>
     </div>
+
   </div>
 </div>
 
@@ -2367,7 +2440,9 @@
     bar.classList.remove('show');
     bar.textContent = '';
     bar.style.background = ''; bar.style.borderColor = ''; bar.style.color = '';
-    document.querySelector('.scanner-hint').textContent = 'Membuka kamera...';
+    document.getElementById('scannerHint').textContent = 'Membuka kamera...';
+    // Pastikan mulai di tab Live
+    _switchScanTab('live', false);
     await _initScanner();
   }
 
@@ -2408,7 +2483,7 @@
 
   async function _initScanner(deviceId) {
     const bar  = document.getElementById('scannerResultBar');
-    const hint = document.querySelector('.scanner-hint');
+    const hint = document.getElementById('scannerHint');
 
     bar.style.background = ''; bar.style.borderColor = ''; bar.style.color = '';
     bar.textContent = ''; bar.classList.remove('show');
@@ -2546,9 +2621,115 @@
     if (codeReader) { try { codeReader.reset(); } catch(_){} codeReader = null; }
     availableCameras = [];
     scannerCallback = null;
+    // Reset upload panel
+    const prev = document.getElementById('scanUploadPreview');
+    if (prev) { prev.style.display = 'none'; prev.src = ''; }
+    const rb = document.getElementById('scannerResultBarUpload');
+    if (rb) { rb.textContent = ''; rb.classList.remove('show'); }
+    const fi = document.getElementById('scanUploadFileInput');
+    if (fi) fi.value = '';
     // Bersihkan tombol fallback jika ada
     const fb = document.getElementById('scannerFallbackBtn');
     if (fb) fb.remove();
+    // Kembali ke tab live untuk sesi berikutnya
+    _switchScanTab('live', false);
+  }
+
+  // ── Tab Switcher: Live vs Upload ──────────────────────
+  function _switchScanTab(mode, startCamera) {
+    const isLive = mode === 'live';
+    document.getElementById('scanTabLive').classList.toggle('active', isLive);
+    document.getElementById('scanTabUpload').classList.toggle('active', !isLive);
+    document.getElementById('scanPanelLive').style.display = isLive ? '' : 'none';
+    document.getElementById('scanPanelUpload').classList.toggle('active', !isLive);
+
+    if (isLive) {
+      // Masuk ke mode live — start kamera jika belum
+      if (startCamera !== false && !scannerStream) _initScanner();
+    } else {
+      // Masuk ke mode upload — hentikan kamera untuk hemat baterai
+      if (scannerStream) { scannerStream.getTracks().forEach(t => t.stop()); scannerStream = null; }
+      if (codeReader)    { try { codeReader.reset(); } catch(_){} codeReader = null; }
+    }
+  }
+
+  // ── Upload Foto & Decode Barcode ─────────────────────
+  function _handleScanUploadDrop(e) {
+    e.preventDefault();
+    document.getElementById('scanUploadZone').classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) _decodeScanUpload(file);
+  }
+
+  function _handleScanUploadFile(input) {
+    const file = input.files[0];
+    if (file) _decodeScanUpload(file);
+  }
+
+  async function _decodeScanUpload(file) {
+    const rb = document.getElementById('scannerResultBarUpload');
+    const prev = document.getElementById('scanUploadPreview');
+
+    // Tampilkan preview gambar
+    const objUrl = URL.createObjectURL(file);
+    prev.src = objUrl;
+    prev.style.display = 'block';
+
+    // Loading state
+    rb.style.background = ''; rb.style.borderColor = ''; rb.style.color = '';
+    rb.textContent = '⏳ Membaca barcode dari gambar...';
+    rb.classList.add('show');
+
+    try {
+      if (typeof ZXing === 'undefined') throw new Error('ZXing not loaded');
+
+      const img = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width; canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+        ZXing.BarcodeFormat.QR_CODE,
+        ZXing.BarcodeFormat.CODE_128,
+        ZXing.BarcodeFormat.CODE_39,
+        ZXing.BarcodeFormat.EAN_13,
+        ZXing.BarcodeFormat.EAN_8,
+        ZXing.BarcodeFormat.DATA_MATRIX,
+        ZXing.BarcodeFormat.PDF_417,
+        ZXing.BarcodeFormat.ITF,
+        ZXing.BarcodeFormat.UPC_A,
+        ZXing.BarcodeFormat.UPC_E,
+        ZXing.BarcodeFormat.AZTEC,
+      ]);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+
+      const reader = new ZXing.BrowserMultiFormatReader(hints);
+      const result = await reader.decodeFromCanvas(canvas);
+      URL.revokeObjectURL(objUrl);
+
+      if (result) {
+        const text = _stripSpaces(result.getText());
+        const fmt  = result.getBarcodeFormat ? result.getBarcodeFormat() : '';
+        rb.style.background = 'rgba(74,222,128,0.1)';
+        rb.style.borderColor = '#4ADE80';
+        rb.style.color       = '#4ADE80';
+        rb.textContent = '✓ ' + text + (fmt ? '  [' + fmt + ']' : '');
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        // Isi ke field & tutup modal setelah 800ms
+        setTimeout(() => {
+          if (scannerCallback) scannerCallback(text);
+          closeScanner();
+          showToast('🖼️ Barcode terbaca: "' + text + '"', 3500);
+        }, 800);
+      }
+    } catch (e) {
+      URL.revokeObjectURL(objUrl);
+      rb.style.background = 'rgba(163,45,45,0.1)';
+      rb.style.borderColor = 'var(--fs-red)';
+      rb.style.color       = 'var(--fs-red)';
+      rb.textContent = '❌ Barcode tidak terbaca. Coba foto lebih dekat, pencahayaan cukup, atau sudut lurus.';
+    }
   }
 
   // Close on overlay click
