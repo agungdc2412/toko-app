@@ -418,18 +418,17 @@
     .label-header h3 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px; }
     .label-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 6px; }
     .label-close:hover { background: var(--border); }
-    .label-grid { display: grid; grid-template-columns: repeat(auto-fill, 189px); gap: 16px; padding: 20px; justify-content: center; }
-    /* Preview label 50x25mm @ 96dpi → 189x94px */
-    .label-card { width: 189px; height: 94px; border: 1.5px solid #ccc; border-radius: 4px; background: white; display: flex; align-items: center; gap: 0; overflow: hidden; position: relative; cursor: pointer; transition: box-shadow 0.15s; }
+    .label-grid { display: grid; grid-template-columns: repeat(auto-fill, 160px); gap: 16px; padding: 20px; justify-content: center; }
+    /* Preview label 50x25mm — layout vertikal: QR atas, info bawah */
+    .label-card { width: 160px; border: 1.5px solid #ccc; border-radius: 6px; background: white; display: flex; flex-direction: column; align-items: center; overflow: hidden; position: relative; cursor: pointer; transition: box-shadow 0.15s; padding: 8px 8px 6px; gap: 4px; }
     .label-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
-    .label-card-qr { flex-shrink: 0; width: 80px; height: 80px; margin: 7px 0 7px 6px; }
-    .label-card-qr canvas { width: 80px !important; height: 80px !important; }
-    .label-card-info { flex: 1; padding: 6px 6px 6px 4px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-sizing: border-box; overflow: hidden; }
-    .label-card-logo { font-size: 6.5px; font-weight: 700; color: #333; letter-spacing: 0.3px; white-space: nowrap; }
+    .label-card-logo { font-size: 7px; font-weight: 700; color: #333; letter-spacing: 0.3px; text-align: center; width: 100%; }
     .label-card-logo span { color: #E87722; font-weight: 800; }
-    .label-card-name { font-size: 8px; font-weight: 700; color: #111; line-height: 1.3; word-break: break-word; flex: 1; display: flex; align-items: center; }
-    .label-card-id { font-size: 6px; color: #666; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .label-card-hint { font-size: 6px; color: #aaa; text-align: center; padding: 2px 0; }
+    .label-card-qr { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+    .label-card-qr canvas { width: 80px !important; height: 80px !important; }
+    .label-card-name { font-size: 8px; font-weight: 700; color: #111; line-height: 1.3; word-break: break-word; text-align: center; width: 100%; }
+    .label-card-id { font-size: 6px; color: #444; font-family: monospace; text-align: center; width: 100%; word-break: break-all; line-height: 1.4; }
+    .label-card-hint { font-size: 6px; color: #aaa; text-align: center; width: 100%; }
     .label-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
     .label-btn { flex: 1; min-width: 140px; padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.15s; }
     .label-btn-primary { background: var(--fs-blue); color: white; }
@@ -6609,9 +6608,23 @@ ${sigSection}
   function _buildDeeplinkUrl(d, f, baseUrl) {
     const params = new URLSearchParams();
     params.set('device', d.deviceName || '');
+    params.set('type',   d.type || 'single');
     if (d.serialNumber) params.set('sn', d.serialNumber);
     if (f.siteId)       params.set('site', f.siteId);
     if (f.collectId)    params.set('id', f.collectId);
+    // Encode sub-modul untuk module device (nama & SN tiap sub-modul)
+    if (d.type === 'module' && d.subModules && d.subModules.length > 0) {
+      const smData = d.subModules
+        .filter(sm => (sm.moduleName || sm.name || '').trim())
+        .map(sm => ({
+          n: sm.moduleName || sm.name || '',
+          s: sm.serialNumber || '',
+          p: sm.partNumber   || '',
+        }));
+      if (smData.length > 0) {
+        params.set('modules', JSON.stringify(smData));
+      }
+    }
     return baseUrl + '?' + params.toString();
   }
 
@@ -6648,14 +6661,14 @@ ${sigSection}
     hint.className = 'label-card-hint';
     hint.textContent = 'Scan untuk info asset';
 
-    info.appendChild(logo);
-    info.appendChild(name);
-    info.appendChild(idEl);
-    info.appendChild(hint);
+    // Layout vertikal: logo → QR → nama → collectId → hint
+    wrap.appendChild(logo);
     wrap.appendChild(qrWrap);
-    wrap.appendChild(info);
+    wrap.appendChild(name);
+    wrap.appendChild(idEl);
+    wrap.appendChild(hint);
 
-    // Generate QR Code menggunakan ZXing / QR via canvas
+    // Generate QR Code
     const url = _buildDeeplinkUrl(d, f, baseUrl);
     _generateQRCanvas(url, 80).then(qrCanvas => {
       qrCanvas.style.width  = '80px';
@@ -6767,17 +6780,16 @@ ${sigSection}
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: Arial, sans-serif; background: #eee; }
         .page { display:flex; flex-wrap:wrap; gap:4mm; padding:8mm; background:white; }
-        /* Label 50mm x 25mm */
-        .label { width:50mm; height:25mm; border:0.5pt solid #bbb; display:flex; align-items:center; background:white; overflow:hidden; page-break-inside:avoid; }
-        .label-qr { flex-shrink:0; width:21mm; height:21mm; margin:2mm 0 2mm 1.5mm; display:flex; align-items:center; justify-content:center; }
-        .label-qr img { width:21mm; height:21mm; }
-        .qr-ph { width:21mm; height:21mm; background:#eee; display:flex; align-items:center; justify-content:center; font-size:8pt; color:#999; }
-        .label-info { flex:1; padding:2mm 1.5mm 2mm 1mm; display:flex; flex-direction:column; justify-content:space-between; height:100%; overflow:hidden; }
-        .label-logo { font-size:5pt; font-weight:700; color:#333; letter-spacing:0.2pt; }
+        /* Label 50mm x 25mm — layout vertikal */
+        .label { width:50mm; min-height:25mm; border:0.5pt solid #bbb; display:flex; flex-direction:column; align-items:center; background:white; overflow:hidden; page-break-inside:avoid; padding:1.5mm 2mm 1mm; gap:0.5mm; box-sizing:border-box; }
+        .label-logo { font-size:5pt; font-weight:700; color:#333; letter-spacing:0.2pt; text-align:center; width:100%; }
         .label-logo span { color:#E87722; font-weight:800; }
-        .label-name { font-size:6.5pt; font-weight:700; color:#111; line-height:1.25; flex:1; display:flex; align-items:center; word-break:break-word; }
-        .label-sn { font-size:5pt; color:#555; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .label-hint { font-size:4.5pt; color:#999; }
+        .label-qr { width:18mm; height:18mm; display:flex; align-items:center; justify-content:center; }
+        .label-qr img { width:18mm; height:18mm; }
+        .qr-ph { width:18mm; height:18mm; background:#eee; display:flex; align-items:center; justify-content:center; font-size:7pt; color:#999; }
+        .label-name { font-size:6pt; font-weight:700; color:#111; line-height:1.2; text-align:center; width:100%; word-break:break-word; }
+        .label-sn { font-size:4.5pt; color:#444; font-family:monospace; text-align:center; width:100%; word-break:break-all; line-height:1.3; }
+        .label-hint { font-size:4pt; color:#aaa; text-align:center; width:100%; }
         .toolbar { position:sticky; top:0; background:#333; color:white; padding:8px 16px; display:flex; align-items:center; gap:12px; z-index:10; }
         .toolbar button { padding:6px 16px; border-radius:6px; border:none; cursor:pointer; font-weight:600; font-size:13px; }
         .btn-print { background:#4ADE80; color:#000; }
@@ -6818,18 +6830,24 @@ ${sigSection}
   // ══════════════════════════════════════════════════════════
   function _handleDeeplink() {
     const params = new URLSearchParams(window.location.search);
-    if (!params.has('device') && !params.has('id')) return; // bukan deeplink
+    if (!params.has('device') && !params.has('id')) return;
 
-    const deviceName = params.get('device') || '';
-    const sn         = params.get('sn')     || '';
-    const siteId     = params.get('site')   || '';
-    const collectId  = params.get('id')     || '';
+    const deviceName  = params.get('device')  || '';
+    const deviceType  = params.get('type')    || 'single';
+    const sn          = params.get('sn')      || '';
+    const siteId      = params.get('site')    || '';
+    const modulesRaw  = params.get('modules') || '';
 
     if (!deviceName && !siteId) return;
 
-    // Tampilkan notif bahwa data dari QR sedang di-load
+    // Parse sub-modul jika ada (module device)
+    let subModulesFromQR = [];
+    if (modulesRaw) {
+      try { subModulesFromQR = JSON.parse(modulesRaw); } catch(_) {}
+    }
+
     setTimeout(() => {
-      // Isi Site ID jika ada
+      // Isi Site ID
       if (siteId) {
         const fSiteId = document.getElementById('fSiteId');
         if (fSiteId && !fSiteId.value) {
@@ -6838,34 +6856,67 @@ ${sigSection}
         }
       }
 
-      // Tambah device dari QR jika ada nama device
-      if (deviceName && typeof addDevice === 'function') {
-        // Tunggu activity dipilih dulu — kalau belum, skip device
-        if (devices.length === 0 && currentActivity) {
+      // Tambah device
+      if (deviceName && typeof addDevice === 'function' && currentActivity) {
+        // Tambah device tipe sesuai QR (single atau module)
+        if (deviceType === 'module' && typeof addModuleDevice === 'function') {
+          addModuleDevice();
+        } else {
           addDevice();
-          setTimeout(() => {
-            const d = devices[devices.length - 1];
-            if (d) {
-              d.deviceName    = deviceName;
-              d.serialNumber  = sn;
-              renderDevices();
-              _autoSave();
-            }
-          }, 100);
         }
+
+        setTimeout(() => {
+          const d = devices[devices.length - 1];
+          if (!d) return;
+
+          d.deviceName   = deviceName;
+          d.serialNumber = sn;
+
+          // Restore sub-modul dari QR
+          if (deviceType === 'module' && subModulesFromQR.length > 0) {
+            // Cari sub-modul yang sudah di-generate otomatis dari katalog
+            // lalu merge nama/SN/PN dari QR
+            subModulesFromQR.forEach((smQR, idx) => {
+              if (idx < (d.subModules || []).length) {
+                // Update sub-modul yang sudah ada
+                d.subModules[idx].serialNumber = smQR.s || '';
+                d.subModules[idx].partNumber   = smQR.p || '';
+              } else {
+                // Tambah sub-modul baru jika melebihi yang ada
+                deviceCounter++;
+                d.subModules = d.subModules || [];
+                d.subModules.push({
+                  id:           d.id + '_sm_' + idx,
+                  moduleName:   smQR.n || '',
+                  serialNumber: smQR.s || '',
+                  partNumber:   smQR.p || '',
+                  statusDevice: '',
+                  collapsed:    false,
+                  _fromCatalog: false,
+                  _isMain:      false,
+                  photos: { sn: null, pn: null },
+                  exts:   { sn: null, pn: null },
+                });
+              }
+            });
+          }
+
+          renderDevices();
+          _autoSave();
+
+          // Toast info
+          const parts = [];
+          if (siteId)     parts.push('Site: ' + siteId);
+          if (deviceName) parts.push('Device: ' + deviceName);
+          if (subModulesFromQR.length > 0) parts.push(subModulesFromQR.length + ' sub-modul');
+          if (parts.length > 0) {
+            showToast('🏷️ Data dari label QR: ' + parts.join(' · '), 5000);
+          }
+        }, 200);
       }
 
-      // Tampilkan toast info
-      const parts = [];
-      if (siteId)     parts.push('Site: ' + siteId);
-      if (deviceName) parts.push('Device: ' + deviceName);
-      if (parts.length > 0) {
-        showToast('🏷️ Data dari label QR: ' + parts.join(' · '), 5000);
-      }
-
-      // Hapus params dari URL agar tidak reload ulang
-      const cleanUrl = window.location.origin + window.location.pathname;
-      window.history.replaceState({}, '', cleanUrl);
+      // Bersihkan URL
+      window.history.replaceState({}, '', window.location.origin + window.location.pathname);
     }, 800);
   }
 
