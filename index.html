@@ -408,6 +408,35 @@
     .ppd-count { font-size: 11px; color: var(--text-secondary); flex-shrink: 0; min-width: 32px; text-align: right; }
 
     /* ── Duplicate SN Modal ───────────────────────────── */
+    /* ══════════════════════════════════════════════════
+       LABEL GENERATOR
+    ══════════════════════════════════════════════════ */
+    .label-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .label-overlay.active { display: flex; }
+    .label-modal { background: var(--surface); border-radius: var(--radius-lg); width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .label-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+    .label-header h3 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px; }
+    .label-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); padding: 4px 8px; border-radius: 6px; }
+    .label-close:hover { background: var(--border); }
+    .label-grid { display: grid; grid-template-columns: repeat(auto-fill, 189px); gap: 16px; padding: 20px; justify-content: center; }
+    /* Preview label 50x25mm @ 96dpi → 189x94px */
+    .label-card { width: 189px; height: 94px; border: 1.5px solid #ccc; border-radius: 4px; background: white; display: flex; align-items: center; gap: 0; overflow: hidden; position: relative; cursor: pointer; transition: box-shadow 0.15s; }
+    .label-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+    .label-card-qr { flex-shrink: 0; width: 80px; height: 80px; margin: 7px 0 7px 6px; }
+    .label-card-qr canvas { width: 80px !important; height: 80px !important; }
+    .label-card-info { flex: 1; padding: 6px 6px 6px 4px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-sizing: border-box; overflow: hidden; }
+    .label-card-logo { font-size: 7px; font-weight: 800; color: #1E5FA5; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    .label-card-name { font-size: 8px; font-weight: 700; color: #111; line-height: 1.3; word-break: break-word; flex: 1; display: flex; align-items: center; }
+    .label-card-id { font-size: 6px; color: #666; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .label-card-hint { font-size: 6px; color: #aaa; text-align: center; padding: 2px 0; }
+    .label-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
+    .label-btn { flex: 1; min-width: 140px; padding: 11px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.15s; }
+    .label-btn-primary { background: var(--fs-blue); color: white; }
+    .label-btn-primary:hover { background: #0F4D8A; }
+    .label-btn-secondary { background: var(--fs-green-light); color: var(--fs-green); border: 1.5px solid rgba(59,109,17,0.2); }
+    .label-btn-secondary:hover { background: #C0DD97; }
+    .label-empty { padding: 40px 20px; text-align: center; color: var(--text-secondary); font-size: 13px; }
+
     .dup-sn-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       z-index: 1100; align-items: center; justify-content: center;
@@ -1809,20 +1838,26 @@
         </button>
       </div>
 
-      <!-- Baris 3: Saran Perbaikan & Reset Form -->
-      <div class="action-bar-tertiary">
-        <a  id="btnSaranPerbaikan"
-            href="SARAN_PERBAIKAN_URL_PLACEHOLDER"
-            target="_blank" rel="noopener"
-            class="action-btn btn-saran">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-            <line x1="12" y1="17" x2="12.01" y2="17"/>
+      <!-- Baris 2b: Generate Label -->
+      <div class="action-bar-secondary" style="margin-top:-2px;">
+        <button class="action-btn" onclick="openLabelModal()"
+          style="background:#FFF8E7;color:#92610A;border:1.5px solid rgba(146,97,10,0.25);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
+            <rect x="3" y="16" width="5" height="5" rx="1"/>
+            <path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/>
           </svg>
-          Saran Perbaikan
-        </a>
-        <button class="action-btn btn-reset-action" onclick="openResetModal()">
+          Generate Label
+        </button>
+        <button class="action-btn" onclick="openLabelModal('single')"
+          style="background:#FFF8E7;color:#92610A;border:1.5px solid rgba(146,97,10,0.25);display:none;" id="btnLabelSingle">
+          Label Device Ini
+        </button>
+      </div>
+
+      <!-- Baris 3: Reset Form -->
+      <div class="action-bar-tertiary">
+        <button class="action-btn btn-reset-action" onclick="openResetModal()" style="grid-column:1/-1;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/>
             <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
@@ -1849,6 +1884,44 @@
 </div>
 
 <!-- ── Duplicate SN Warning Modal ─────────────────── -->
+<!-- ══════════════════════════════════════════════════
+     LABEL GENERATOR MODAL
+══════════════════════════════════════════════════ -->
+<div class="label-overlay" id="labelOverlay">
+  <div class="label-modal">
+    <div class="label-header">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/>
+          <rect x="3" y="16" width="5" height="5" rx="1"/>
+          <path d="M21 16h-3v3m0-3v3h-3m3-9h3M3 9h3M9 3v3M9 21v-3M9 9h3v3H9z"/>
+        </svg>
+        Generate Label Asset
+      </h3>
+      <button class="label-close" onclick="closeLabelModal()">✕</button>
+    </div>
+    <div class="label-grid" id="labelGrid">
+      <div class="label-empty">Memuat label...</div>
+    </div>
+    <div class="label-footer">
+      <button class="label-btn label-btn-primary" onclick="_printAllLabels()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Cetak Semua Label
+      </button>
+      <button class="label-btn label-btn-secondary" onclick="_downloadLabelPDF()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/>
+        </svg>
+        Unduh PDF Label
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="dup-sn-overlay" id="dupSnOverlay">
   <div class="dup-sn-modal">
     <div class="dup-sn-header">
@@ -3472,8 +3545,9 @@ map.on('click',function(e){
 
         ${_deviceActivityFields(d)}
 
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="dup-device-btn" onclick="openLabelModal('${d.id}')" title="Generate Label Asset" style="background:#FFF8E7;color:#92610A;border:1.5px solid rgba(146,97,10,0.25);">🏷️ Label</button>
           <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
         </div>
       </div>`;
@@ -3550,8 +3624,9 @@ map.on('click',function(e){
           + Tambah Komponen Manual
         </button>
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="dup-device-btn" onclick="openLabelModal('${d.id}')" title="Generate Label Asset" style="background:#FFF8E7;color:#92610A;border:1.5px solid rgba(146,97,10,0.25);">🏷️ Label</button>
           <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
         </div>
       </div>`;
@@ -3714,8 +3789,9 @@ map.on('click',function(e){
 
         ${_statusPills(d.id, d.statusDevice)}
 
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px;">
           <button class="dup-device-btn" onclick="duplicateDevice('${d.id}')">${_icoDup} Duplikat</button>
+          <button class="dup-device-btn" onclick="openLabelModal('${d.id}')" title="Generate Label Asset" style="background:#FFF8E7;color:#92610A;border:1.5px solid rgba(146,97,10,0.25);">🏷️ Label</button>
           <button class="delete-device-btn" onclick="removeDevice('${d.id}')">Hapus</button>
         </div>
       </div>`;
@@ -6482,6 +6558,256 @@ ${sigSection}
 
   // ── Init: IDB ──
   _openIDB().catch(e => console.warn('[IDB Init]', e));
+  // ══════════════════════════════════════════════════════════
+  // ── LABEL GENERATOR ───────────────────────────────────────
+  // ══════════════════════════════════════════════════════════
+  // Ukuran label: 50mm x 25mm @ 96dpi = 189 x 94 px
+  // Konten: Logo Fiberstar + Nama Device + QR Code (deeplink)
+
+  let _labelTargetId = null; // null = semua device, string = satu device
+
+  function openLabelModal(deviceId) {
+    _labelTargetId = (deviceId && deviceId !== 'single') ? deviceId : null;
+    document.getElementById('labelOverlay').classList.add('active');
+    _renderLabelGrid();
+  }
+
+  function closeLabelModal() {
+    document.getElementById('labelOverlay').classList.remove('active');
+    _labelTargetId = null;
+  }
+
+  function _renderLabelGrid() {
+    const grid = document.getElementById('labelGrid');
+    grid.innerHTML = '<div class="label-empty">⏳ Memuat QR Code...</div>';
+
+    const f = getFormData();
+    const baseUrl = window.location.origin + window.location.pathname;
+
+    // Tentukan device yang akan di-render
+    let targets = devices;
+    if (_labelTargetId) {
+      targets = devices.filter(d => d.id === _labelTargetId);
+    }
+    // Filter hanya device yang punya nama
+    targets = targets.filter(d => (d.deviceName || '').trim());
+
+    if (targets.length === 0) {
+      grid.innerHTML = '<div class="label-empty">Tidak ada device dengan nama yang bisa di-generate labelnya.<br>Isi nama device terlebih dahulu.</div>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    targets.forEach(d => {
+      const card = _buildLabelCard(d, f, baseUrl);
+      grid.appendChild(card);
+    });
+  }
+
+  function _buildDeeplinkUrl(d, f, baseUrl) {
+    const params = new URLSearchParams();
+    params.set('device', d.deviceName || '');
+    if (d.serialNumber) params.set('sn', d.serialNumber);
+    if (f.siteId)       params.set('site', f.siteId);
+    if (f.collectId)    params.set('id', f.collectId);
+    return baseUrl + '?' + params.toString();
+  }
+
+  function _buildLabelCard(d, f, baseUrl) {
+    const wrap = document.createElement('div');
+    wrap.className = 'label-card';
+    wrap.title = 'Klik untuk preview / unduh label ini';
+
+    // QR container
+    const qrWrap = document.createElement('div');
+    qrWrap.className = 'label-card-qr';
+
+    // Info container
+    const info = document.createElement('div');
+    info.className = 'label-card-info';
+
+    // Logo text
+    const logo = document.createElement('div');
+    logo.className = 'label-card-logo';
+    logo.textContent = '★ FIBERSTAR';
+
+    // Device name
+    const name = document.createElement('div');
+    name.className = 'label-card-name';
+    name.textContent = d.deviceName || '—';
+
+    // Collect ID / SN
+    const idEl = document.createElement('div');
+    idEl.className = 'label-card-id';
+    idEl.textContent = d.serialNumber ? 'SN: ' + d.serialNumber : (f.collectId || '');
+
+    // Scan hint
+    const hint = document.createElement('div');
+    hint.className = 'label-card-hint';
+    hint.textContent = 'Scan untuk info asset';
+
+    info.appendChild(logo);
+    info.appendChild(name);
+    info.appendChild(idEl);
+    info.appendChild(hint);
+    wrap.appendChild(qrWrap);
+    wrap.appendChild(info);
+
+    // Generate QR Code menggunakan ZXing / QR via canvas
+    const url = _buildDeeplinkUrl(d, f, baseUrl);
+    _generateQRCanvas(url, 80).then(qrCanvas => {
+      qrCanvas.style.width  = '80px';
+      qrCanvas.style.height = '80px';
+      qrWrap.appendChild(qrCanvas);
+    }).catch(() => {
+      qrWrap.innerHTML = '<div style="font-size:8px;color:#aaa;text-align:center;padding:4px;">QR Error</div>';
+    });
+
+    wrap.onclick = () => _downloadSingleLabel(d, f, baseUrl);
+    return wrap;
+  }
+
+  // Generate QR Code ke canvas menggunakan ZXing encode
+  // atau fallback ke QR via API-less pure JS
+  async function _generateQRCanvas(text, size) {
+    // Coba pakai qrcode.js jika tersedia (inject on demand)
+    if (typeof QRCode === 'undefined') {
+      await _loadQRLib();
+    }
+    if (typeof QRCode !== 'undefined') {
+      const div = document.createElement('div');
+      new QRCode(div, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M,
+      });
+      // QRCode.js membuat <canvas> di dalam div
+      await new Promise(r => setTimeout(r, 50));
+      const c = div.querySelector('canvas');
+      if (c) return c;
+    }
+    // Fallback: canvas kosong dengan teks
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#999';
+    ctx.font = '7px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('QR', size/2, size/2 - 4);
+    ctx.fillText('Code', size/2, size/2 + 8);
+    return c;
+  }
+
+  function _loadQRLib() {
+    return new Promise((resolve, reject) => {
+      if (document.getElementById('qrcodeLib')) { resolve(); return; }
+      const s = document.createElement('script');
+      s.id  = 'qrcodeLib';
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+      s.onload  = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  // ── Print semua label via window.print() ─────────────────
+  function _printAllLabels() {
+    const f = getFormData();
+    const baseUrl = window.location.origin + window.location.pathname;
+    let targets = _labelTargetId
+      ? devices.filter(d => d.id === _labelTargetId)
+      : devices.filter(d => (d.deviceName || '').trim());
+
+    if (targets.length === 0) { showToast('Tidak ada device untuk dicetak'); return; }
+
+    _buildPrintWindow(targets, f, baseUrl);
+  }
+
+  async function _buildPrintWindow(targets, f, baseUrl) {
+    // Tunggu QR lib load
+    try { await _loadQRLib(); } catch(_) {}
+
+    // Buat konten print per label 50x25mm
+    const labelsHtml = await Promise.all(targets.map(async d => {
+      const url = _buildDeeplinkUrl(d, f, baseUrl);
+      // Generate QR sebagai data URL
+      let qrDataUrl = '';
+      try {
+        const qrCanvas = await _generateQRCanvas(url, 150);
+        qrDataUrl = qrCanvas.toDataURL('image/png');
+      } catch(_) {}
+
+      const sn = d.serialNumber ? 'SN: ' + d.serialNumber : '';
+      return `
+        <div class="label">
+          <div class="label-qr">
+            ${qrDataUrl ? `<img src="${qrDataUrl}" width="70" height="70">` : '<div class="qr-ph">QR</div>'}
+          </div>
+          <div class="label-info">
+            <div class="label-logo">★ FIBERSTAR</div>
+            <div class="label-name">${(d.deviceName||'').substring(0,40)}</div>
+            <div class="label-sn">${sn}</div>
+            <div class="label-hint">Scan untuk info asset</div>
+          </div>
+        </div>`;
+    }));
+
+    const pw = window.open('', '_blank', 'width=800,height=600');
+    pw.document.write(`<!DOCTYPE html><html><head>
+      <meta charset="utf-8">
+      <title>Label Asset — ${f.siteName || f.siteId || 'Fiberstar'}</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; background: #eee; }
+        .page { display:flex; flex-wrap:wrap; gap:4mm; padding:8mm; background:white; }
+        /* Label 50mm x 25mm */
+        .label { width:50mm; height:25mm; border:0.5pt solid #bbb; display:flex; align-items:center; background:white; overflow:hidden; page-break-inside:avoid; }
+        .label-qr { flex-shrink:0; width:21mm; height:21mm; margin:2mm 0 2mm 1.5mm; display:flex; align-items:center; justify-content:center; }
+        .label-qr img { width:21mm; height:21mm; }
+        .qr-ph { width:21mm; height:21mm; background:#eee; display:flex; align-items:center; justify-content:center; font-size:8pt; color:#999; }
+        .label-info { flex:1; padding:2mm 1.5mm 2mm 1mm; display:flex; flex-direction:column; justify-content:space-between; height:100%; overflow:hidden; }
+        .label-logo { font-size:5pt; font-weight:800; color:#1E5FA5; letter-spacing:0.3pt; text-transform:uppercase; }
+        .label-name { font-size:6.5pt; font-weight:700; color:#111; line-height:1.25; flex:1; display:flex; align-items:center; word-break:break-word; }
+        .label-sn { font-size:5pt; color:#555; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .label-hint { font-size:4.5pt; color:#999; }
+        .toolbar { position:sticky; top:0; background:#333; color:white; padding:8px 16px; display:flex; align-items:center; gap:12px; z-index:10; }
+        .toolbar button { padding:6px 16px; border-radius:6px; border:none; cursor:pointer; font-weight:600; font-size:13px; }
+        .btn-print { background:#4ADE80; color:#000; }
+        .btn-close { background:#555; color:#fff; }
+        .info { font-size:12px; color:#ccc; }
+        @media print {
+          .toolbar { display:none; }
+          body { background:white; }
+          .page { padding:0; gap:2mm; }
+        }
+      </style>
+    </head><body>
+      <div class="toolbar">
+        <button class="btn-print" onclick="window.print()">🖨️ Cetak</button>
+        <button class="btn-close" onclick="window.close()">Tutup</button>
+        <span class="info">${labelsHtml.length} label · ${f.siteName || f.siteId || ''} · Ukuran cetak: 50×25mm</span>
+      </div>
+      <div class="page">${labelsHtml.join('')}</div>
+    </body></html>`);
+    pw.document.close();
+  }
+
+  // ── Download PDF label semua device via print ─────────────
+  function _downloadLabelPDF() {
+    _printAllLabels(); // gunakan print dialog dengan Save as PDF
+    showToast('💡 Di dialog cetak, pilih "Save as PDF" untuk unduh PDF label', 4000);
+  }
+
+  // ── Download label single device ──────────────────────────
+  function _downloadSingleLabel(d, f, baseUrl) {
+    _buildPrintWindow([d], f, baseUrl);
+  }
+
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
