@@ -5710,13 +5710,15 @@ ${sigSection}
 
   // Restore draft saat load
   _restoreDraft();
-  _handleDeeplink(); // baca URL params dari scan QR label
   // Setelah text draft di-restore, muat foto dari IDB (async)
   _openIDB().then(() => {
     _idbLoadPhotoDraft().then(restored => {
       if (restored) showToast('🖼️ Foto draft dipulihkan dari penyimpanan lokal', 3000);
     });
   }).catch(() => {});
+  // Handle deeplink dari scan QR label (setelah restore selesai)
+  // Dibungkus try-catch agar error deeplink tidak ganggu init
+  try { _handleDeeplink(); } catch(_) {}
 
   function _openIDB() {
     return new Promise((resolve, reject) => {
@@ -6859,11 +6861,8 @@ ${sigSection}
       // Tambah device
       if (deviceName && typeof addDevice === 'function' && currentActivity) {
         // Tambah device tipe sesuai QR (single atau module)
-        if (deviceType === 'module' && typeof addModuleDevice === 'function') {
-          addModuleDevice();
-        } else {
-          addDevice();
-        }
+        // addDevice('module') untuk module device, addDevice() untuk single
+        addDevice(deviceType === 'module' ? 'module' : 'single');
 
         setTimeout(() => {
           const d = devices[devices.length - 1];
