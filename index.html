@@ -425,7 +425,8 @@
     .label-card-qr { flex-shrink: 0; width: 80px; height: 80px; margin: 7px 0 7px 6px; }
     .label-card-qr canvas { width: 80px !important; height: 80px !important; }
     .label-card-info { flex: 1; padding: 6px 6px 6px 4px; display: flex; flex-direction: column; justify-content: space-between; height: 100%; box-sizing: border-box; overflow: hidden; }
-    .label-card-logo { font-size: 7px; font-weight: 800; color: #1E5FA5; letter-spacing: 0.5px; text-transform: uppercase; white-space: nowrap; }
+    .label-card-logo { font-size: 6.5px; font-weight: 700; color: #333; letter-spacing: 0.3px; white-space: nowrap; }
+    .label-card-logo span { color: #E87722; font-weight: 800; }
     .label-card-name { font-size: 8px; font-weight: 700; color: #111; line-height: 1.3; word-break: break-word; flex: 1; display: flex; align-items: center; }
     .label-card-id { font-size: 6px; color: #666; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .label-card-hint { font-size: 6px; color: #aaa; text-align: center; padding: 2px 0; }
@@ -5710,6 +5711,7 @@ ${sigSection}
 
   // Restore draft saat load
   _restoreDraft();
+  _handleDeeplink(); // baca URL params dari scan QR label
   // Setelah text draft di-restore, muat foto dari IDB (async)
   _openIDB().then(() => {
     _idbLoadPhotoDraft().then(restored => {
@@ -6629,7 +6631,7 @@ ${sigSection}
     // Logo text
     const logo = document.createElement('div');
     logo.className = 'label-card-logo';
-    logo.textContent = '★ FIBERSTAR';
+    logo.innerHTML = 'Asset Milik <span>Fiberstar</span>';
 
     // Device name
     const name = document.createElement('div');
@@ -6639,7 +6641,7 @@ ${sigSection}
     // Collect ID / SN
     const idEl = document.createElement('div');
     idEl.className = 'label-card-id';
-    idEl.textContent = d.serialNumber ? 'SN: ' + d.serialNumber : (f.collectId || '');
+    idEl.textContent = f.collectId || '';
 
     // Scan hint
     const hint = document.createElement('div');
@@ -6742,14 +6744,14 @@ ${sigSection}
         qrDataUrl = qrCanvas.toDataURL('image/png');
       } catch(_) {}
 
-      const sn = d.serialNumber ? 'SN: ' + d.serialNumber : '';
+      const sn = f.collectId || '';
       return `
         <div class="label">
           <div class="label-qr">
             ${qrDataUrl ? `<img src="${qrDataUrl}" width="70" height="70">` : '<div class="qr-ph">QR</div>'}
           </div>
           <div class="label-info">
-            <div class="label-logo">★ FIBERSTAR</div>
+            <div class="label-logo">Asset Milik <span>Fiberstar</span></div>
             <div class="label-name">${(d.deviceName||'').substring(0,40)}</div>
             <div class="label-sn">${sn}</div>
             <div class="label-hint">Scan untuk info asset</div>
@@ -6771,7 +6773,8 @@ ${sigSection}
         .label-qr img { width:21mm; height:21mm; }
         .qr-ph { width:21mm; height:21mm; background:#eee; display:flex; align-items:center; justify-content:center; font-size:8pt; color:#999; }
         .label-info { flex:1; padding:2mm 1.5mm 2mm 1mm; display:flex; flex-direction:column; justify-content:space-between; height:100%; overflow:hidden; }
-        .label-logo { font-size:5pt; font-weight:800; color:#1E5FA5; letter-spacing:0.3pt; text-transform:uppercase; }
+        .label-logo { font-size:5pt; font-weight:700; color:#333; letter-spacing:0.2pt; }
+        .label-logo span { color:#E87722; font-weight:800; }
         .label-name { font-size:6.5pt; font-weight:700; color:#111; line-height:1.25; flex:1; display:flex; align-items:center; word-break:break-word; }
         .label-sn { font-size:5pt; color:#555; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .label-hint { font-size:4.5pt; color:#999; }
@@ -6806,6 +6809,64 @@ ${sigSection}
   // ── Download label single device ──────────────────────────
   function _downloadSingleLabel(d, f, baseUrl) {
     _buildPrintWindow([d], f, baseUrl);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ── DEEPLINK HANDLER ──────────────────────────────────────
+  // Baca parameter URL saat dibuka dari scan QR label
+  // Contoh: ?device=OLT+HUAWEI&sn=21023&site=KYB032&id=NEW-...
+  // ══════════════════════════════════════════════════════════
+  function _handleDeeplink() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('device') && !params.has('id')) return; // bukan deeplink
+
+    const deviceName = params.get('device') || '';
+    const sn         = params.get('sn')     || '';
+    const siteId     = params.get('site')   || '';
+    const collectId  = params.get('id')     || '';
+
+    if (!deviceName && !siteId) return;
+
+    // Tampilkan notif bahwa data dari QR sedang di-load
+    setTimeout(() => {
+      // Isi Site ID jika ada
+      if (siteId) {
+        const fSiteId = document.getElementById('fSiteId');
+        if (fSiteId && !fSiteId.value) {
+          fSiteId.value = siteId;
+          fSiteId.dispatchEvent(new Event('input'));
+        }
+      }
+
+      // Tambah device dari QR jika ada nama device
+      if (deviceName && typeof addDevice === 'function') {
+        // Tunggu activity dipilih dulu — kalau belum, skip device
+        if (devices.length === 0 && currentActivity) {
+          addDevice();
+          setTimeout(() => {
+            const d = devices[devices.length - 1];
+            if (d) {
+              d.deviceName    = deviceName;
+              d.serialNumber  = sn;
+              renderDevices();
+              _autoSave();
+            }
+          }, 100);
+        }
+      }
+
+      // Tampilkan toast info
+      const parts = [];
+      if (siteId)     parts.push('Site: ' + siteId);
+      if (deviceName) parts.push('Device: ' + deviceName);
+      if (parts.length > 0) {
+        showToast('🏷️ Data dari label QR: ' + parts.join(' · '), 5000);
+      }
+
+      // Hapus params dari URL agar tidak reload ulang
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, '', cleanUrl);
+    }, 800);
   }
 
 </script>
