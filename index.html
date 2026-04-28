@@ -772,6 +772,8 @@
     .activity-tab.active-dismantle svg  { color: #A32D2D; }
     .activity-tab.active-replace      { border-color: #BA7517; background: #FAEEDA; }
     .activity-tab.active-replace svg  { color: #BA7517; }
+    .activity-tab.active-retagging      { border-color: #0E7C5B; background: #E6FAF5; }
+    .activity-tab.active-retagging svg  { color: #0E7C5B; }
     .activity-badge {
       display: inline-flex; align-items: center; gap: 6px;
       font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
@@ -782,6 +784,7 @@
     .badge-additional { background: #EEF0FE; color: #3730A3; }
     .badge-dismantle  { background: #FCEBEB; color: #A32D2D; }
     .badge-replace    { background: #FAEEDA; color: #BA7517; }
+    .badge-retagging  { background: #E6FAF5; color: #0E7C5B; }
 
     /* ── Collect ID ──────────────────────────────── */
     .collect-id-box {
@@ -1517,6 +1520,11 @@
         <span class="act-label">Replace</span>
         <span class="act-sub">Pergantian Device</span>
       </button>
+      <button class="activity-tab" id="tab-retagging" onclick="setActivity('retagging')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span class="act-label">Re-Tagging</span>
+        <span class="act-sub">Label Rusak / Hilang</span>
+      </button>
     </div>
   </div>
 
@@ -1631,7 +1639,7 @@
       </div>
 
       <!-- Coordinate — tampil untuk semua activity -->
-      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxCoord" style="grid-column: 1 / -1;">
+      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace ctx-retagging" id="ctxCoord" style="grid-column: 1 / -1;">
         <label class="form-label">Coordinate Site <span style="color:var(--fs-red);font-size:11px;">*</span></label>
 
         <!-- Mode selector -->
@@ -1695,7 +1703,7 @@
       </div>
 
       <!-- Floor Location — New, Existing -->
-      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="ctxFloor">
+      <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace ctx-retagging" id="ctxFloor">
         <label class="form-label">Floor Location <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
@@ -1724,7 +1732,7 @@
   </div>
 
   <!-- Form View Site / Rack — hanya New & Existing -->
-  <div class="section-card ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace" id="sectionRack">
+  <div class="section-card ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace ctx-retagging" id="sectionRack">
     <div class="section-title"><span class="section-title-dot"></span>View Site / Rack</div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
       Upload foto kondisi site secara keseluruhan beserta rack. Bisa lebih dari satu foto.
@@ -2262,7 +2270,7 @@
   let currentCollectId = '';
 
   // ── Collect ID Engine ───────────────────────────────
-  const ACT_CODE = { new: 'NEW', existing: 'EXI', additional: 'ADD', dismantle: 'DIS', replace: 'REP' };
+  const ACT_CODE = { new: 'NEW', existing: 'EXI', additional: 'ADD', dismantle: 'DIS', replace: 'REP', retagging: 'RTG' };
 
   // Mapping role login ke kode divisi pendek untuk Collect ID
   const ROLE_DIV_CODE = { Asset: 'AM', FOP: 'FOP', NetDev: 'ND' };
@@ -2352,6 +2360,12 @@
       collectTitle: 'Asset yang Diganti',
       collectHint: 'Setiap entri berisi pasangan: device LAMA (dilepas) dan device BARU (dipasang).',
       addBtnLabel: 'Tambah Pasangan Replace',
+    },
+    retagging: {
+      label: 'Re-Tagging', badgeClass: 'badge-retagging', tabClass: 'active-retagging',
+      collectTitle: 'Asset Re-Tagging',
+      collectHint: 'Catat device yang labelnya rusak atau hilang. Isi kondisi label lama, alasan re-tagging, dan foto dokumentasi sebelum label baru dipasang.',
+      addBtnLabel: 'Input Asset Re-Tagging',
     },
   };
 
@@ -3464,6 +3478,45 @@ map.on('click',function(e){
           </div>
         </div>`;
     }
+    if (act === 'retagging') {
+      return `
+        <div class="device-activity-block" style="background:#E6FAF5;border-left:3px solid #0E7C5B;">
+          <div class="dab-title">🏷️ Info Re-Tagging</div>
+          <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Kondisi Label Lama <span class="required">*</span></label>
+              <select class="form-input" onchange="updateDevice('${d.id}','labelCondition',this.value)">
+                <option value="">— Pilih Kondisi —</option>
+                <option value="Rusak" ${d.labelCondition==='Rusak'?'selected':''}>Rusak / Tidak Terbaca</option>
+                <option value="Hilang" ${d.labelCondition==='Hilang'?'selected':''}>Hilang</option>
+                <option value="Tidak Ada" ${d.labelCondition==='Tidak Ada'?'selected':''}>Tidak Ada (belum pernah di-tagging)</option>
+                <option value="Rusak Akibat Relokasi" ${d.labelCondition==='Rusak Akibat Relokasi'?'selected':''}>Rusak Akibat Relokasi</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Sumber Temuan</label>
+              <select class="form-input" onchange="updateDevice('${d.id}','retagSource',this.value)">
+                <option value="">— Pilih Sumber —</option>
+                <option value="Audit" ${d.retagSource==='Audit'?'selected':''}>Audit / Asset Opname</option>
+                <option value="Laporan FOP" ${d.retagSource==='Laporan FOP'?'selected':''}>Laporan Tim FOP</option>
+                <option value="Laporan GA/IT" ${d.retagSource==='Laporan GA/IT'?'selected':''}>Laporan Tim GA/IT</option>
+                <option value="Relokasi" ${d.retagSource==='Relokasi'?'selected':''}>Relokasi / Pemindahan</option>
+                <option value="Temuan Lapangan" ${d.retagSource==='Temuan Lapangan'?'selected':''}>Temuan Langsung di Lapangan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Keterangan / Alasan Re-Tagging</label>
+            <div class="stt-wrap">
+              <input type="text" class="form-input" placeholder="e.g. Label terkelupas akibat panas, tidak terbaca saat audit"
+                value="${escHtml(d.retagReason||'')}"
+                oninput="updateDevice('${d.id}','retagReason',this.value)">
+              <button class="stt-btn" title="Ucapkan Alasan"
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','retagReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
+            </div>
+          </div>
+        </div>`;
+    }
     if (act === 'dismantle') {
       return `
         <div class="device-activity-block dismantle-block">
@@ -4484,6 +4537,14 @@ map.on('click',function(e){
       errors.push({ icon: '📍', msg: 'Koordinat Site belum diisi', sub: 'Gunakan GPS Otomatis, Input Manual, atau Klik Peta.' });
     }
 
+    // ── Wajib: Re-Tagging fields ──
+    if (f.activity === 'retagging') {
+      const missingLabel = f.devices.filter(d => !(d.labelCondition || '').trim());
+      if (missingLabel.length > 0) {
+        errors.push({ icon: '🏷️', msg: 'Kondisi Label Lama wajib diisi di semua device', sub: missingLabel.length + ' device belum diisi kondisi label lamanya.' });
+      }
+    }
+
     // ── Wajib: Foto PIC, TTD PIC, Foto Site/Rack ──
     if (!f.picPhoto) {
       errors.push({ icon: '🤳', msg: 'Foto PIC (Dokumentasi) belum diambil', sub: 'Ambil foto dokumentasi petugas di bagian Form Checked.' });
@@ -4969,6 +5030,13 @@ ${mapLink}
     const extraRows = [];
     if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes, '', '', '', '', '', '', '', '', '']);
     if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason, '', '', '', '', '', '', '', '', '']);
+    if (f.activity === 'retagging') {
+      f.devices.forEach((d,i) => {
+        if (d.labelCondition || d.retagSource || d.retagReason) {
+          extraRows.push(['Re-Tagging Asset '+(i+1), d.labelCondition||'-', d.retagSource||'-', d.retagReason||'-', '', '', '', '', '', '', '']);
+        }
+      });
+    }
     if (f.activity === 'dismantle'  && f.warehouse)       extraRows.push(['Lokasi Penyimpanan', f.warehouse, '', '', '', '', '', '', '', '', '']);
     if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason, '', '', '', '', '', '', '', '', '']);
 
@@ -5069,6 +5137,11 @@ ${mapLink}
     const extraRows = [];
     if (f.activity === 'additional' && f.addNotes)        extraRows.push(['Keterangan Penambahan', f.addNotes]);
     if (f.activity === 'dismantle'  && f.dismantleReason) extraRows.push(['Alasan Dismantle', f.dismantleReason]);
+    if (f.activity === 'retagging') {
+      f.devices.forEach((d,i) => {
+        if (d.labelCondition) extraRows.push(['Kondisi Label ('+(d.deviceName||'Asset '+(i+1))+')', d.labelCondition + (d.retagSource?' | '+d.retagSource:'') + (d.retagReason?' | '+d.retagReason:'')]);
+      });
+    }
     if (f.activity === 'dismantle'  && f.warehouse)       extraRows.push(['Lokasi Penyimpanan', f.warehouse]);
     if (f.activity === 'replace'    && f.replaceReason)   extraRows.push(['Alasan Pergantian', f.replaceReason]);
 
@@ -5097,7 +5170,7 @@ ${mapLink}
       ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
     f.devices.forEach((d, i) => {
-      const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):'-';
+      const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):f.activity==='retagging'?((d.labelCondition||'')+' | '+(d.retagSource||'')+' | '+(d.retagReason||'')).replace(/^ \| | \| $/g,'').replace(/\| \|/g,'|')||'-':'-';
       const locStore = f.activity==='dismantle'?(d.warehouse||'-'):'-';
       sheetData.push([
         i+1,
@@ -5227,7 +5300,7 @@ ${sigSection}
   function _buildFileName(f) {
     const safe = s => String(s || '').trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
     // Kode aktivitas pendek (sama dengan prefix Collect ID)
-    const ACT_CODE_MAP = { new:'NEW', existing:'EXI', additional:'ADD', dismantle:'DIS', replace:'REP' };
+    const ACT_CODE_MAP = { new:'NEW', existing:'EXI', additional:'ADD', dismantle:'DIS', replace:'REP', retagging:'RTG' };
     const actCode = ACT_CODE_MAP[f.activity] || (f.activity || 'ACT').toUpperCase();
     // no urut: ambil segment terakhir dari collectId (random hex), fallback ke timestamp
     const noUrut = f.collectId
@@ -5517,6 +5590,12 @@ ${sigSection}
           dismantleReason: d.dismantleReason || '',
           warehouse:      d.warehouse      || '',
           replaceReason:  d.replaceReason  || '',
+          labelCondition: d.labelCondition || '',
+          retagSource:    d.retagSource    || '',
+          retagReason:    d.retagReason    || '',
+          labelCondition: d.labelCondition || '',
+          retagSource:    d.retagSource    || '',
+          retagReason:    d.retagReason    || '',
           snOld:          d.snOld          || '',
           snNew:          d.snNew          || '',
           deviceNameOld:  d.deviceNameOld  || '',
