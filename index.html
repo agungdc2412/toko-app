@@ -7037,42 +7037,43 @@ ${sigSection}
 
         <div class="gdl-section-title">Alur Kerja Singkat</div>
         <div class="gdl-steps">
-          <div class="gdl-step"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Login</b><p>Pilih divisi → masukkan token → klik Login</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type, PIC, Koordinat GPS</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Foto View Site / Rack</b><p>Foto kondisi keseluruhan rack dan ruang server</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Nama device → Foto (Full/Type/S/N) → S/N → P/N → Status → Jumlah SFP</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Foto PIC &amp; Tanda Tangan</b><p>Dokumentasi petugas dan tanda tangan digital</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Export & Sync</b><p>Gunakan tombol Export (PDF/CSV/ZIP) atau Sync ke Google Sheets untuk menyimpan data</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">8</div><div class="gdl-step-body"><b>Kirim Email</b><p>Tap "Kirim Email" → ZIP otomatis ter-download → attach ke email yang terbuka</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Login</b><p>Pilih divisi (Asset / FOP / NetDev) → masukkan token → klik Masuk. Divisi dan kode Collect ID otomatis terisi sesuai akun.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace / Re-Tagging. Setiap kegiatan memiliki field tambahan yang berbeda.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type Site, PIC Name, Division, Subregion, Koordinat GPS, Floor Location. Foto PIC dan Tanda Tangan wajib diisi.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Upload Foto View Site / Rack</b><p>Foto kondisi keseluruhan site dan rack — <b>wajib minimal 1 foto</b> sebelum bisa kirim.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Pilih Single Device atau Module Device → isi Nama, S/N, P/N, Status, Jumlah SFP → lengkapi foto per device.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Generate Label (Opsional)</b><p>Tap tombol 🏷️ Label di card device atau Generate Label di action bar → QR Code otomatis terbuat → cetak label 50×25mm.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Kirim &amp; Export</b><p>Kirim Email → ZIP otomatis ter-download → attach ke email. Atau Generate PDF / Excel untuk laporan terpisah.</p></div></div>
         </div>
 
-        <div class="gdl-section-title" style="margin-top:20px;">Checklist Sebelum Selesai</div>
+        <div class="gdl-section-title" style="margin-top:20px;">Checklist Sebelum Kirim</div>
         <div class="gdl-checklist">
-          <div class="gdl-check-item">✅ Semua device sudah punya minimal 1 foto</div>
-          <div class="gdl-check-item">✅ Status device sudah dipilih (Active/Damage/Spare)</div>
-          <div class="gdl-check-item">✅ S/N sudah diisi untuk setiap device</div>
-            <div class="gdl-check-item">✅ Data sudah di-export atau ter-sync ke Google Sheets</div>
+          <div class="gdl-check-item">✅ Foto PIC (Dokumentasi) sudah diambil</div>
+          <div class="gdl-check-item">✅ Tanda Tangan PIC sudah ditambahkan</div>
+          <div class="gdl-check-item">✅ Minimal 1 foto View Site / Rack sudah diupload</div>
+          <div class="gdl-check-item">✅ Semua device sudah punya foto dan S/N terisi</div>
+          <div class="gdl-check-item">✅ Status device sudah dipilih (Active / Damage / Spare)</div>
+          <div class="gdl-check-item">✅ Tidak ada S/N duplikat antar device maupun sub-modul</div>
           <div class="gdl-check-item">✅ File ZIP sudah ter-download dan di-attach ke email</div>
         </div>
 
         <div class="gdl-callout info">
           <b>ℹ️ Fitur Utama App</b>
           <div class="gdl-feature-grid">
-            <div class="gdl-feature"><span>📋</span><span>Form Digital lengkap</span></div>
-            <div class="gdl-feature"><span>📍</span><span>GPS Otomatis</span></div>
-            <div class="gdl-feature"><span>📷</span><span>Multi Foto per device</span></div>
+            <div class="gdl-feature"><span>📋</span><span>6 Jenis Kegiatan</span></div>
+            <div class="gdl-feature"><span>📍</span><span>GPS Otomatis + Peta</span></div>
+            <div class="gdl-feature"><span>📷</span><span>Multi Foto per Device</span></div>
             <div class="gdl-feature"><span>🎤</span><span>Speech-to-Text S/N &amp; P/N</span></div>
-            <div class="gdl-feature"><span>📊</span><span>Barcode / QR Scanner</span></div>
+            <div class="gdl-feature"><span>📊</span><span>Scan Barcode / QR / Upload Foto</span></div>
             <div class="gdl-feature"><span>✍️</span><span>Tanda Tangan Digital</span></div>
-            <div class="gdl-feature"><span>☁️</span><span>Sync ke Google Sheets</span></div>
-            <div class="gdl-feature"><span>📦</span><span>Export ZIP semua data</span></div>
+            <div class="gdl-feature"><span>🏷️</span><span>Generate Label QR Asset</span></div>
+            <div class="gdl-feature"><span>📦</span><span>Export ZIP / PDF / Excel</span></div>
           </div>
         </div>
 
         <div class="gdl-callout warn">
-          <b>🔐 Login &amp; Token</b><br>
-          Aplikasi dilindungi sistem token per divisi. Setiap divisi (Asset, FOP, NetDev) memiliki token berbeda yang didistribusikan oleh admin. Sesi aktif beberapa jam — jika habis, login ulang. Data yang sudah tersimpan <b>tidak akan hilang</b>.
+          <b>🔐 Login &amp; Token per Divisi</b><br>
+          Pilih divisi terlebih dahulu, lalu masukkan token 6 karakter. Token berbeda per divisi — hubungi Admin jika lupa. Saat ganti user di device yang sama, Collect ID otomatis diperbarui sesuai divisi baru. Data tersimpan <b>tidak akan hilang</b> saat ganti user.
         </div>
 
         <div class="gdl-contact">
@@ -7088,41 +7089,54 @@ ${sigSection}
 
         <div class="gdl-section-title">Jenis Kegiatan</div>
         <div class="gdl-activity-grid">
-          <div class="gdl-act new"><div class="gdl-act-icon">🆕</div><div><b>New Site</b><p>Instalasi aset di site baru yang belum pernah tercatat</p></div></div>
-          <div class="gdl-act existing"><div class="gdl-act-icon">📌</div><div><b>Existing</b><p>Pendataan ulang aset yang sudah ada di site lama</p></div></div>
-          <div class="gdl-act additional"><div class="gdl-act-icon">➕</div><div><b>Additional</b><p>Penambahan device baru di site yang sudah ada</p></div></div>
-          <div class="gdl-act dismantle"><div class="gdl-act-icon">🗑️</div><div><b>Dismantle</b><p>Pelepasan/pembongkaran aset dari site</p></div></div>
-          <div class="gdl-act replace"><div class="gdl-act-icon">🔄</div><div><b>Replace</b><p>Penggantian device lama dengan device baru</p></div></div>
+          <div class="gdl-act new"><div class="gdl-act-icon">🆕</div><div><b>New Site</b><p>Instalasi aset di site baru yang belum pernah tercatat. Semua field site dan device wajib diisi lengkap.</p></div></div>
+          <div class="gdl-act existing"><div class="gdl-act-icon">📌</div><div><b>Existing</b><p>Pendataan ulang aset di site lama. Digunakan saat site sudah ada tapi data perlu diperbarui.</p></div></div>
+          <div class="gdl-act additional"><div class="gdl-act-icon">➕</div><div><b>Additional</b><p>Penambahan device baru ke site yang sudah ada sebelumnya.</p></div></div>
+          <div class="gdl-act dismantle"><div class="gdl-act-icon">🗑️</div><div><b>Dismantle</b><p>Pelepasan/pembongkaran aset dari site. Wajib isi alasan dismantle dan lokasi penyimpanan (warehouse).</p></div></div>
+          <div class="gdl-act replace"><div class="gdl-act-icon">🔄</div><div><b>Replace</b><p>Penggantian device lama dengan device baru. Isi data device lama (dilepas) dan device baru (dipasang).</p></div></div>
+          <div class="gdl-act" style="border-left:3px solid #0E7C5B;"><div class="gdl-act-icon">🏷️</div><div><b>Re-Tagging</b><p>Label fisik device rusak atau hilang. Isi kondisi label lama, sumber temuan, dan alasan. Generate label baru setelah selesai.</p></div></div>
         </div>
 
         <div class="gdl-callout info" style="margin-top:12px;">
           <b>ℹ️ Collect ID</b><br>
-          Setelah memilih jenis kegiatan dan mengisi Site ID, sistem otomatis membuat Collect ID unik (contoh: <code>NEW-JKT001-20260407-0856-A3F2</code>) sebagai nomor referensi. Tidak dapat diubah manual.
+          Otomatis terbuat setelah pilih kegiatan dan isi Site ID. Format: <code>NEW-4091-KYB032-AM-20260422-C480</code><br>
+          Terdiri dari: Kode Kegiatan · Subregion · Site ID · Divisi · Tanggal · Kode Unik. <b>Tidak dapat diubah manual.</b>
         </div>
 
-        <div class="gdl-section-title">Site Information</div>
+        <div class="gdl-section-title">Site Information — Field Wajib</div>
         <div class="gdl-field-table">
-          <div class="gdl-field-row"><div class="gdl-field-name">Tanggal</div><div class="gdl-field-desc">Tanggal pelaksanaan kegiatan</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Site Name</div><div class="gdl-field-desc">Nama site/lokasi · contoh: <em>Gedung Sudirman Lt.3</em></div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Site ID</div><div class="gdl-field-desc">ID unik site dari sistem Fiberstar · contoh: <em>JKT-001</em></div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Type Site</div><div class="gdl-field-desc">Tipe site: POP, BTS, DC, NOC, ODC, dll.</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">PIC Name</div><div class="gdl-field-desc">Nama teknisi/penanggung jawab kegiatan</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Division</div><div class="gdl-field-desc">Divisi yang mengerjakan — terisi otomatis dari login</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Floor Location</div><div class="gdl-field-desc">Lokasi spesifik di dalam gedung · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Tanggal</div><div class="gdl-field-desc">Tanggal pelaksanaan kegiatan di lapangan</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Site Name</div><div class="gdl-field-desc">Nama lokasi · contoh: <em>Apt Medit Lagoon</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Site ID</div><div class="gdl-field-desc">ID unik site dari sistem Fiberstar · contoh: <em>KYB032</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Type Site</div><div class="gdl-field-desc">POP / BTS / DC / NOC / ODC / ODP / BDF dll.</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">PIC Name</div><div class="gdl-field-desc">Nama teknisi/penanggung jawab di lapangan</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Foto PIC ⚠️</div><div class="gdl-field-desc"><b>Wajib</b> — Ambil foto dokumentasi petugas di lokasi</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Division</div><div class="gdl-field-desc">Terisi otomatis dari login (Asset / FOP / NetDev)</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Subregion</div><div class="gdl-field-desc">Pilih kode subregion sesuai wilayah site — masuk ke Collect ID</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Koordinat GPS</div><div class="gdl-field-desc">Gunakan GPS Otomatis, Input Manual, atau Klik Peta</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Floor Location</div><div class="gdl-field-desc">Lokasi spesifik · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Tanda Tangan ⚠️</div><div class="gdl-field-desc"><b>Wajib</b> — Tanda tangan digital PIC sebelum kirim</div></div>
         </div>
 
         <div class="gdl-section-title">Koordinat GPS</div>
         <div class="gdl-steps" style="gap:8px;">
-          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>GPS Otomatis (Disarankan)</b><p>Tap "Capture Location" → izinkan akses lokasi → koordinat terisi otomatis beserta akurasi meter.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Input Manual</b><p>Pindah ke tab "Input Manual" → ketik Latitude &amp; Longitude → klik "Terapkan".</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Klik Peta</b><p>Pindah ke tab "Klik Peta" → tap titik lokasi di peta interaktif.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>GPS Otomatis (Disarankan)</b><p>Tap "Capture Location" → izinkan akses lokasi → koordinat dan akurasi meter terisi otomatis.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Input Manual</b><p>Tab "Input Manual" → ketik Latitude &amp; Longitude → klik "Terapkan".</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Klik Peta</b><p>Tab "Klik Peta" → tap titik lokasi di peta interaktif OpenStreetMap.</p></div></div>
         </div>
 
         <div class="gdl-section-title">Input S/N &amp; P/N</div>
         <div class="gdl-input-methods">
-          <div class="gdl-input-method"><span class="gdl-im-icon">⌨️</span><div><b>Ketik Manual</b><p>Spasi otomatis dihapus — tidak perlu khawatir typo dari keyboard.</p></div></div>
-          <div class="gdl-input-method"><span class="gdl-im-icon">🎤</span><div><b>Speech-to-Text</b><p>Tap ikon mikrofon, ucapkan S/N huruf per huruf. Spasi dari speech otomatis dihapus. Gunakan Chrome/Edge.</p></div></div>
-          <div class="gdl-input-method"><span class="gdl-im-icon">📊</span><div><b>Scan Barcode/QR</b><p>Tap ikon scan, arahkan kamera ke label perangkat. Mendukung QR Code, Code 128, Code 39, EAN, Data Matrix.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">⌨️</span><div><b>Ketik Manual</b><p>Otomatis UPPERCASE — spasi dihapus otomatis saat mengetik.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">🎤</span><div><b>Speech-to-Text</b><p>Tap ikon mikrofon → ucapkan S/N. Hasil otomatis UPPERCASE dan spasi dihapus. Gunakan Chrome / Edge.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">📷</span><div><b>Scan Live</b><p>Tap ikon scan → arahkan kamera ke label. Support QR Code, Code 128, Code 39, EAN, DataMatrix, dll.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">🖼️</span><div><b>Upload Foto Barcode</b><p>Di modal scanner, pilih tab "Upload Foto" → pilih foto dari galeri → barcode terbaca otomatis. Pastikan foto hanya kode QR/Barcode, bukan full device.</p></div></div>
+        </div>
+
+        <div class="gdl-section-title">Tipe Device</div>
+        <div class="gdl-input-methods">
+          <div class="gdl-input-method"><span class="gdl-im-icon">📦</span><div><b>Single Device</b><p>Device tunggal seperti Switch, Router, OTB, AC, UPS, dll. Isi nama, foto, S/N, P/N, status, dan jumlah SFP.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">🗂️</span><div><b>Module Device</b><p>Device dengan sub-modul seperti OLT, Rectifier, DWDM. Pilih nama device utama → sub-modul otomatis muncul dari katalog → isi S/N tiap sub-modul.</p></div></div>
         </div>
       </div>
 
@@ -7328,33 +7342,34 @@ ${sigSection}
 
         <div class="gdl-section-title">Tombol Aksi</div>
         <div class="gdl-action-list">
-          <div class="gdl-action-item email"><div class="gdl-action-icon">📧</div><div><b>Kirim Email</b><p>Otomatis generate &amp; download file ZIP, lalu membuka email client dengan subject &amp; body terisi. Attach file ZIP yang ter-download ke email sebelum mengirim. <b>Sistem akan memperingatkan jika ada S/N duplikat.</b></p></div></div>
-          <div class="gdl-action-item pdf"><div class="gdl-action-icon">📄</div><div><b>Generate PDF</b><p>Membuka jendela baru berisi laporan lengkap siap di-print. Gunakan Ctrl+P untuk save sebagai PDF.</p></div></div>
-          <div class="gdl-action-item excel"><div class="gdl-action-icon">📊</div><div><b>Generate Excel</b><p>Download file .xlsx berisi Site Information dan Device List dalam 1 sheet.</p></div></div>
+          <div class="gdl-action-item email"><div class="gdl-action-icon">📧</div><div><b>Kirim Email</b><p>Generate ZIP → download otomatis → buka email client dengan subject &amp; body terisi. Attach file ZIP ke email sebelum Send. <b>S/N duplikat (termasuk sub-modul) akan diblokir — wajib diperbaiki dulu sebelum bisa kirim.</b></p></div></div>
+          <div class="gdl-action-item pdf"><div class="gdl-action-icon">📄</div><div><b>Generate PDF</b><p>Buka jendela laporan lengkap siap cetak. Di dialog print pilih "Save as PDF" untuk simpan ke file.</p></div></div>
+          <div class="gdl-action-item excel"><div class="gdl-action-icon">📊</div><div><b>Generate Excel</b><p>Download file .xlsx berisi Site Information dan Device List lengkap.</p></div></div>
+          <div class="gdl-action-item" style="border-left:3px solid #92610A;"><div class="gdl-action-icon">🏷️</div><div><b>Generate Label</b><p>Buka modal label — preview semua label QR per device. Cetak atau unduh PDF label 50×25mm siap tempel. Bisa juga generate label per device dari tombol 🏷️ di card device.</p></div></div>
         </div>
 
         <div class="gdl-section-title">Isi File ZIP</div>
         <div class="gdl-zip-tree">
-          <div class="gdl-zip-row root">📦 <b>AssetTagging_[SiteID]_[Kegiatan]_[Tanggal]_[ID].zip</b></div>
+          <div class="gdl-zip-row root">📦 <b>[ACT]-[Subregion]-[SiteID]-[Divisi]-[Tanggal]-[Kode].zip</b></div>
           <div class="gdl-zip-row">📊 <b>data.xlsx</b> — Site info + daftar device lengkap</div>
           <div class="gdl-zip-row">📄 <b>laporan.html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
           <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto view site dan rack</div>
           <div class="gdl-zip-row">🖼️ <b>foto_pic.jpg</b> — Foto dokumentasi PIC</div>
-          <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital</div>
-          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto Full, Type, S/N per device</div>
+          <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital PIC</div>
+          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto per device (Full, Zoom, Label/S/N, P/N)</div>
           <div class="gdl-zip-row">📝 <b>README.txt</b> — Panduan isi ZIP</div>
         </div>
 
-        <div class="gdl-section-title">Simpan &amp; Sinkronisasi</div>
+        <div class="gdl-section-title">Pemulihan Data Otomatis</div>
         <div class="gdl-steps" style="gap:8px;">
-            <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Sync ke Google Sheets</b><p>Tap "Sync ke Google Sheets" → data otomatis sync jika online dan Sheets sudah dikonfigurasi.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Panel Antrian</b><p>Status: <em>Pending</em> (belum sync) · <em>Synced</em> (berhasil) · <em>Failed</em> (gagal). Tap "Retry" untuk coba ulang.</p></div></div>
-          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Pemulihan Otomatis</b><p>Jika halaman di-refresh atau perangkat mati tiba-tiba, semua data &amp; foto dipulihkan otomatis saat dibuka kembali.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Auto-Save Aktif</b><p>Setiap perubahan form langsung tersimpan otomatis ke penyimpanan lokal browser.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Foto Tersimpan di IndexedDB</b><p>Foto PIC, TTD, foto site, dan foto device tersimpan terpisah — tetap ada meski halaman di-refresh.</p></div></div>
+          <div class="gdl-step small"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Pulih Otomatis</b><p>Buka kembali halaman setelah tutup/refresh → semua data dan foto langsung dipulihkan. Toast "Foto draft dipulihkan" akan muncul.</p></div></div>
         </div>
 
         <div class="gdl-callout danger">
           <b>⚠️ Jangan hapus cache browser</b><br>
-          Foto disimpan di IndexedDB browser. Menggunakan fitur "Clear Site Data" atau "Hapus Data Browser" <b>akan menghapus semua foto yang belum ter-ZIP</b> dan tidak bisa dikembalikan. Pastikan data sudah di-Save dan ter-Sync sebelum membersihkan cache.
+          Foto disimpan di IndexedDB browser. Menggunakan fitur "Clear Site Data" atau "Hapus Data Situs" <b>akan menghapus semua foto yang belum ter-ZIP</b> secara permanen. Selalu download ZIP terlebih dahulu sebelum membersihkan cache browser.
         </div>
       </div>
 
@@ -7376,12 +7391,12 @@ ${sigSection}
             <div class="gdl-trouble-a">Aktifkan izin kamera di browser. Gunakan Chrome versi terbaru. Pastikan halaman dibuka via HTTPS, bukan file://.</div>
           </div>
           <div class="gdl-trouble-item">
-
-            <div class="gdl-trouble-a">Pastikan Jenis Kegiatan dan Site ID sudah diisi. Collect ID harus tergenerate terlebih dahulu sebelum Save.</div>
+            <div class="gdl-trouble-q">🏷️ Collect ID tidak berubah setelah ganti user</div>
+            <div class="gdl-trouble-a">Logout lalu login ulang dengan akun yang benar. Collect ID otomatis diperbarui saat login berhasil — tidak perlu refresh manual.</div>
           </div>
           <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">☁️ Sync ke Google Sheets gagal</div>
-            <div class="gdl-trouble-a">Cek koneksi internet. Pastikan URL Apps Script sudah dikonfigurasi (Shift+Ctrl+S). Data tersimpan di antrian lokal — akan sync otomatis saat online kembali.</div>
+            <div class="gdl-trouble-q">📊 Scanner barcode terbuka tapi tidak terbaca</div>
+            <div class="gdl-trouble-a">Coba tab "Upload Foto" di modal scanner — foto barcode dari galeri lebih reliable untuk barcode kecil atau DataMatrix. Pastikan foto hanya area barcode, tidak full device, dan tidak buram.</div>
           </div>
           <div class="gdl-trouble-item">
             <div class="gdl-trouble-q">🖼️ Foto tidak muncul setelah refresh</div>
@@ -7396,8 +7411,12 @@ ${sigSection}
             <div class="gdl-trouble-a">Hubungi Admin untuk mendapatkan token yang benar. Token bersifat <b>case-sensitive</b>. Jangan ada spasi di awal/akhir.</div>
           </div>
           <div class="gdl-trouble-item">
-            <div class="gdl-trouble-q">⚠️ Muncul peringatan S/N duplikat</div>
-            <div class="gdl-trouble-a">Periksa device yang disebutkan — pastikan tidak ada S/N yang sama pada dua device berbeda. Perbaiki dulu sebelum kirim email, atau pilih "Tetap Kirim" jika memang disengaja.</div>
+            <div class="gdl-trouble-q">⚠️ Muncul peringatan S/N duplikat dan tidak bisa kirim</div>
+            <div class="gdl-trouble-a">Pengecekan S/N sekarang mencakup device utama <b>dan sub-modul</b>. Tidak ada opsi "Tetap Kirim" — wajib perbaiki S/N yang duplikat terlebih dahulu. Klik "Kembali &amp; Perbaiki" untuk melihat device mana yang bermasalah.</div>
+          </div>
+          <div class="gdl-trouble-item">
+            <div class="gdl-trouble-q">🏷️ QR Code label di-scan tapi form tidak terisi</div>
+            <div class="gdl-trouble-a">Pastikan activity sudah dipilih dulu sebelum scan QR label — aplikasi hanya bisa menambah device setelah jenis kegiatan ditentukan. Scan ulang setelah pilih activity.</div>
           </div>
         </div>
 
