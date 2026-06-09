@@ -474,6 +474,48 @@
     .btn-reset:hover { background: #f7c1c1; border-color: var(--fs-red); }
     .btn-reset svg { width: 15px; height: 15px; flex-shrink: 0; }
 
+    /* ── Email Body Modal ────────────────────────────────── */
+    .email-body-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 1003; align-items: center; justify-content: center;
+    }
+    .email-body-overlay.active { display: flex; }
+    .email-body-modal {
+      background: var(--bg-primary); border-radius: var(--radius-lg);
+      width: min(600px, 96vw); max-height: 90vh; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.25);
+      display: flex; flex-direction: column;
+    }
+    .email-body-header {
+      padding: 14px 18px; background: var(--fs-blue);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .email-body-header-title { font-size: 14px; font-weight: 600; color: white; display: flex; align-items: center; gap: 8px; }
+    .email-body-close { width: 30px; height: 30px; background: rgba(255,255,255,0.15); border: none; border-radius: 50%; color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+    .email-body-close:hover { background: rgba(255,255,255,0.3); }
+    .email-body-content { padding: 16px 18px; overflow-y: auto; flex: 1; }
+    .email-field-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; margin-top: 14px; }
+    .email-field-label:first-child { margin-top: 0; }
+    .email-field-box {
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      background: var(--bg-secondary); padding: 10px 12px; font-size: 13px;
+      color: var(--text-primary); font-family: inherit; line-height: 1.6;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .email-field-box.subject { font-weight: 600; font-size: 14px; }
+    .email-copy-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .email-copy-btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+      border-radius: var(--radius-md); font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .email-copy-btn.subject-btn { background: var(--fs-blue-light); color: var(--fs-blue); border: 1px solid rgba(24,95,165,0.2); }
+    .email-copy-btn.subject-btn:hover { background: #c8dff5; }
+    .email-copy-btn.body-btn { background: var(--fs-green-light); color: var(--fs-green); border: 1px solid rgba(59,109,17,0.2); }
+    .email-copy-btn.body-btn:hover { background: #c0dd97; }
+    .email-notice { font-size: 12px; color: var(--fs-amber); background: var(--fs-amber-light); border: 1px solid rgba(186,117,23,0.3); border-radius: var(--radius-md); padding: 8px 12px; margin-top: 12px; line-height: 1.6; }
+    .email-body-footer { padding: 14px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
+
     .reset-overlay {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55);
       z-index: 1002; align-items: center; justify-content: center;
@@ -1826,6 +1868,19 @@
         </button>
       </div>
 
+      <!-- Baris 1b: Generate Body Email (fallback jika mailto gagal) -->
+      <div class="action-bar-primary" style="margin-top:-4px;">
+        <button class="action-btn" id="btnGenEmailBody" onclick="openEmailBodyModal()"
+          style="background:#EAF1FB;color:#1a56c4;border:1.5px solid #b3cef5;font-size:13px;padding:10px 16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          Generate Body Email (Manual)
+        </button>
+      </div>
+
       <!-- Baris 2: Generate PDF & Excel -->
       <div class="action-bar-secondary">
         <button class="action-btn btn-pdf" onclick="generatePDF()">
@@ -1960,6 +2015,58 @@
   </div>
 </div>
 <!-- Google Sheets Config Modal -->
+
+<!-- Email Body Modal -->
+<div class="email-body-overlay" id="emailBodyOverlay" onclick="if(event.target===this)closeEmailBodyModal()">
+  <div class="email-body-modal">
+    <div class="email-body-header">
+      <div class="email-body-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="18" height="18">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        Generate Body Email (Manual Fallback)
+      </div>
+      <button class="email-body-close" onclick="closeEmailBodyModal()">&#x2715;</button>
+    </div>
+    <div class="email-body-content">
+      <div class="email-notice">
+        ⚠️ Gunakan fitur ini jika tombol <b>Kirim Email</b> gagal membuka Outlook secara otomatis.<br>
+        Salin <b>Subject</b> dan <b>Body</b> di bawah, lalu buka Outlook/Gmail secara manual dan paste ke email baru. Attach file ZIP yang sudah ter-download.
+      </div>
+
+      <div class="email-field-label">📋 TO (Tujuan Email)</div>
+      <div class="email-field-box subject" id="emailTo">Int-Asset.Management@fiberstar.co.id</div>
+      <div class="email-copy-row">
+        <button class="email-copy-btn subject-btn" onclick="_copyEmailField('emailTo','Alamat email')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Salin Alamat
+        </button>
+      </div>
+
+      <div class="email-field-label">📌 Subject</div>
+      <div class="email-field-box subject" id="emailSubjectDisplay"></div>
+      <div class="email-copy-row">
+        <button class="email-copy-btn subject-btn" onclick="_copyEmailField('emailSubjectDisplay','Subject')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Salin Subject
+        </button>
+      </div>
+
+      <div class="email-field-label">✉️ Body Email</div>
+      <div class="email-field-box" id="emailBodyDisplay" style="max-height:320px;overflow-y:auto;"></div>
+      <div class="email-copy-row">
+        <button class="email-copy-btn body-btn" onclick="_copyEmailField('emailBodyDisplay','Body email')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Salin Body
+        </button>
+      </div>
+    </div>
+    <div class="email-body-footer">
+      <button class="reset-btn-cancel" onclick="closeEmailBodyModal()">Tutup</button>
+    </div>
+  </div>
+</div>
 
 <!-- Reset Modal -->
 <div class="reset-overlay" id="resetOverlay">
@@ -3234,7 +3341,48 @@ map.on('click',function(e){
     showToast('Asset dihapus');
   }
 
+  // ── Flush semua field input aktif ke devices array ────
+  // Mencegah data yang sedang diketik hilang saat re-render (Duplicate, dll.)
+  function _flushActiveInputs() {
+    devices.forEach(d => {
+      // Device utama — field teks biasa
+      const fields = [
+        ['deviceName', 'input[id^="ac_"]', null],
+      ];
+      // Flush device name (bisa pakai id pattern)
+      const nameEl = document.querySelector('#dc_' + d.id + ' input[placeholder="Ketik nama device..."], #dc_' + d.id + ' input[placeholder="Nama device yang dilepas..."], #dc_' + d.id + ' input[placeholder="Nama device pengganti..."]');
+      // Serial number
+      const snEl = document.getElementById('sn_' + d.id);
+      if (snEl) { const v = _stripSpaces(snEl.value); if (v !== d.serialNumber) d.serialNumber = v; }
+      // Part number
+      const pnEl = document.getElementById('pn_' + d.id);
+      if (pnEl) { const v = _stripSpaces(pnEl.value); if (v !== d.partNumber) d.partNumber = v; }
+      // Replace fields
+      const nameOldEl = document.getElementById('nameold_' + d.id);
+      if (nameOldEl && nameOldEl.value !== (d.deviceNameOld||'')) d.deviceNameOld = nameOldEl.value;
+      const nameNewEl = document.getElementById('namenew_' + d.id);
+      if (nameNewEl && nameNewEl.value !== (d.deviceNameNew||'')) { d.deviceNameNew = nameNewEl.value; d.deviceName = nameNewEl.value; }
+      const snOldEl = document.getElementById('snold_' + d.id);
+      if (snOldEl) { const v = _stripSpaces(snOldEl.value); if (v !== (d.snOld||'')) d.snOld = v; }
+      const snNewEl = document.getElementById('snnew_' + d.id);
+      if (snNewEl) { const v = _stripSpaces(snNewEl.value); if (v !== (d.snNew||'')) { d.snNew = v; d.serialNumber = v; } }
+      const pnOldEl = document.getElementById('pnold_' + d.id);
+      if (pnOldEl) { const v = _stripSpaces(pnOldEl.value); if (v !== (d.pnOld||'')) d.pnOld = v; }
+      const pnNewEl = document.getElementById('pnnew_' + d.id);
+      if (pnNewEl) { const v = _stripSpaces(pnNewEl.value); if (v !== (d.pnNew||'')) { d.pnNew = v; d.partNumber = v; } }
+      // Sub-modules
+      (d.subModules || []).forEach(sm => {
+        const smSnEl = document.getElementById('sm_sn_' + sm.id);
+        if (smSnEl) { const v = _stripSpaces(smSnEl.value); if (v !== (sm.serialNumber||'')) sm.serialNumber = v; }
+        const smPnEl = document.getElementById('sm_pn_' + sm.id);
+        if (smPnEl) { const v = _stripSpaces(smPnEl.value); if (v !== (sm.partNumber||'')) sm.partNumber = v; }
+      });
+    });
+  }
+
   function duplicateDevice(id) {
+    // Flush semua input aktif ke devices array sebelum clone
+    _flushActiveInputs();
     const src = devices.find(x => x.id === id);
     if (!src) return;
     deviceCounter++;
@@ -3712,11 +3860,13 @@ map.on('click',function(e){
               <div class="device-ac-wrap" style="flex:1;min-width:0;">
                 <input type="text" id="${nameOldId}" class="form-input" style="width:100%;" placeholder="Nama device yang dilepas..."
                   value="${escHtml(d.deviceNameOld||d.deviceName||'')}" autocomplete="off"
-                  oninput="updateDevice('${d.id}','deviceNameOld',this.value);if(!d.deviceNameNew)updateDeviceTitle('${d.id}',this.value,${i});">
-                <div class="device-ac-dropdown" id="acold_${d.id}"></div>
+                  oninput="updateDevice('${d.id}','deviceNameOld',this.value);(function(v){var _d=devices.find(function(x){return x.id==='${d.id}';});if(_d&&!_d.deviceNameNew)updateDeviceTitle('${d.id}',v,${i});})(this.value);_acFilter('${d.id}_old',this.value,this)"
+                  onfocus="_acFilter('${d.id}_old',this.value,this)"
+                  onkeydown="_acKeyNav(event,'${d.id}_old')">
+                <div class="device-ac-dropdown" id="ac_${d.id}_old"></div>
               </div>
               <button class="stt-btn" title="Ucapkan Nama Lama"
-                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameOld',t);var el=document.getElementById('${nameOldId}');if(el)el.value=t;}.bind(this))">${_icoMic}</button>
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameOld',t);var el=document.getElementById('${nameOldId}');if(el){el.value=t;_acFilter('${d.id}_old',t,el);}}.bind(this))">${_icoMic}</button>
             </div>
           </div>
 
@@ -3787,11 +3937,13 @@ map.on('click',function(e){
               <div class="device-ac-wrap" style="flex:1;min-width:0;">
                 <input type="text" id="${nameNewId}" class="form-input" style="width:100%;" placeholder="Nama device pengganti..."
                   value="${escHtml(d.deviceNameNew||d.deviceName||'')}" autocomplete="off"
-                  oninput="updateDevice('${d.id}','deviceNameNew',this.value);updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});">
-                <div class="device-ac-dropdown" id="acnew_${d.id}"></div>
+                  oninput="updateDevice('${d.id}','deviceNameNew',this.value);updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});_acFilter('${d.id}_new',this.value,this)"
+                  onfocus="_acFilter('${d.id}_new',this.value,this)"
+                  onkeydown="_acKeyNav(event,'${d.id}_new')">
+                <div class="device-ac-dropdown" id="ac_${d.id}_new"></div>
               </div>
               <button class="stt-btn" title="Ucapkan Nama Baru"
-                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameNew',t);updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var el=document.getElementById('${nameNewId}');if(el)el.value=t;}.bind(this))">${_icoMic}</button>
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameNew',t);updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var el=document.getElementById('${nameNewId}');if(el){el.value=t;_acFilter('${d.id}_new',t,el);}}.bind(this))">${_icoMic}</button>
             </div>
           </div>
 
@@ -4670,7 +4822,101 @@ map.on('click',function(e){
     // Tidak ada opsi "Tetap Kirim" — user wajib perbaiki SN dulu
   }
 
-    function sendEmail() {
+  // ── Generate Body Email Modal (fallback manual) ─────────
+  function openEmailBodyModal() {
+    const f = getFormData();
+    if (!f.siteName && !f.siteId) {
+      showToast('⚠️ Isi minimal Site Name dan Site ID sebelum generate body email', 4000);
+      return;
+    }
+    const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
+    const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || (f.activity || '-');
+    const folderName = _buildFileName ? _buildFileName(f) : (f.siteId || 'file');
+    const zipFilename = folderName + '.zip';
+
+    const subject = `Asset Tagging - ${f.siteName || '-'} (${f.siteId || '-'}) - ${f.typeSite || '-'}`;
+
+    const bodyLines = [
+      'Halo Tim Asset Management,',
+      '',
+      'Berikut laporan Asset Tagging:',
+      '',
+      `Collect ID    : ${f.collectId || '-'}`,
+      `Jenis Kegiatan: ${actLabel}`,
+      `Site          : ${f.siteName || '-'}`,
+      `Site ID       : ${f.siteId || '-'}`,
+      `Type          : ${f.typeSite || '-'}`,
+      `Date          : ${f.date || '-'}`,
+      `PIC           : ${f.picName || '-'}`,
+      `Division      : ${f.division || '-'}`,
+      `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}`,
+      `Koordinat     : ${coordStr}`,
+      `Floor Location: ${f.floorLocation || '-'}`,
+      `Jumlah Device : ${f.devices.length}`,
+      `Foto Site     : ${(f.sitePhotos||[]).length} foto`,
+      '',
+    ];
+
+    f.devices.forEach((d, i) => {
+      bodyLines.push(`Device ${i+1}: ${d.deviceName || '-'}`);
+      bodyLines.push(`  S/N : ${d.serialNumber || '-'}`);
+      bodyLines.push(`  P/N : ${d.partNumber || '-'}`);
+      bodyLines.push('');
+    });
+
+    bodyLines.push('⚠️  PENTING: Attach file ZIP berikut ke email ini sebelum dikirim:');
+    bodyLines.push(`📎  ${zipFilename}`);
+    bodyLines.push('(File ZIP sudah ter-download otomatis di folder Downloads Anda)');
+    bodyLines.push('');
+    bodyLines.push('File ZIP berisi: data.xlsx + laporan.html + foto lengkap');
+    bodyLines.push('');
+    bodyLines.push('Salam,');
+    bodyLines.push('Fiberstar Asset Tagging App');
+
+    const body = bodyLines.join('\n');
+
+    document.getElementById('emailSubjectDisplay').textContent = subject;
+    document.getElementById('emailBodyDisplay').textContent = body;
+    document.getElementById('emailBodyOverlay').classList.add('active');
+  }
+
+  function closeEmailBodyModal() {
+    document.getElementById('emailBodyOverlay').classList.remove('active');
+  }
+
+  function _copyEmailField(elId, label) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    const text = el.textContent || el.innerText || '';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('✅ ' + label + ' berhasil disalin ke clipboard!', 3000);
+      }).catch(() => {
+        _copyFallback(text, label);
+      });
+    } else {
+      _copyFallback(text, label);
+    }
+  }
+
+  function _copyFallback(text, label) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      showToast('✅ ' + label + ' berhasil disalin!', 3000);
+    } catch (e) {
+      showToast('⚠️ Gagal menyalin. Silakan select manual dan Ctrl+C.', 4000);
+    }
+    document.body.removeChild(ta);
+  }
+
+  // ── sendEmail legacy wrapper ─────────────────────────────
+  function sendEmail() {
     // Legacy — kept for backward compat, redirect to new function
     sendEmailWithZip();
   }
@@ -6111,6 +6357,9 @@ ${sigSection}
   }
 
   // ── Filter dan render dropdown ─────────────────────────
+  // ── Per-devId close handler map ────────────────────────
+  const _acCloseHandlers = {};
+
   function _acFilter(devId, query, inputEl) {
     const dd = document.getElementById('ac_' + devId);
     if (!dd) return;
@@ -6157,15 +6406,18 @@ ${sigSection}
     }
     dd.classList.add('show');
 
-    // Tutup saat klik di luar
-    const close = (e) => {
+    // Hapus close handler lama untuk devId ini (jika ada) sebelum daftarkan yang baru
+    if (_acCloseHandlers[devId]) {
+      document.removeEventListener('mousedown', _acCloseHandlers[devId]);
+    }
+    _acCloseHandlers[devId] = (e) => {
       if (!dd.contains(e.target) && e.target !== inputEl) {
         dd.classList.remove('show');
-        document.removeEventListener('mousedown', close);
+        document.removeEventListener('mousedown', _acCloseHandlers[devId]);
+        delete _acCloseHandlers[devId];
       }
     };
-    document.removeEventListener('mousedown', close);
-    document.addEventListener('mousedown', close);
+    document.addEventListener('mousedown', _acCloseHandlers[devId]);
   }
 
   // ── Pilih item dari dropdown ──────────────────────────
@@ -6180,11 +6432,29 @@ ${sigSection}
     const pn   = item.dataset.pn;
     const kat  = item.dataset.kat;
 
+    // Deteksi apakah ini Replace _old / _new suffix
+    const isReplaceOld = devId.endsWith('_old');
+    const isReplaceNew = devId.endsWith('_new');
+    const realDevId = isReplaceOld ? devId.slice(0, -4) : isReplaceNew ? devId.slice(0, -4) : devId;
+
     // Update state
-    const d = devices.find(x => x.id === devId);
+    const d = devices.find(x => x.id === realDevId);
     if (d) {
-      d.deviceName  = name;
-      if (pn)  d.partNumber = pn;
+      if (isReplaceOld) {
+        d.deviceNameOld = name;
+        // Auto-fill P/N Lama
+        if (pn) { d.pnOld = pn; const pnOldEl = document.getElementById('pnold_' + realDevId); if (pnOldEl) pnOldEl.value = pn; }
+        updateDeviceTitle(realDevId, name, devices.indexOf(d));
+      } else if (isReplaceNew) {
+        d.deviceNameNew = name;
+        d.deviceName = name;
+        // Auto-fill P/N Baru
+        if (pn) { d.pnNew = pn; d.partNumber = pn; const pnNewEl = document.getElementById('pnnew_' + realDevId); if (pnNewEl) pnNewEl.value = pn; }
+        updateDeviceTitle(realDevId, name, devices.indexOf(d));
+      } else {
+        d.deviceName  = name;
+        if (pn)  d.partNumber = pn;
+      }
     }
 
     // Update DOM input langsung tanpa re-render penuh
@@ -6194,22 +6464,26 @@ ${sigSection}
       if (inp) inp.value = name;
     }
 
-    // Auto-fill Part Number field
-    if (pn) {
-      const pnEl = document.querySelector(`#dc_${devId} .pn-input`);
-      if (pnEl) { pnEl.value = pn; updateDevice(devId, 'partNumber', pn); }
+    // Auto-fill Part Number field (hanya untuk non-replace)
+    if (pn && !isReplaceOld && !isReplaceNew) {
+      const pnEl = document.querySelector(`#dc_${realDevId} .pn-input`);
+      if (pnEl) { pnEl.value = pn; updateDevice(realDevId, 'partNumber', pn); }
     }
 
-    // Update card title
-    const d2 = devices.find(x => x.id === devId);
-    const idx2 = devices.indexOf(d2);
-    updateDeviceTitle(devId, name, idx2);
+    // Update card title (hanya untuk non-replace, replace sudah di atas)
+    if (!isReplaceOld && !isReplaceNew) {
+      const d2 = devices.find(x => x.id === realDevId);
+      const idx2 = devices.indexOf(d2);
+      updateDeviceTitle(realDevId, name, idx2);
+    }
 
     dd.classList.remove('show');
     _acFocusIdx[devId] = -1;
-    // Auto-generate sub-modul jika device type=module
-    const dChk = devices.find(x => x.id === devId);
-    if (dChk && dChk.type === 'module') _autoGenerateSubModules(devId, name);
+    // Auto-generate sub-modul jika device type=module (hanya non-replace)
+    if (!isReplaceOld && !isReplaceNew) {
+      const dChk = devices.find(x => x.id === realDevId);
+      if (dChk && dChk.type === 'module') _autoGenerateSubModules(realDevId, name);
+    }
   }
 
   // ── Auto-generate sub-modul dari katalog ────────────────
