@@ -1931,7 +1931,7 @@
 
     </div>
     <div class="zip-info" id="zipInfoBox">
-      &#128230; File ZIP berisi: <b>data.xlsx</b> (2 sheet: Site Info + Device List) + <b>laporan.html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
+      &#128230; File ZIP berisi: <b>[SiteID]_[Activity]_[Date].xlsx</b> + <b>[SiteID]_[Activity]_[Date].html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
       📂 Format nama file ZIP: <b>SubregionCode_SiteID_SiteName_Activity_YYYYMMDD_xxxx.zip</b> — contoh: <code style="background:#ede9fe;padding:1px 5px;border-radius:4px;">3081_MKS_Adiyaksa_Additional_20260410_815B.zip</code><br>
       <span id="emailZipStatus">Tombol <b>Kirim Email</b> akan otomatis generate &amp; download ZIP, lalu membuka email client — attach file ZIP yang sudah ter-download ke email tersebut.</span><br>
       Jika mengalami kendala atau butuh panduan bisa menghubungi <b>Team Asset Management</b> atau <br>Info di Grup WhatsApp <b>Collect Data Asset FOP&NetDev</b>
@@ -3318,6 +3318,7 @@ map.on('click',function(e){
       dismantleReason: '',  // dismantle: alasan
       warehouse: '',        // dismantle: lokasi penyimpanan
       replaceReason: '',    // replace: alasan pergantian
+      activityDate: '',     // additional/dismantle/replace: tanggal aktivitas
       snOld: '',            // replace: SN lama (existing)
       snNew: '',            // replace: SN baru (pengganti)
       deviceNameOld: '',    // replace: nama device lama
@@ -3370,6 +3371,9 @@ map.on('click',function(e){
       if (pnOldEl) { const v = _stripSpaces(pnOldEl.value); if (v !== (d.pnOld||'')) d.pnOld = v; }
       const pnNewEl = document.getElementById('pnnew_' + d.id);
       if (pnNewEl) { const v = _stripSpaces(pnNewEl.value); if (v !== (d.pnNew||'')) { d.pnNew = v; d.partNumber = v; } }
+      // Activity Date
+      const actDateEl = document.getElementById('actdate_' + d.id);
+      if (actDateEl && actDateEl.value !== (d.activityDate||'')) d.activityDate = actDateEl.value;
       // Sub-modules
       (d.subModules || []).forEach(sm => {
         const smSnEl = document.getElementById('sm_sn_' + sm.id);
@@ -3613,6 +3617,16 @@ map.on('click',function(e){
   // ── Per-device activity-specific fields ──────────────
   function _deviceActivityFields(d) {
     const act = currentActivity;
+
+    // Reusable Activity Date field snippet
+    const _actDateField = (id) => `
+        <div class="form-group" style="margin-top:10px;margin-bottom:0;">
+          <label class="form-label">📅 Activity Date</label>
+          <input type="date" class="form-input" id="actdate_${id}"
+            value="${escHtml(d.activityDate||'')}"
+            oninput="updateDevice('${id}','activityDate',this.value)">
+        </div>`;
+
     if (act === 'additional') {
       return `
         <div class="form-group" style="margin-bottom:14px;">
@@ -3624,6 +3638,7 @@ map.on('click',function(e){
             <button class="stt-btn" title="Ucapkan Keterangan"
               onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNotes',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
           </div>
+          ${_actDateField(d.id)}
         </div>`;
     }
     if (act === 'retagging') {
@@ -3679,7 +3694,7 @@ map.on('click',function(e){
                 onclick="startSTTInline(this,function(t){updateDevice('${d.id}','dismantleReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom:10px;">
             <label class="form-label">Lokasi Penyimpanan / Warehouse</label>
             <div class="stt-wrap">
               <input type="text" class="form-input" placeholder="e.g. Gudang Jakarta Selatan, Rak B-3"
@@ -3689,6 +3704,7 @@ map.on('click',function(e){
                 onclick="startSTTInline(this,function(t){updateDevice('${d.id}','warehouse',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
             </div>
           </div>
+          ${_actDateField(d.id)}
         </div>`;
     }
     return '';
@@ -3915,6 +3931,13 @@ map.on('click',function(e){
               <button class="stt-btn" title="Ucapkan Alasan"
                 onclick="startSTTInline(this,function(t){updateDevice('${d.id}','replaceReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
             </div>
+          </div>
+          <!-- Activity Date -->
+          <div class="form-group" style="margin-top:10px;">
+            <label class="form-label">📅 Activity Date</label>
+            <input type="date" class="form-input" id="actdate_${d.id}"
+              value="${escHtml(d.activityDate||'')}"
+              oninput="updateDevice('${d.id}','activityDate',this.value)">
           </div>
         </div>
 
@@ -4868,7 +4891,7 @@ map.on('click',function(e){
     bodyLines.push(`📎  ${zipFilename}`);
     bodyLines.push('(File ZIP sudah ter-download otomatis di folder Downloads Anda)');
     bodyLines.push('');
-    bodyLines.push('File ZIP berisi: data.xlsx + laporan.html + foto lengkap');
+    bodyLines.push('File ZIP berisi: [nama_file].xlsx + [nama_file].html + foto lengkap');
     bodyLines.push('');
     bodyLines.push('Salam,');
     bodyLines.push('Fiberstar Asset Tagging App');
@@ -4958,11 +4981,13 @@ map.on('click',function(e){
       // ── 1. Build ZIP (same logic as generateZip) ──
       const zip = new JSZip();
       const root = zip.folder(folderName);
+      const xlsxFilename = `${folderName}.xlsx`;
+      const laporanFilename = `${folderName}.html`;
 
       // Excel XLSX
       const xlsxB64 = _buildXlsxBase64(f);
       if (xlsxB64) {
-        root.file('data.xlsx', xlsxB64, { base64: true });
+        root.file(xlsxFilename, xlsxB64, { base64: true });
       } else {
         let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
           `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nFloor Location,"${f.floorLocation||'-'}"\n\n` +
@@ -4973,7 +4998,7 @@ map.on('click',function(e){
 
       // Laporan HTML
       const pdfHtml = _buildPdfHtml(f);
-      root.file('laporan.html', pdfHtml);
+      root.file(laporanFilename, pdfHtml);
 
       // Site Photos
       let totalSitePhotos = 0;
@@ -5012,7 +5037,7 @@ map.on('click',function(e){
         (d.subModules || []).forEach((sm, si) => {
           if (!sm.photos) return;
           const smSafeName = (sm.moduleName || 'submodul').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
-          const smLabel = `SubMod_${String(si+1).padStart(2,'0')}_${smSafeName}`;
+          const smLabel = `Mod_${String(si+1).padStart(2,'0')}_${smSafeName}`;
           const smAdded = [];
           if (sm.photos.sn) {
             const ext = (sm.exts && sm.exts.sn) || 'jpg';
@@ -5043,15 +5068,15 @@ map.on('click',function(e){
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
         `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
         `${folderName}/\n` +
-        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Asset List)\n` +
-        `  laporan.html           <- Buka di browser → Print/Save as PDF\n` +
+        `  ${xlsxFilename}  <- Data semua device (Site Info + Asset List)\n` +
+        `  ${laporanFilename}  <- Buka di browser → Print/Save as PDF\n` +
         `  Site_Photos/           <- Foto view site & rack (${totalSitePhotos} foto)\n` +
         (f.picPhoto ? `  foto_pic.${f.picPhoto.ext||'jpg'}          <- Foto dokumentasi PIC\n` : '') +
         (f.signature ? `  ttd_pic.png            <- Tanda tangan digital PIC\n` : '') +
         `${photoSummary.join('\n')}\n\n` +
         `Cara penggunaan:\n` +
-        `1. Buka data.xlsx di Microsoft Excel / Google Sheets\n` +
-        `2. Buka laporan.html di browser → Ctrl+P untuk print/save PDF\n` +
+        `1. Buka ${xlsxFilename} di Microsoft Excel / Google Sheets\n` +
+        `2. Buka ${laporanFilename} di browser → Ctrl+P untuk print/save PDF\n` +
         `3. Foto site tersimpan di folder Site_Photos\n` +
         `4. Foto per device tersimpan di masing-masing folder device\n` +
         `5. Attach file ZIP ini ke email atau upload ke Teams\n`;
@@ -5097,7 +5122,7 @@ map.on('click',function(e){
         `\n\n⚠️  PENTING: Attach file ZIP berikut ke email ini sebelum dikirim:\n` +
         `📎  ${zipFilename}\n` +
         `(File ZIP sudah ter-download otomatis di folder Downloads Anda)\n\n` +
-        `File ZIP berisi: data.xlsx + laporan.html + ${totalPhotos} foto\n\nSalam,\nFiberstar Asset Tagging App`
+        `File ZIP berisi: ${folderName}.xlsx + ${folderName}.html + ${totalPhotos} foto\n\nSalam,\nFiberstar Asset Tagging App`
       );
 
       // Delay sedikit agar browser sempat proses download dulu
@@ -5309,7 +5334,7 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],  // baris kosong sebagai separator
-      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Activity Date','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
 
     f.devices.forEach((d, i) => {
@@ -5318,8 +5343,9 @@ ${mapLink}
                     : f.activity==='replace'    ? (d.replaceReason||'-')
                     : '-';
       const locStore = f.activity==='dismantle' ? (d.warehouse||'-') : '-';
-      // 16 kolom sesuai header:
-      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
+      const actDate  = ['additional','dismantle','replace'].includes(f.activity) ? (d.activityDate||'-') : '-';
+      // 17 kolom sesuai header:
+      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Activity Date|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
       sheetData.push([
         i+1,                                                                              // No
         f.activity==='replace' ? 'Replace' : d.type==='module' ? 'Module' : 'Single',    // Tipe
@@ -5332,13 +5358,14 @@ ${mapLink}
         d.statusDevice||'-',                                                               // Status
         d.sfpCount !== null && d.sfpCount !== undefined ? d.sfpCount : '-',               // Jumlah SFP
         actNote,                                                                           // Alasan/Keterangan
+        actDate,                                                                           // Activity Date
         locStore,                                                                          // Lokasi Simpan
         d.photos.full  ? 'Ada' : '-',                                                     // Foto Full
         d.photos.zoom  ? 'Ada' : '-',                                                     // Foto Type
         d.photos.label ? 'Ada' : '-',                                                     // Foto S/N
         d.photos.pn    ? 'Ada' : '-',                                                     // Foto P/N
       ]);
-      // Sub-modul rows — 16 kolom, kolom kosong untuk kolom yang tidak relevan
+      // Sub-modul rows — 17 kolom, kolom kosong untuk kolom yang tidak relevan
       (d.subModules||[]).forEach((sm, si) => {
         sheetData.push([
           '',                                     // No
@@ -5352,6 +5379,7 @@ ${mapLink}
           sm.statusDevice||'-',                   // Status
           '-',                                    // Jumlah SFP
           '-',                                    // Alasan/Keterangan
+          '-',                                    // Activity Date
           '-',                                    // Lokasi Simpan
           '-',                                    // Foto Full
           '-',                                    // Foto Type
@@ -5362,7 +5390,7 @@ ${mapLink}
     });
 
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    // 16 kolom: No|Tipe|NamaLama|S/N Lama|S/N Baru|P/N Lama|NamaBaru|P/N Baru|Status|SFP|Alasan|LokasiSimpan|FotoFull|FotoType|FotoSN|FotoPn
+    // 17 kolom: No|Tipe|NamaLama|S/N Lama|S/N Baru|P/N Lama|NamaBaru|P/N Baru|Status|SFP|Alasan|ActivityDate|LokasiSimpan|FotoFull|FotoType|FotoSN|FotoPn
     ws['!cols'] = [
       {wch:4},  // No
       {wch:9},  // Tipe
@@ -5375,6 +5403,7 @@ ${mapLink}
       {wch:10}, // Status
       {wch:8},  // Jumlah SFP
       {wch:28}, // Alasan/Keterangan
+      {wch:14}, // Activity Date
       {wch:22}, // Lokasi Simpan
       {wch:10}, // Foto Full
       {wch:10}, // Foto Type
@@ -5395,8 +5424,7 @@ ${mapLink}
     }
 
     XLSX.utils.book_append_sheet(wb, ws, 'Asset Tagging');
-    const filename = `${_buildFileName(f)}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    const filename = `${_buildFileName(f)}.xlsx`;    XLSX.writeFile(wb, filename);
     return wb;
   }
 
@@ -5439,13 +5467,14 @@ ${mapLink}
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],
-      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Activity Date','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
     f.devices.forEach((d, i) => {
       const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):f.activity==='retagging'?((d.labelCondition||'')+' | '+(d.retagSource||'')+' | '+(d.retagReason||'')).replace(/^ \| | \| $/g,'').replace(/\| \|/g,'|')||'-':'-';
       const locStore = f.activity==='dismantle'?(d.warehouse||'-'):'-';
-      // 16 kolom sesuai header:
-      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
+      const actDate  = ['additional','dismantle','replace'].includes(f.activity) ? (d.activityDate||'-') : '-';
+      // 17 kolom sesuai header:
+      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Activity Date|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
       sheetData.push([
         i+1,                                                                                  // No
         f.activity==='replace'?'Replace':d.type==='module'?'Module':'Single',                 // Tipe
@@ -5458,13 +5487,14 @@ ${mapLink}
         d.statusDevice||'-',                                                                   // Status
         d.sfpCount!==null&&d.sfpCount!==undefined?d.sfpCount:'-',                            // Jumlah SFP
         actNote,                                                                               // Alasan/Keterangan
+        actDate,                                                                               // Activity Date
         locStore,                                                                              // Lokasi Simpan
         d.photos.full?'Ada':'-',                                                              // Foto Full
         d.photos.zoom?'Ada':'-',                                                              // Foto Type
         d.photos.label?'Ada':'-',                                                             // Foto S/N
         d.photos.pn?'Ada':'-',                                                                // Foto P/N
       ]);
-      // Sub-modul rows — 16 kolom
+      // Sub-modul rows — 17 kolom
       (d.subModules||[]).forEach((sm, si) => {
         sheetData.push([
           '',                                       // No
@@ -5478,6 +5508,7 @@ ${mapLink}
           sm.statusDevice||'-',                     // Status
           '-',                                      // Jumlah SFP
           '-',                                      // Alasan/Keterangan
+          '-',                                      // Activity Date
           '-',                                      // Lokasi Simpan
           '-',                                      // Foto Full
           '-',                                      // Foto Type
@@ -5487,7 +5518,7 @@ ${mapLink}
       });
     });
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    // 16 kolom lebar proporsional
+    // 17 kolom lebar proporsional
     ws['!cols'] = [
       {wch:4},  // No
       {wch:9},  // Tipe
@@ -5500,6 +5531,7 @@ ${mapLink}
       {wch:10}, // Status
       {wch:8},  // Jumlah SFP
       {wch:28}, // Alasan/Keterangan
+      {wch:14}, // Activity Date
       {wch:22}, // Lokasi Simpan
       {wch:10}, // Foto Full
       {wch:10}, // Foto Type
@@ -5606,7 +5638,7 @@ ${sigSection}
   // Contoh:  4091_AM_KYB054_Grand_Rubina_Tower_EXI_20260420_1989
   function _buildFileName(f) {
     const safe = s => String(s || '').trim().replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g,'_').replace(/^_|_$/g,'');
-    // Kode aktivitas pendek (sama dengan prefix Collect ID)
+    // Kode aktivitas pendek
     const ACT_CODE_MAP = { new:'NEW', existing:'EXI', additional:'ADD', dismantle:'DIS', replace:'REP', retagging:'RTG' };
     const actCode = ACT_CODE_MAP[f.activity] || (f.activity || 'ACT').toUpperCase();
     // no urut: ambil segment terakhir dari collectId (random hex), fallback ke timestamp
@@ -5622,11 +5654,11 @@ ${sigSection}
       const sess = JSON.parse(localStorage.getItem('fs_pin_session') || '{}');
       divCode = ROLE_DIV_MAP[sess.role] || 'XX';
     } catch(_) {}
+    // Format baru: Subregion_User_SiteID_Activity_Date_XXXX (tanpa SiteName)
     const parts = [
       subregionCode,
       divCode,
-      safe(f.siteId)   || 'SITEID',
-      safe(f.siteName) || 'SITE',
+      safe(f.siteId) || 'SITEID',
       actCode,
       (f.date || '').replace(/-/g, ''),
       noUrut,
@@ -5646,12 +5678,14 @@ ${sigSection}
       const zip = new JSZip();
       const folderName = _buildFileName(f);
       const root = zip.folder(folderName);
+      const xlsxFilename = `${folderName}.xlsx`;
+      const laporanFilename = `${folderName}.html`;
       const coordStr = (f.coordLat && f.coordLng) ? f.coordLat + ', ' + f.coordLng : '-';
 
       // ── 1. Excel XLSX ──
       const xlsxB64 = _buildXlsxBase64(f);
       if (xlsxB64) {
-        root.file('data.xlsx', xlsxB64, { base64: true });
+        root.file(xlsxFilename, xlsxB64, { base64: true });
       } else {
         // Fallback CSV jika SheetJS tidak termuat
         let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
@@ -5663,7 +5697,7 @@ ${sigSection}
 
       // ── 2. PDF (HTML yang bisa di-print) ──
       const pdfHtml = _buildPdfHtml(f);
-      root.file('laporan.html', pdfHtml);
+      root.file(laporanFilename, pdfHtml);
 
       // ── 3. Site Photos ──
       let totalSitePhotos = 0;
@@ -5697,6 +5731,21 @@ ${sigSection}
         if (d.photos.zoom)  { devFolder.file(`foto_type.${d.exts.zoom||'jpg'}`,   d.photos.zoom.split(',')[1],  {base64:true}); added.push('type');  totalDevicePhotos++; }
         if (d.photos.label) { devFolder.file(`foto_sn.${d.exts.label||'jpg'}`,    d.photos.label.split(',')[1], {base64:true}); added.push('s/n');   totalDevicePhotos++; }
         photoSummary.push(`  ${folderLabel}/  [${added.length > 0 ? added.join(', ') : 'tidak ada foto'}]`);
+
+        // ── Foto Sub-Modul ──
+        (d.subModules || []).forEach((sm, si) => {
+          if (!sm.photos) return;
+          const smSafeName = (sm.moduleName || 'submodul').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+          const smLabel = `Mod_${String(si+1).padStart(2,'0')}_${smSafeName}`;
+          if (sm.photos.sn) {
+            devFolder.file(`${smLabel}_foto_sn.${(sm.exts&&sm.exts.sn)||'jpg'}`, sm.photos.sn.split(',')[1], {base64:true});
+            totalDevicePhotos++;
+          }
+          if (sm.photos.pn) {
+            devFolder.file(`${smLabel}_foto_pn.${(sm.exts&&sm.exts.pn)||'jpg'}`, sm.photos.pn.split(',')[1], {base64:true});
+            totalDevicePhotos++;
+          }
+        });
       });
 
       const totalPhotos = totalSitePhotos + totalDevicePhotos;
@@ -5712,15 +5761,15 @@ ${sigSection}
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
         `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
         `${folderName}/\n` +
-        `  data.xlsx              <- Data semua device (2 sheet: Site Info + Asset List)\n` +
-        `  laporan.html           <- Buka di browser → Print/Save as PDF\n` +
+        `  ${xlsxFilename}  <- Data semua device (Site Info + Asset List)\n` +
+        `  ${laporanFilename}  <- Buka di browser → Print/Save as PDF\n` +
         `  Site_Photos/           <- Foto view site & rack (${totalSitePhotos} foto)\n` +
         (f.picPhoto ? `  foto_pic.${f.picPhoto.ext||'jpg'}          <- Foto dokumentasi PIC\n` : '') +
         (f.signature ? `  ttd_pic.png            <- Tanda tangan digital PIC\n` : '') +
         `${photoSummary.join('\n')}\n\n` +
         `Cara penggunaan:\n` +
-        `1. Buka data.xlsx di Microsoft Excel / Google Sheets\n` +
-        `2. Buka laporan.html di browser → Ctrl+P untuk print/save PDF\n` +
+        `1. Buka ${xlsxFilename} di Microsoft Excel / Google Sheets\n` +
+        `2. Buka ${laporanFilename} di browser → Ctrl+P untuk print/save PDF\n` +
         `3. Foto site tersimpan di folder Site_Photos\n` +
         `4. Foto per device tersimpan di masing-masing folder device\n` +
         `5. Attach file ZIP ini ke email atau upload ke Teams\n`;
@@ -5733,7 +5782,7 @@ ${sigSection}
       a.href = url; a.download = `${folderName}.zip`; a.click();
       URL.revokeObjectURL(url);
 
-      showToast(`✅ ZIP berhasil! ${f.devices.length} device, ${totalPhotos} foto + data.xlsx + laporan.html`, 6000);
+      showToast(`✅ ZIP berhasil! ${f.devices.length} device, ${totalPhotos} foto + ${xlsxFilename} + ${laporanFilename}`, 6000);
 
     } catch (err) {
       showToast('Gagal membuat ZIP: ' + err.message);
@@ -5897,10 +5946,7 @@ ${sigSection}
           dismantleReason: d.dismantleReason || '',
           warehouse:      d.warehouse      || '',
           replaceReason:  d.replaceReason  || '',
-          labelCondition: d.labelCondition || '',
-          retagSource:    d.retagSource    || '',
-          retagReason:    d.retagReason    || '',
-          labelCondition: d.labelCondition || '',
+          activityDate:   d.activityDate   || '',
           retagSource:    d.retagSource    || '',
           retagReason:    d.retagReason    || '',
           snOld:          d.snOld          || '',
@@ -6004,7 +6050,7 @@ ${sigSection}
           dismantleReason: d.dismantleReason || '',
           warehouse:      d.warehouse      || '',
           replaceReason:  d.replaceReason  || '',
-          snOld:          d.snOld          || '',
+          activityDate:   d.activityDate   || '',
           snNew:          d.snNew          || '',
           deviceNameOld:  d.deviceNameOld  || '',
           deviceNameNew:  d.deviceNameNew  || '',
@@ -7686,8 +7732,8 @@ ${sigSection}
         <div class="gdl-section-title">Isi File ZIP</div>
         <div class="gdl-zip-tree">
           <div class="gdl-zip-row root">📦 <b>[ACT]-[Subregion]-[SiteID]-[Divisi]-[Tanggal]-[Kode].zip</b></div>
-          <div class="gdl-zip-row">📊 <b>data.xlsx</b> — Site info + daftar device lengkap</div>
-          <div class="gdl-zip-row">📄 <b>laporan.html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
+          <div class="gdl-zip-row">📊 <b>[SiteID]_[Activity]_[Date].xlsx</b> — Site info + daftar device lengkap</div>
+          <div class="gdl-zip-row">📄 <b>[SiteID]_[Activity]_[Date].html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
           <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto view site dan rack</div>
           <div class="gdl-zip-row">🖼️ <b>foto_pic.jpg</b> — Foto dokumentasi PIC</div>
           <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital PIC</div>
