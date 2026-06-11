@@ -5318,43 +5318,69 @@ ${mapLink}
                     : f.activity==='replace'    ? (d.replaceReason||'-')
                     : '-';
       const locStore = f.activity==='dismantle' ? (d.warehouse||'-') : '-';
+      // 16 kolom sesuai header:
+      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
       sheetData.push([
-        i+1,
-        f.activity==='replace' ? 'Replace' : d.type==='module' ? 'Module' : 'Single',
-        d.deviceName||'-',
-        f.activity==='replace' ? (d.snOld||'-') : (d.serialNumber||'-'),
-        f.activity==='replace' ? (d.snNew||d.serialNumber||'-') : '-',
-        d.partNumber||'-',
-        d.statusDevice||'-',
-        d.sfpCount !== null && d.sfpCount !== undefined ? d.sfpCount : '-',
-        f.activity==='replace'?(d.deviceNameNew||d.deviceName||'-'):'-',
-        f.activity==='replace'?(d.pnNew||d.partNumber||'-'):'-',
-        actNote, locStore,
-        d.photos.full  ? 'Ada' : '-',
-        d.photos.zoom  ? 'Ada' : '-',
-        d.photos.label ? 'Ada' : '-',
-        d.photos.pn    ? 'Ada' : '-',
+        i+1,                                                                              // No
+        f.activity==='replace' ? 'Replace' : d.type==='module' ? 'Module' : 'Single',    // Tipe
+        f.activity==='replace' ? (d.deviceNameOld||d.deviceName||'-') : (d.deviceName||'-'), // Nama Device / Lama
+        f.activity==='replace' ? (d.snOld||'-') : (d.serialNumber||'-'),                  // S/N (Lama/Aktif)
+        f.activity==='replace' ? (d.snNew||d.serialNumber||'-') : '-',                    // S/N Baru
+        f.activity==='replace' ? (d.pnOld||d.partNumber||'-') : (d.partNumber||'-'),      // P/N (Lama/Aktif)
+        f.activity==='replace' ? (d.deviceNameNew||d.deviceName||'-') : '-',              // Nama Device Baru
+        f.activity==='replace' ? (d.pnNew||d.partNumber||'-') : '-',                      // P/N Baru
+        d.statusDevice||'-',                                                               // Status
+        d.sfpCount !== null && d.sfpCount !== undefined ? d.sfpCount : '-',               // Jumlah SFP
+        actNote,                                                                           // Alasan/Keterangan
+        locStore,                                                                          // Lokasi Simpan
+        d.photos.full  ? 'Ada' : '-',                                                     // Foto Full
+        d.photos.zoom  ? 'Ada' : '-',                                                     // Foto Type
+        d.photos.label ? 'Ada' : '-',                                                     // Foto S/N
+        d.photos.pn    ? 'Ada' : '-',                                                     // Foto P/N
       ]);
-      // Tambah baris sub-modul (indented dengan ↳)
+      // Sub-modul rows — 16 kolom, kolom kosong untuk kolom yang tidak relevan
       (d.subModules||[]).forEach((sm, si) => {
         sheetData.push([
-          '',
-          '  ↳ Sub-Modul ' + (si+1),
-          sm.moduleName||'-',
-          sm.serialNumber||'-',
-          '-',
-          sm.partNumber||'-',
-          sm.statusDevice||'-',
-          '-', '-', '-', '-', '-',
-          '-', '-',
-          sm.photos && sm.photos.sn ? 'Ada' : '-',
-          sm.photos && sm.photos.pn ? 'Ada' : '-',
+          '',                                     // No
+          '  ↳ Sub-Modul ' + (si+1),             // Tipe
+          sm.moduleName||'-',                     // Nama Device
+          sm.serialNumber||'-',                   // S/N
+          '-',                                    // S/N Baru
+          sm.partNumber||'-',                     // P/N
+          '-',                                    // Nama Device Baru
+          '-',                                    // P/N Baru
+          sm.statusDevice||'-',                   // Status
+          '-',                                    // Jumlah SFP
+          '-',                                    // Alasan/Keterangan
+          '-',                                    // Lokasi Simpan
+          '-',                                    // Foto Full
+          '-',                                    // Foto Type
+          sm.photos && sm.photos.sn ? 'Ada' : '-', // Foto S/N
+          sm.photos && sm.photos.pn ? 'Ada' : '-', // Foto P/N
         ]);
       });
     });
 
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    ws['!cols'] = [{wch:20},{wch:32},{wch:30},{wch:20},{wch:20},{wch:10},{wch:10},{wch:10},{wch:10},{wch:10},{wch:30}];
+    // 16 kolom: No|Tipe|NamaLama|S/N Lama|S/N Baru|P/N Lama|NamaBaru|P/N Baru|Status|SFP|Alasan|LokasiSimpan|FotoFull|FotoType|FotoSN|FotoPn
+    ws['!cols'] = [
+      {wch:4},  // No
+      {wch:9},  // Tipe
+      {wch:28}, // Nama Device / Lama
+      {wch:20}, // S/N Lama
+      {wch:20}, // S/N Baru
+      {wch:18}, // P/N Lama
+      {wch:28}, // Nama Device Baru
+      {wch:18}, // P/N Baru
+      {wch:10}, // Status
+      {wch:8},  // Jumlah SFP
+      {wch:28}, // Alasan/Keterangan
+      {wch:22}, // Lokasi Simpan
+      {wch:10}, // Foto Full
+      {wch:10}, // Foto Type
+      {wch:10}, // Foto S/N
+      {wch:10}, // Foto P/N
+    ];
 
     // Style header title row
     if (ws['A1']) ws['A1'].s = { font: { bold: true, sz: 14, color: { rgb: '185FA5' } } };
@@ -5418,33 +5444,68 @@ ${mapLink}
     f.devices.forEach((d, i) => {
       const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):f.activity==='retagging'?((d.labelCondition||'')+' | '+(d.retagSource||'')+' | '+(d.retagReason||'')).replace(/^ \| | \| $/g,'').replace(/\| \|/g,'|')||'-':'-';
       const locStore = f.activity==='dismantle'?(d.warehouse||'-'):'-';
+      // 16 kolom sesuai header:
+      // No|Tipe|Nama Device/Lama|S/N Lama|S/N Baru|P/N Lama|Nama Device Baru|P/N Baru|Status|Jumlah SFP|Alasan/Ket|Lokasi Simpan|Foto Full|Foto Type|Foto S/N|Foto P/N
       sheetData.push([
-        i+1,
-        f.activity==='replace'?'Replace':d.type==='module'?'Module':'Single',
-        f.activity==='replace'?(d.deviceNameOld||d.deviceName||'-'):(d.deviceName||'-'),
-        f.activity==='replace'?(d.snOld||'-'):(d.serialNumber||'-'),
-        f.activity==='replace'?(d.snNew||d.serialNumber||'-'):'-',
-        f.activity==='replace'?(d.pnOld||d.partNumber||'-'):(d.partNumber||'-'), d.statusDevice||'-',
-        d.sfpCount!==null&&d.sfpCount!==undefined?d.sfpCount:'-',
-        actNote, locStore,
-        d.photos.full?'Ada':'-', d.photos.zoom?'Ada':'-',
-        d.photos.label?'Ada':'-', d.photos.pn?'Ada':'-',
+        i+1,                                                                                  // No
+        f.activity==='replace'?'Replace':d.type==='module'?'Module':'Single',                 // Tipe
+        f.activity==='replace'?(d.deviceNameOld||d.deviceName||'-'):(d.deviceName||'-'),      // Nama Device / Lama
+        f.activity==='replace'?(d.snOld||'-'):(d.serialNumber||'-'),                          // S/N (Lama/Aktif)
+        f.activity==='replace'?(d.snNew||d.serialNumber||'-'):'-',                            // S/N Baru
+        f.activity==='replace'?(d.pnOld||d.partNumber||'-'):(d.partNumber||'-'),              // P/N (Lama/Aktif)
+        f.activity==='replace'?(d.deviceNameNew||d.deviceName||'-'):'-',                      // Nama Device Baru
+        f.activity==='replace'?(d.pnNew||d.partNumber||'-'):'-',                              // P/N Baru
+        d.statusDevice||'-',                                                                   // Status
+        d.sfpCount!==null&&d.sfpCount!==undefined?d.sfpCount:'-',                            // Jumlah SFP
+        actNote,                                                                               // Alasan/Keterangan
+        locStore,                                                                              // Lokasi Simpan
+        d.photos.full?'Ada':'-',                                                              // Foto Full
+        d.photos.zoom?'Ada':'-',                                                              // Foto Type
+        d.photos.label?'Ada':'-',                                                             // Foto S/N
+        d.photos.pn?'Ada':'-',                                                                // Foto P/N
       ]);
-      // Sub-modul rows
+      // Sub-modul rows — 16 kolom
       (d.subModules||[]).forEach((sm, si) => {
         sheetData.push([
-          '', '  ↳ Sub-Modul '+(si+1),
-          sm.moduleName||'-',
-          sm.serialNumber||'-', '-',
-          sm.partNumber||'-', sm.statusDevice||'-',
-          '-', '-', '-',
-          sm.photos&&sm.photos.sn?'Ada':'-',
-          sm.photos&&sm.photos.pn?'Ada':'-',
+          '',                                       // No
+          '  ↳ Sub-Modul '+(si+1),                 // Tipe
+          sm.moduleName||'-',                       // Nama Device
+          sm.serialNumber||'-',                     // S/N
+          '-',                                      // S/N Baru
+          sm.partNumber||'-',                       // P/N
+          '-',                                      // Nama Device Baru
+          '-',                                      // P/N Baru
+          sm.statusDevice||'-',                     // Status
+          '-',                                      // Jumlah SFP
+          '-',                                      // Alasan/Keterangan
+          '-',                                      // Lokasi Simpan
+          '-',                                      // Foto Full
+          '-',                                      // Foto Type
+          sm.photos&&sm.photos.sn?'Ada':'-',        // Foto S/N
+          sm.photos&&sm.photos.pn?'Ada':'-',        // Foto P/N
         ]);
       });
     });
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    ws['!cols'] = [{wch:4},{wch:9},{wch:28},{wch:20},{wch:20},{wch:18},{wch:10},{wch:10},{wch:28},{wch:22},{wch:10},{wch:10},{wch:10},{wch:10}];
+    // 16 kolom lebar proporsional
+    ws['!cols'] = [
+      {wch:4},  // No
+      {wch:9},  // Tipe
+      {wch:28}, // Nama Device / Lama
+      {wch:20}, // S/N Lama
+      {wch:20}, // S/N Baru
+      {wch:18}, // P/N Lama
+      {wch:28}, // Nama Device Baru
+      {wch:18}, // P/N Baru
+      {wch:10}, // Status
+      {wch:8},  // Jumlah SFP
+      {wch:28}, // Alasan/Keterangan
+      {wch:22}, // Lokasi Simpan
+      {wch:10}, // Foto Full
+      {wch:10}, // Foto Type
+      {wch:10}, // Foto S/N
+      {wch:10}, // Foto P/N
+    ];
     XLSX.utils.book_append_sheet(wb, ws, 'Asset Tagging');
     return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
   }
