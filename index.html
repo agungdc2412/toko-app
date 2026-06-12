@@ -756,7 +756,7 @@
     .coord-status.err { color: var(--fs-red); }
     .coord-status.loading { color: var(--fs-amber); }
 
-    /* View Site / Rack photo section */
+    /* Foto Site & Rack section */
     .site-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 10px; }
     .site-photo-slot {
       aspect-ratio: 1; border-radius: var(--radius-md); border: 1px solid var(--border);
@@ -1744,12 +1744,12 @@
         </div>
       </div>
 
-      <!-- Floor Location — New, Existing -->
+      <!-- Lokasi Lantai / Ruangan -->
       <div class="form-group ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace ctx-retagging" id="ctxFloor">
-        <label class="form-label">Floor Location <span style="color:var(--fs-red);font-size:11px;">*</span></label>
+        <label class="form-label">Lokasi Lantai / Ruangan <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
           <input type="text" class="form-input" placeholder="e.g. Lantai 3, Ruang Server" id="fFloorLocation">
-          <button class="stt-btn" title="Ucapkan Floor Location" onclick="startSTT('fFloorLocation', this)">
+          <button class="stt-btn" title="Ucapkan Lokasi Lantai" onclick="startSTT('fFloorLocation', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
         </div>
@@ -1773,9 +1773,9 @@
     </div>
   </div>
 
-  <!-- Form View Site / Rack — hanya New & Existing -->
+  <!-- Form Foto Site & Rack -->
   <div class="section-card ctx-field ctx-new ctx-existing ctx-additional ctx-dismantle ctx-replace ctx-retagging" id="sectionRack">
-    <div class="section-title"><span class="section-title-dot"></span>View Site / Rack</div>
+    <div class="section-title"><span class="section-title-dot"></span>Foto Site &amp; Rack</div>
     <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px;">
       Upload foto kondisi site secara keseluruhan beserta rack. Bisa lebih dari satu foto.
     </div>
@@ -1831,12 +1831,12 @@
       <div class="add-type-popup" id="addTypePopup">
         <button class="add-type-btn" onclick="addDevice('single');closeAddPopup()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          <span class="atb-label">Single Device</span>
+          <span class="atb-label">Device Tunggal</span>
           <span class="atb-sub">1 perangkat tunggal</span>
         </button>
         <button class="add-type-btn module-btn" onclick="addDevice('module');closeAddPopup()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/></svg>
-          <span class="atb-label">Module Device</span>
+          <span class="atb-label">Device Modul</span>
           <span class="atb-sub">Perangkat dengan sub-modul</span>
         </button>
       </div>
@@ -1868,7 +1868,7 @@
         </button>
       </div>
 
-      <!-- Baris 1b: Generate Body Email (fallback jika mailto gagal) -->
+      <!-- Baris 1b: Buat Draft Email (fallback jika mailto gagal) -->
       <div class="action-bar-primary" style="margin-top:-4px;">
         <button class="action-btn" id="btnGenEmailBody" onclick="openEmailBodyModal()"
           style="background:#EAF1FB;color:#1a56c4;border:1.5px solid #b3cef5;font-size:13px;padding:10px 16px;">
@@ -1877,7 +1877,7 @@
             <polyline points="14 2 14 8 20 8"/>
             <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
           </svg>
-          Generate Body Email (Manual)
+          Buat Draft Email (Manual)
         </button>
       </div>
 
@@ -1931,10 +1931,10 @@
 
     </div>
     <div class="zip-info" id="zipInfoBox">
-      &#128230; File ZIP berisi: <b>[SiteID]_[Activity]_[Date].xlsx</b> + <b>[SiteID]_[Activity]_[Date].html</b> + folder per device dengan semua foto + <b>README.txt</b>.<br>
-      📂 Format nama file ZIP: <b>SubregionCode_SiteID_SiteName_Activity_YYYYMMDD_xxxx.zip</b> — contoh: <code style="background:#ede9fe;padding:1px 5px;border-radius:4px;">3081_MKS_Adiyaksa_Additional_20260410_815B.zip</code><br>
+      📦 File ZIP berisi: <b>SubregionCode_DivisiCode_SiteID_Activity_Date.xlsx</b> + <b>SubregionCode_DivisiCode_SiteID_Activity_Date.html</b> + folder foto per device + <b>README.txt</b>.<br>
+      📂 Format nama file ZIP: <b>SubregionCode_DivisiCode_SiteID_Activity_YYYYMMDD_xxxx.zip</b> — contoh: <code style="background:#ede9fe;padding:1px 5px;border-radius:4px;">4091_AM_SJK001_ADD_20260610_A3F9.zip</code><br>
       <span id="emailZipStatus">Tombol <b>Kirim Email</b> akan otomatis generate &amp; download ZIP, lalu membuka email client — attach file ZIP yang sudah ter-download ke email tersebut.</span><br>
-      Jika mengalami kendala atau butuh panduan bisa menghubungi <b>Team Asset Management</b> atau <br>Info di Grup WhatsApp <b>Collect Data Asset FOP&NetDev</b>
+      Jika mengalami kendala atau butuh panduan bisa menghubungi <b>Team Asset Management</b> atau <br>Info di Grup WhatsApp <b>Collect Data Asset FOP&amp;NetDev</b>
     </div>
     <!-- Email+ZIP attach reminder -->
     <div id="emailAttachReminder" style="display:none;margin-top:12px;padding:14px 16px;background:#EAF3DE;border:1px solid #3B6D11;border-radius:10px;font-size:13px;color:#3B6D11;line-height:1.7;">
@@ -2025,7 +2025,7 @@
           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
           <polyline points="22,6 12,13 2,6"/>
         </svg>
-        Generate Body Email (Manual Fallback)
+        Buat Draft Email (Manual Fallback)
       </div>
       <button class="email-body-close" onclick="closeEmailBodyModal()">&#x2715;</button>
     </div>
@@ -2091,7 +2091,7 @@
         </label>
         <label class="reset-checkbox-item" id="rc_site_photos">
           <input type="checkbox" id="chk_site_photos" checked onchange="toggleResetItem('rc_site_photos',this.checked)">
-          <span>🖼️ Foto Site / Rack</span>
+          <span>🖼️ Foto Site & Rack</span>
         </label>
         <label class="reset-checkbox-item" id="rc_devices">
           <input type="checkbox" id="chk_devices" checked onchange="toggleResetItem('rc_devices',this.checked)">
@@ -3621,7 +3621,7 @@ map.on('click',function(e){
     // Reusable Activity Date field snippet
     const _actDateField = (id) => `
         <div class="form-group" style="margin-top:10px;margin-bottom:0;">
-          <label class="form-label">📅 Activity Date</label>
+          <label class="form-label">📅 Tanggal Aktivitas</label>
           <input type="date" class="form-input" id="actdate_${id}"
             value="${escHtml(d.activityDate||'')}"
             oninput="updateDevice('${id}','activityDate',this.value)">
@@ -3715,7 +3715,7 @@ map.on('click',function(e){
     return `
       <div class="device-card-body">
         <div class="form-group" style="margin-bottom:14px;">
-          <label class="form-label">Device Full Name</label>
+          <label class="form-label">Nama Device</label>
           <div style="display:flex;gap:6px;align-items:flex-start;">
             <div class="device-ac-wrap">
               <input type="text" class="form-input" style="width:100%;" placeholder="Ketik nama device..."
@@ -3726,7 +3726,7 @@ map.on('click',function(e){
                 onkeydown="_acKeyNav(event,'${d.id}')">
               <div class="device-ac-dropdown" id="ac_${d.id}"></div>
             </div>
-            <button class="stt-btn" title="Ucapkan Device Name"
+            <button class="stt-btn" title="Ucapkan Nama Device"
               onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var inp=this.parentElement.querySelector('input');inp.value=t;_acFilter('${d.id}',t,inp);}.bind(this.parentElement))">${_icoMic}</button>
           </div>
         </div>
@@ -3777,7 +3777,7 @@ map.on('click',function(e){
     return `
       <div class="device-card-body">
         <div class="form-group" style="margin-bottom:14px;">
-          <label class="form-label">Module Device Name
+          <label class="form-label">Nama Modul Device
             <span style="font-size:10px;color:var(--fs-purple);font-weight:400;margin-left:6px;">✦ Pilih dari dropdown → sub-modul auto ter-generate</span>
           </label>
           <div style="display:flex;gap:6px;align-items:flex-start;">
@@ -3932,9 +3932,9 @@ map.on('click',function(e){
                 onclick="startSTTInline(this,function(t){updateDevice('${d.id}','replaceReason',t);this.parentElement.querySelector('input').value=t;}.bind(this.parentElement))">${_icoMic}</button>
             </div>
           </div>
-          <!-- Activity Date -->
+          <!-- Tanggal Aktivitas -->
           <div class="form-group" style="margin-top:10px;">
-            <label class="form-label">📅 Activity Date</label>
+            <label class="form-label">📅 Tanggal Aktivitas</label>
             <input type="date" class="form-input" id="actdate_${d.id}"
               value="${escHtml(d.activityDate||'')}"
               oninput="updateDevice('${d.id}','activityDate',this.value)">
@@ -4705,7 +4705,7 @@ map.on('click',function(e){
     if (!f.picName)    errors.push({ icon: '👤', msg: 'PIC Name harus diisi' });
     if (!f.division)   errors.push({ icon: '🏬', msg: 'Division harus dipilih' });
     if (!f.subregion)  errors.push({ icon: '🗺️', msg: 'Subregion harus dipilih' });
-    if (!f.floorLocation) errors.push({ icon: '🏗️', msg: 'Floor Location harus diisi' });
+    if (!f.floorLocation) errors.push({ icon: '🏗️', msg: 'Lokasi Lantai / Ruangan harus diisi' });
 
     // ── Wajib: Koordinat ──
     if (!f.coordLat || !f.coordLng) {
@@ -4728,7 +4728,7 @@ map.on('click',function(e){
       errors.push({ icon: '✍️', msg: 'Tanda Tangan PIC belum diisi', sub: 'Tap tombol "Tambah Tanda Tangan" di bagian Form Checked.' });
     }
     if (!f.sitePhotos || f.sitePhotos.length === 0) {
-      errors.push({ icon: '🏢', msg: 'Foto View Site / Rack belum diupload', sub: 'Upload minimal 1 foto kondisi keseluruhan rack/ruangan.' });
+      errors.push({ icon: '🏢', msg: 'Foto Site & Rack belum diupload', sub: 'Upload minimal 1 foto kondisi keseluruhan rack/ruangan.' });
     }
 
     // ── Wajib activity-specific ──
@@ -4766,7 +4766,7 @@ map.on('click',function(e){
       const label = d.deviceName ? `"${d.deviceName}"` : `Asset ${i + 1}`;
 
       if (!d.deviceName)
-        errors.push({ icon: '📦', msg: `Device ${i+1}: Device Name belum diisi` });
+        errors.push({ icon: '📦', msg: `Device ${i+1}: Nama Device belum diisi` });
 
       if (!d.serialNumber)
         errors.push({ icon: '🔢', msg: `${label}: Serial Number (S/N) belum diisi`, sub: 'Ketik manual, ucapkan via 🎤, atau scan barcode.' });
@@ -4874,7 +4874,7 @@ map.on('click',function(e){
       `Division      : ${f.division || '-'}`,
       `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}`,
       `Koordinat     : ${coordStr}`,
-      `Floor Location: ${f.floorLocation || '-'}`,
+      `Lokasi Lantai  : ${f.floorLocation || '-'}`,
       `Jumlah Device : ${f.devices.length}`,
       `Foto Site     : ${(f.sitePhotos||[]).length} foto`,
       '',
@@ -4990,8 +4990,9 @@ map.on('click',function(e){
         root.file(xlsxFilename, xlsxB64, { base64: true });
       } else {
         let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
-          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nFloor Location,"${f.floorLocation||'-'}"\n\n` +
-          `No,Device Full Name,Serial Number,Part Number\n`;
+          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nLokasi Lantai,"${f.floorLocation||'-'}"\n\n` +
+          `No,Nama Device,Serial Number,Part Number
+`;
         f.devices.forEach((d, i) => { csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`; });
         root.file('data.csv', csv);
       }
@@ -5063,7 +5064,8 @@ map.on('click',function(e){
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
         `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
-        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Koordinat     : ${coordStr}
+Lokasi Lantai : ${f.floorLocation || '-'}\n` +
         `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
         `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
@@ -5114,7 +5116,8 @@ map.on('click',function(e){
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Date          : ${f.date}\nPIC           : ${f.picName}\nDivision      : ${f.division}\n` +
         `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
-        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Koordinat     : ${coordStr}
+Lokasi Lantai : ${f.floorLocation || '-'}\n` +
         `Jumlah Device : ${f.devices.length}\nFoto Site     : ${f.sitePhotos.length} foto\n\n` +
         f.devices.map((d, i) =>
           `Device ${i+1}: ${d.deviceName}\n  S/N : ${d.serialNumber}\n  P/N : ${d.partNumber}`
@@ -5250,7 +5253,7 @@ map.on('click',function(e){
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
   <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
   <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
-  <div><span class="lbl">Floor Location: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
+  <div><span class="lbl">Lokasi Lantai: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
 </div>
 ${mapLink}
 <table>
@@ -5326,15 +5329,15 @@ ${mapLink}
       ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
-        ['Floor Location', f.floorLocation || '-'],
+        ['Lokasi Lantai', f.floorLocation || '-'],
       ] : [
-        ['Floor Location', f.floorLocation || '-'],
+        ['Lokasi Lantai', f.floorLocation || '-'],
       ]),
       ...extraRows,
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],  // baris kosong sebagai separator
-      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Activity Date','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Tgl. Aktivitas','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
 
     f.devices.forEach((d, i) => {
@@ -5417,7 +5420,7 @@ ${mapLink}
     // Style device table header row (find row index of header)
     const headerRowIdx = sheetData.findIndex(r => r[0]==='No' && r[2]==='Device Name');
     if (headerRowIdx >= 0) {
-      ['No','Tipe','Device Name','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modules'].forEach((_, ci) => {
+      ['No','Tipe','Nama Device','Serial Number','Part Number','Status','Foto Full','Foto Type','Foto S/N','Foto P/N','Sub-Modul'].forEach((_, ci) => {
         const cell = XLSX.utils.encode_cell({ r: headerRowIdx, c: ci });
         if (ws[cell]) ws[cell].s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '185FA5' } } };
       });
@@ -5459,15 +5462,15 @@ ${mapLink}
       ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
-        ['Floor Location', f.floorLocation || '-'],
+        ['Lokasi Lantai', f.floorLocation || '-'],
       ] : [
-        ['Floor Location', f.floorLocation || '-'],
+        ['Lokasi Lantai', f.floorLocation || '-'],
       ]),
       ...extraRows,
       ['Jumlah Asset',     f.devices.length],
       ['Jumlah Foto Site', f.sitePhotos.length],
       [],
-      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Activity Date','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
+      ['No','Tipe','Nama Device / Lama','S/N (Lama/Aktif)','S/N Baru','P/N (Lama/Aktif)','Nama Device Baru','P/N Baru','Status','Jumlah SFP','Alasan/Keterangan','Tgl. Aktivitas','Lokasi Simpan','Foto Full','Foto Type','Foto S/N','Foto P/N'],
     ];
     f.devices.forEach((d, i) => {
       const actNote = f.activity==='additional'?(d.deviceNotes||'-'):f.activity==='dismantle'?(d.dismantleReason||'-'):f.activity==='replace'?(d.replaceReason||'-'):f.activity==='retagging'?((d.labelCondition||'')+' | '+(d.retagSource||'')+' | '+(d.retagReason||'')).replace(/^ \| | \| $/g,'').replace(/\| \|/g,'|')||'-':'-';
@@ -5606,12 +5609,12 @@ tr:nth-child(even) td{background:#f9f9f9;}
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
   <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
-  <div><span class="lbl">Floor Location: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
+  <div><span class="lbl">Lokasi Lantai: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
   ${(f.activity==='new'||f.activity==='existing') ? `<div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>` : ''}
   ${extraInfo}
 </div>
 ${mapLink}
-<table><thead><tr><th>#</th><th>Tipe</th><th>Device Name</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>F.Full</th><th>F.Type</th><th>F.S/N</th></tr></thead>
+<table><thead><tr><th>#</th><th>Tipe</th><th>Nama Device</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>F.Full</th><th>F.Type</th><th>F.S/N</th></tr></thead>
 <tbody>${rows}</tbody></table>
 ${sigSection}
 </body></html>`;
@@ -5689,8 +5692,9 @@ ${sigSection}
       } else {
         // Fallback CSV jika SheetJS tidak termuat
         let csv = `Site,${f.siteName}\nSite ID,${f.siteId}\nType,${f.typeSite}\nDate,${f.date}\n` +
-          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nFloor Location,"${f.floorLocation||'-'}"\n\n` +
-          `No,Device Full Name,Serial Number,Part Number\n`;
+          `PIC,${f.picName}\nDivision,${f.division}\nKoordinat,"${coordStr}"\nLokasi Lantai,"${f.floorLocation||'-'}"\n\n` +
+          `No,Nama Device,Serial Number,Part Number
+`;
         f.devices.forEach((d, i) => { csv += `${i+1},"${d.deviceName}","${d.serialNumber}","${d.partNumber}"\n`; });
         root.file('data.csv', csv);
       }
@@ -5756,7 +5760,8 @@ ${sigSection}
         `Site          : ${f.siteName}\nSite ID       : ${f.siteId}\nType          : ${f.typeSite}\n` +
         `Tanggal       : ${f.date}\nPIC           : ${f.picName}\nDivisi        : ${f.division}\n` +
         `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}\n` +
-        `Koordinat     : ${coordStr}\nFloor Location: ${f.floorLocation || '-'}\n` +
+        `Koordinat     : ${coordStr}
+Lokasi Lantai : ${f.floorLocation || '-'}\n` +
         `Devices       : ${f.devices.length}\nFoto Site     : ${totalSitePhotos}\n` +
         `Foto Device   : ${totalDevicePhotos}\nTotal Foto    : ${totalPhotos}\n\n` +
         `STRUKTUR FOLDER\n${'─'.repeat(50)}\n` +
@@ -7420,9 +7425,9 @@ ${sigSection}
         <div class="gdl-steps">
           <div class="gdl-step"><div class="gdl-step-num">1</div><div class="gdl-step-body"><b>Login</b><p>Pilih divisi (Asset / FOP / NetDev) → masukkan token → klik Masuk. Divisi dan kode Collect ID otomatis terisi sesuai akun.</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">2</div><div class="gdl-step-body"><b>Pilih Jenis Kegiatan</b><p>New Site / Existing / Additional / Dismantle / Replace / Re-Tagging. Setiap kegiatan memiliki field tambahan yang berbeda.</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type Site, PIC Name, Division, Subregion, Koordinat GPS, Floor Location. Foto PIC dan Tanda Tangan wajib diisi.</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Upload Foto View Site / Rack</b><p>Foto kondisi keseluruhan site dan rack — <b>wajib minimal 1 foto</b> sebelum bisa kirim.</p></div></div>
-          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Pilih Single Device atau Module Device → isi Nama, S/N, P/N, Status, Jumlah SFP → lengkapi foto per device.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">3</div><div class="gdl-step-body"><b>Isi Site Information</b><p>Tanggal, Site Name, Site ID, Type Site, PIC Name, Division, Subregion, Koordinat GPS, Lokasi Lantai / Ruangan. Foto PIC dan Tanda Tangan wajib diisi.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">4</div><div class="gdl-step-body"><b>Upload Foto Site &amp; Rack</b><p>Foto kondisi keseluruhan site dan rack — <b>wajib minimal 1 foto</b> sebelum bisa kirim.</p></div></div>
+          <div class="gdl-step"><div class="gdl-step-num">5</div><div class="gdl-step-body"><b>Input Asset</b><p>Pilih Device Tunggal atau Device Modul → isi Nama, S/N, P/N, Status, Jumlah SFP → lengkapi foto per device.</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">6</div><div class="gdl-step-body"><b>Generate Label (Opsional)</b><p>Tap tombol 🏷️ Label di card device atau Generate Label di action bar → QR Code otomatis terbuat → cetak label 50×25mm.</p></div></div>
           <div class="gdl-step"><div class="gdl-step-num">7</div><div class="gdl-step-body"><b>Kirim &amp; Export</b><p>Kirim Email → ZIP otomatis ter-download → attach ke email. Atau Generate PDF / Excel untuk laporan terpisah.</p></div></div>
         </div>
@@ -7431,7 +7436,7 @@ ${sigSection}
         <div class="gdl-checklist">
           <div class="gdl-check-item">✅ Foto PIC (Dokumentasi) sudah diambil</div>
           <div class="gdl-check-item">✅ Tanda Tangan PIC sudah ditambahkan</div>
-          <div class="gdl-check-item">✅ Minimal 1 foto View Site / Rack sudah diupload</div>
+          <div class="gdl-check-item">✅ Minimal 1 foto Site &amp; Rack sudah diupload</div>
           <div class="gdl-check-item">✅ Semua device sudah punya foto dan S/N terisi</div>
           <div class="gdl-check-item">✅ Status device sudah dipilih (Active / Damage / Spare)</div>
           <div class="gdl-check-item">✅ Tidak ada S/N duplikat antar device maupun sub-modul</div>
@@ -7495,7 +7500,7 @@ ${sigSection}
           <div class="gdl-field-row"><div class="gdl-field-name">Division</div><div class="gdl-field-desc">Terisi otomatis dari login (Asset / FOP / NetDev)</div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Subregion</div><div class="gdl-field-desc">Pilih kode subregion sesuai wilayah site — masuk ke Collect ID</div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Koordinat GPS</div><div class="gdl-field-desc">Gunakan GPS Otomatis, Input Manual, atau Klik Peta</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Floor Location</div><div class="gdl-field-desc">Lokasi spesifik · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Lokasi Lantai / Ruangan</div><div class="gdl-field-desc">Lokasi spesifik · contoh: <em>Lantai 3, Ruang Server A</em></div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Tanda Tangan ⚠️</div><div class="gdl-field-desc"><b>Wajib</b> — Tanda tangan digital PIC sebelum kirim</div></div>
         </div>
 
@@ -7516,8 +7521,8 @@ ${sigSection}
 
         <div class="gdl-section-title">Tipe Device</div>
         <div class="gdl-input-methods">
-          <div class="gdl-input-method"><span class="gdl-im-icon">📦</span><div><b>Single Device</b><p>Device tunggal seperti Switch, Router, OTB, AC, UPS, dll. Isi nama, foto, S/N, P/N, status, dan jumlah SFP.</p></div></div>
-          <div class="gdl-input-method"><span class="gdl-im-icon">🗂️</span><div><b>Module Device</b><p>Device dengan sub-modul seperti OLT, Rectifier, DWDM. Pilih nama device utama → sub-modul otomatis muncul dari katalog → isi S/N tiap sub-modul.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">📦</span><div><b>Device Tunggal</b><p>Device tunggal seperti Switch, Router, OTB, AC, UPS, dll. Isi nama, foto, S/N, P/N, status, dan jumlah SFP.</p></div></div>
+          <div class="gdl-input-method"><span class="gdl-im-icon">🗂️</span><div><b>Device Modul</b><p>Device dengan sub-modul seperti OLT, Rectifier, DWDM. Pilih nama device utama → sub-modul otomatis muncul dari katalog → isi S/N tiap sub-modul.</p></div></div>
         </div>
       </div>
 
@@ -7731,13 +7736,13 @@ ${sigSection}
 
         <div class="gdl-section-title">Isi File ZIP</div>
         <div class="gdl-zip-tree">
-          <div class="gdl-zip-row root">📦 <b>[ACT]-[Subregion]-[SiteID]-[Divisi]-[Tanggal]-[Kode].zip</b></div>
-          <div class="gdl-zip-row">📊 <b>[SiteID]_[Activity]_[Date].xlsx</b> — Site info + daftar device lengkap</div>
-          <div class="gdl-zip-row">📄 <b>[SiteID]_[Activity]_[Date].html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
-          <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto view site dan rack</div>
+          <div class="gdl-zip-row root">📦 <b>SubregionCode_DivisiCode_SiteID_Activity_YYYYMMDD_xxxx.zip</b></div>
+          <div class="gdl-zip-row">📊 <b>SubregionCode_DivisiCode_SiteID_Activity_Date.xlsx</b> — Site info + daftar device lengkap</div>
+          <div class="gdl-zip-row">📄 <b>SubregionCode_DivisiCode_SiteID_Activity_Date.html</b> — Laporan visual (buka di browser → Ctrl+P → PDF)</div>
+          <div class="gdl-zip-row">📁 <b>Site_Photos/</b> — Foto site &amp; rack</div>
           <div class="gdl-zip-row">🖼️ <b>foto_pic.jpg</b> — Foto dokumentasi PIC</div>
           <div class="gdl-zip-row">✍️ <b>ttd_pic.png</b> — Tanda tangan digital PIC</div>
-          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto per device (Full, Zoom, Label/S/N, P/N)</div>
+          <div class="gdl-zip-row">📁 <b>Device_01_NamaDevice/</b> — Foto per device (Full, Type, S/N, P/N) + foto sub-modul (Mod_01_...)</div>
           <div class="gdl-zip-row">📝 <b>README.txt</b> — Panduan isi ZIP</div>
         </div>
 
