@@ -1618,7 +1618,8 @@
       <div class="form-group">
         <label class="form-label">Site ID <span style="color:var(--fs-red);font-size:11px;">*</span></label>
         <div class="stt-wrap">
-          <input type="text" class="form-input" placeholder="e.g. KYB001" id="fSiteId">
+          <input type="text" class="form-input" placeholder="e.g. TGR003" id="fSiteId" maxlength="10"
+            oninput="_formatSiteId(this, false)" onblur="_formatSiteId(this, true)">
           <button class="stt-btn" title="Ucapkan Site ID" onclick="startSTT('fSiteId', this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
           </button>
@@ -1666,7 +1667,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">Subregion <span style="color:var(--fs-red);font-size:11px;">*</span></label>
-        <select class="form-select" id="fSubregion">
+        <select class="form-select" id="fSubregion" onchange="onSubregionChange()">
           <option value="">— Pilih Subregion —</option>
           <option value="1011">1011 | Northern Sumatra (Aceh-Medan-Riau-Padang)</option>
           <option value="1021">1021 | Southern Sumatra (Bengkulu-Jambi-Bangka-Palembang-Lampung)</option>
@@ -1678,6 +1679,26 @@
           <option value="3081">3081 | Sulawesi-Maluku-Papua</option>
           <option value="4091">4091 | Jabodetabek</option>
         </select>
+      </div>
+
+      <!-- City Name — dropdown difilter by Subregion -->
+      <div class="form-group">
+        <label class="form-label">City Name <span style="color:var(--fs-red);font-size:11px;">*</span></label>
+        <select class="form-select" id="fCityName" onchange="onCityChange()">
+          <option value="">— Pilih Subregion dulu —</option>
+        </select>
+      </div>
+
+      <!-- Functional Location — auto-generate read-only -->
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label class="form-label">Functional Location <span style="color:var(--fs-red);font-size:11px;">*</span></label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" class="form-input" id="fFuncLoc" readonly
+            placeholder="Auto-generate: SubregionID-CityID-SiteID"
+            style="background:var(--bg-secondary);color:var(--text-secondary);cursor:default;flex:1;">
+          <span id="fFuncLocStatus" style="font-size:11px;color:var(--text-secondary);white-space:nowrap;"></span>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">📌 Contoh: <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">4091-TNG-TGR003</code> — terisi otomatis setelah Subregion, City Name, dan Site ID diisi.</div>
       </div>
 
       <!-- Coordinate — tampil untuk semua activity -->
@@ -4645,6 +4666,8 @@ map.on('click',function(e){
       picPhoto:        picPhotoData,
       division:        _v('fDivision'),
       subregion:       _v('fSubregion'),
+      cityName:        _v('fCityName'),
+      funcLoc:         document.getElementById('fFuncLoc') ? document.getElementById('fFuncLoc').value : '',
       coordLat:        _v('fCoordLat'),
       coordLng:        _v('fCoordLng'),
       floorLocation:   _v('fFloorLocation'),
@@ -4705,6 +4728,8 @@ map.on('click',function(e){
     if (!f.picName)    errors.push({ icon: '👤', msg: 'PIC Name harus diisi' });
     if (!f.division)   errors.push({ icon: '🏬', msg: 'Division harus dipilih' });
     if (!f.subregion)  errors.push({ icon: '🗺️', msg: 'Subregion harus dipilih' });
+    if (!f.cityName)   errors.push({ icon: '🏙️', msg: 'City Name harus dipilih' });
+    if (!f.funcLoc)    errors.push({ icon: '📍', msg: 'Functional Location belum ter-generate (isi Subregion, City, dan Site ID)' });
     if (!f.floorLocation) errors.push({ icon: '🏗️', msg: 'Lokasi Lantai / Ruangan harus diisi' });
 
     // ── Wajib: Koordinat ──
@@ -4873,6 +4898,8 @@ map.on('click',function(e){
       `PIC           : ${f.picName || '-'}`,
       `Division      : ${f.division || '-'}`,
       `Subregion     : ${f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '-'}`,
+      `City Name     : ${f.cityName || '-'}`,
+      `Functional Loc: ${f.funcLoc || '-'}`,
       `Koordinat     : ${coordStr}`,
       `Lokasi Lantai  : ${f.floorLocation || '-'}`,
       `Jumlah Device : ${f.devices.length}`,
@@ -5252,6 +5279,8 @@ Lokasi Lantai : ${f.floorLocation || '-'}\n` +
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
   <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
+  <div><span class="lbl">City Name: </span><b>${escHtml(f.cityName || '—')}</b></div>
+  <div><span class="lbl">Functional Location: </span><b style="font-family:monospace">${escHtml(f.funcLoc || '—')}</b></div>
   <div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>
   <div><span class="lbl">Lokasi Lantai: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
 </div>
@@ -5327,6 +5356,8 @@ ${mapLink}
       ['PIC Name',         f.picName || '-'],
       ['Division',         f.division || '-'],
       ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
+      ['City Name',        f.cityName || '-'],
+      ['Functional Location', f.funcLoc || '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
         ['Lokasi Lantai', f.floorLocation || '-'],
@@ -5460,6 +5491,8 @@ ${mapLink}
       ['PIC Name',         f.picName || '-'],
       ['Division',         f.division || '-'],
       ['Subregion',        f.subregion ? f.subregion + ' | ' + (_subregionLabel(f.subregion)) : '-'],
+      ['City Name',        f.cityName || '-'],
+      ['Functional Location', f.funcLoc || '-'],
       ...((f.activity==='new'||f.activity==='existing') ? [
         ['Koordinat',      coordStr],
         ['Lokasi Lantai', f.floorLocation || '-'],
@@ -5609,6 +5642,8 @@ tr:nth-child(even) td{background:#f9f9f9;}
   <div><span class="lbl">PIC: </span><b>${escHtml(f.picName)}</b></div>
   <div><span class="lbl">Division: </span><b>${escHtml(f.division)}</b></div>
   <div><span class="lbl">Subregion: </span><b>${escHtml(f.subregion ? f.subregion + ' | ' + _subregionLabel(f.subregion) : '—')}</b></div>
+  <div><span class="lbl">City Name: </span><b>${escHtml(f.cityName || '—')}</b></div>
+  <div><span class="lbl">Functional Location: </span><b style="font-family:monospace">${escHtml(f.funcLoc || '—')}</b></div>
   <div><span class="lbl">Lokasi Lantai: </span><b>${escHtml(f.floorLocation||'—')}</b></div>
   ${(f.activity==='new'||f.activity==='existing') ? `<div><span class="lbl">Koordinat: </span><b>${escHtml(coordStr)}</b></div>` : ''}
   ${extraInfo}
@@ -5618,6 +5653,132 @@ ${mapLink}
 <tbody>${rows}</tbody></table>
 ${sigSection}
 </body></html>`;
+  }
+
+  // ── City & Functional Location helpers ──────────────────
+  function onSubregionChange() {
+    const subregion = document.getElementById('fSubregion').value;
+    const sel = document.getElementById('fCityName');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Pilih City —</option>';
+    if (!subregion) {
+      sel.innerHTML = '<option value="">— Pilih Subregion dulu —</option>';
+      _updateFuncLoc();
+      return;
+    }
+    CITY_DATA.filter(c => c.s === subregion).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.c;
+      opt.textContent = `${c.c} - ${c.n}`;
+      sel.appendChild(opt);
+    });
+    _updateFuncLoc();
+    _autoSave();
+  }
+
+  function onCityChange() { _updateFuncLoc(); _autoSave(); }
+
+  function _updateFuncLoc() {
+    const subregion = (document.getElementById('fSubregion')?.value || '').trim();
+    const cityCode  = (document.getElementById('fCityName')?.value || '').trim();
+    const siteId    = (document.getElementById('fSiteId')?.value || '').trim();
+    const el        = document.getElementById('fFuncLoc');
+    const status    = document.getElementById('fFuncLocStatus');
+    if (!el) return;
+    if (subregion && cityCode && siteId) {
+      el.value = `${subregion}-${cityCode}-${siteId}`;
+      if (status) { status.textContent = '✅ Terisi'; status.style.color = 'var(--fs-green)'; }
+    } else {
+      el.value = '';
+      const missing = [];
+      if (!subregion) missing.push('Subregion');
+      if (!cityCode)  missing.push('City Name');
+      if (!siteId)    missing.push('Site ID');
+      if (status) { status.textContent = `⏳ Menunggu: ${missing.join(', ')}`; status.style.color = 'var(--text-secondary)'; }
+    }
+  }
+
+  // ── Site ID Formatter ────────────────────────────────────
+  // Real-time (oninput): hanya hapus '-' & karakter non-alfanumerik, TANPA padding,
+  //   supaya user bisa terus mengetik digit tanpa field "terkunci" duluan.
+  // Final (onblur): pad digit dengan 0 di depan agar genap 6 char.
+  //   TGR-03 → TGR003 | TGR-133 → TGR133 | KYB1 → KYB001
+  function _formatSiteId(el, isFinal) {
+    let v = el.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const letters = v.replace(/[^A-Z]/g, '').substring(0, 3);
+    let digits    = v.replace(/[^0-9]/g, '').substring(0, 3);
+
+    if (!isFinal) {
+      // Sedang mengetik: hanya bersihkan karakter, jangan pad dulu
+      el.value = (letters + digits).substring(0, 6);
+      _updateFuncLoc();
+      _autoSave();
+      return;
+    }
+
+    // Selesai mengetik (blur): rapikan & pad jadi 6 char
+    if (!v) { el.value = ''; _updateFuncLoc(); return; }
+    if (letters.length === 3 && digits.length > 0) {
+      el.value = letters + digits.padStart(3, '0');
+    } else {
+      el.value = (letters + digits).substring(0, 6);
+    }
+    _updateFuncLoc();
+    _autoSave();
+  }
+
+  // ── Restore City dropdown saat load draft ───────────────
+  function _restoreCityDropdown(subregion, cityCode) {
+    if (!subregion) return;
+    const sel = document.getElementById('fCityName');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">— Pilih City —</option>';
+    CITY_DATA.filter(c => c.s === subregion).forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.c;
+      opt.textContent = `${c.c} - ${c.n}`;
+      sel.appendChild(opt);
+    });
+    if (cityCode) sel.value = cityCode;
+    _updateFuncLoc();
+  }
+
+  // ── City Database (514 kota, grouped by Subregion) ─────────────────
+  const _CITY_DB={"1011":[{"v":"TTN - KAB. ACEH SELATAN","id":"TTN","n":"KAB. ACEH SELATAN"},{"v":"KTN - KAB. ACEH TENGGARA","id":"KTN","n":"KAB. ACEH TENGGARA"},{"v":"IRY - KAB. ACEH TIMUR","id":"IRY","n":"KAB. ACEH TIMUR"},{"v":"TKN - KAB. ACEH TENGAH","id":"TKN","n":"KAB. ACEH TENGAH"},{"v":"MBO - KAB. ACEH BARAT","id":"MBO","n":"KAB. ACEH BARAT"},{"v":"JTH - KAB. ACEH BESAR","id":"JTH","n":"KAB. ACEH BESAR"},{"v":"SGI - KAB. PIDIE","id":"SGI","n":"KAB. PIDIE"},{"v":"LSK - KAB. ACEH UTARA","id":"LSK","n":"KAB. ACEH UTARA"},{"v":"SNB - KAB. SIMEULUE","id":"SNB","n":"KAB. SIMEULUE"},{"v":"SKL - KAB. ACEH SINGKIL","id":"SKL","n":"KAB. ACEH SINGKIL"},{"v":"BRE - KAB. BIREUEN","id":"BRE","n":"KAB. BIREUEN"},{"v":"BPD - KAB. ACEH BARAT DAYA","id":"BPD","n":"KAB. ACEH BARAT DAYA"},{"v":"BKJ - KAB. GAYO LUES","id":"BKJ","n":"KAB. GAYO LUES"},{"v":"CAG - KAB. ACEH JAYA","id":"CAG","n":"KAB. ACEH JAYA"},{"v":"SKM - KAB. NAGAN RAYA","id":"SKM","n":"KAB. NAGAN RAYA"},{"v":"KRB - KAB. ACEH TAMIANG","id":"KRB","n":"KAB. ACEH TAMIANG"},{"v":"STR - KAB. BENER MERIAH","id":"STR","n":"KAB. BENER MERIAH"},{"v":"MRN - KAB. PIDIE JAYA","id":"MRN","n":"KAB. PIDIE JAYA"},{"v":"BNA - KOTA BANDA ACEH","id":"BNA","n":"KOTA BANDA ACEH"},{"v":"SAB - KOTA SABANG","id":"SAB","n":"KOTA SABANG"},{"v":"LSM - KOTA LHOKSEUMAWE","id":"LSM","n":"KOTA LHOKSEUMAWE"},{"v":"LGS - KOTA LANGSA","id":"LGS","n":"KOTA LANGSA"},{"v":"SUS - KOTA SUBULUSSALAM","id":"SUS","n":"KOTA SUBULUSSALAM"},{"v":"PDN - KAB. TAPANULI TENGAH","id":"PDN","n":"KAB. TAPANULI TENGAH"},{"v":"TRT - KAB. TAPANULI UTARA","id":"TRT","n":"KAB. TAPANULI UTARA"},{"v":"SPR - KAB. TAPANULI SELATAN","id":"SPR","n":"KAB. TAPANULI SELATAN"},{"v":"GDO - KAB. NIAS","id":"GDO","n":"KAB. NIAS"},{"v":"STB - KAB. LANGKAT","id":"STB","n":"KAB. LANGKAT"},{"v":"KBJ - KAB. KARO","id":"KBJ","n":"KAB. KARO"},{"v":"LBP - KAB. DELI SERDANG","id":"LBP","n":"KAB. DELI SERDANG"},{"v":"RYA - KAB. SIMALUNGUN","id":"RYA","n":"KAB. SIMALUNGUN"},{"v":"KIS - KAB. ASAHAN","id":"KIS","n":"KAB. ASAHAN"},{"v":"RAP - KAB. LABUHANBATU","id":"RAP","n":"KAB. LABUHANBATU"},{"v":"SDK - KAB. DAIRI","id":"SDK","n":"KAB. DAIRI"},{"v":"BLG - KAB. TOBA","id":"BLG","n":"KAB. TOBA"},{"v":"PYB - KAB. MANDAILING NATAL","id":"PYB","n":"KAB. MANDAILING NATAL"},{"v":"TLD - KAB. NIAS SELATAN","id":"TLD","n":"KAB. NIAS SELATAN"},{"v":"SAL - KAB. PAKPAK BHARAT","id":"SAL","n":"KAB. PAKPAK BHARAT"},{"v":"DLS - KAB. HUMBANG HASUNDUTAN","id":"DLS","n":"KAB. HUMBANG HASUNDUTAN"},{"v":"PRR - KAB. SAMOSIR","id":"PRR","n":"KAB. SAMOSIR"},{"v":"SRH - KAB. SERDANG BEDAGAI","id":"SRH","n":"KAB. SERDANG BEDAGAI"},{"v":"LMP - KAB. BATU BARA","id":"LMP","n":"KAB. BATU BARA"},{"v":"GNT - KAB. PADANG LAWAS UTARA","id":"GNT","n":"KAB. PADANG LAWAS UTARA"},{"v":"SBH - KAB. PADANG LAWAS","id":"SBH","n":"KAB. PADANG LAWAS"},{"v":"KPI - KAB. LABUHANBATU SELATAN","id":"KPI","n":"KAB. LABUHANBATU SELATAN"},{"v":"AKK - KAB. LABUHANBATU UTARA","id":"AKK","n":"KAB. LABUHANBATU UTARA"},{"v":"LTU - KAB. NIAS UTARA","id":"LTU","n":"KAB. NIAS UTARA"},{"v":"LHM - KAB. NIAS BARAT","id":"LHM","n":"KAB. NIAS BARAT"},{"v":"MDN - KOTA MEDAN","id":"MDN","n":"KOTA MEDAN"},{"v":"PMS - KOTA PEMATANG SIANTAR","id":"PMS","n":"KOTA PEMATANG SIANTAR"},{"v":"SBG - KOTA SIBOLGA","id":"SBG","n":"KOTA SIBOLGA"},{"v":"TJB - KOTA TANJUNG BALAI","id":"TJB","n":"KOTA TANJUNG BALAI"},{"v":"BNJ - KOTA BINJAI","id":"BNJ","n":"KOTA BINJAI"},{"v":"TBT - KOTA TEBING TINGGI","id":"TBT","n":"KOTA TEBING TINGGI"},{"v":"PSP - KOTA PADANG SIDEMPUAN","id":"PSP","n":"KOTA PADANG SIDEMPUAN"},{"v":"GST - KOTA GUNUNGSITOLI","id":"GST","n":"KOTA GUNUNGSITOLI"},{"v":"PNN - KAB. PESISIR SELATAN","id":"PNN","n":"KAB. PESISIR SELATAN"},{"v":"ARS - KAB. SOLOK","id":"ARS","n":"KAB. SOLOK"},{"v":"MRJ - KAB. SIJUNJUNG","id":"MRJ","n":"KAB. SIJUNJUNG"},{"v":"BSK - KAB. TANAH DATAR","id":"BSK","n":"KAB. TANAH DATAR"},{"v":"NPM - KAB. PADANG PARIAMAN","id":"NPM","n":"KAB. PADANG PARIAMAN"},{"v":"LBB - KAB. AGAM","id":"LBB","n":"KAB. AGAM"},{"v":"SRK - KAB. LIMA PULUH KOTA","id":"SRK","n":"KAB. LIMA PULUH KOTA"},{"v":"LBS - KAB. PASAMAN","id":"LBS","n":"KAB. PASAMAN"},{"v":"TPT - KAB. KEPULAUAN MENTAWAI","id":"TPT","n":"KAB. KEPULAUAN MENTAWAI"},{"v":"PLJ - KAB. DHARMASRAYA","id":"PLJ","n":"KAB. DHARMASRAYA"},{"v":"PDA - KAB. SOLOK SELATAN","id":"PDA","n":"KAB. SOLOK SELATAN"},{"v":"SPE - KAB. PASAMAN BARAT","id":"SPE","n":"KAB. PASAMAN BARAT"},{"v":"PAD - KOTA PADANG","id":"PAD","n":"KOTA PADANG"},{"v":"SLK - KOTA SOLOK","id":"SLK","n":"KOTA SOLOK"},{"v":"SWL - KOTA SAWAHLUNTO","id":"SWL","n":"KOTA SAWAHLUNTO"},{"v":"PPJ - KOTA PADANG PANJANG","id":"PPJ","n":"KOTA PADANG PANJANG"},{"v":"BKT - KOTA BUKITTINGGI","id":"BKT","n":"KOTA BUKITTINGGI"},{"v":"PYH - KOTA PAYAKUMBUH","id":"PYH","n":"KOTA PAYAKUMBUH"},{"v":"PMN - KOTA PARIAMAN","id":"PMN","n":"KOTA PARIAMAN"},{"v":"BKN - KAB. KAMPAR","id":"BKN","n":"KAB. KAMPAR"},{"v":"RGT - KAB. INDRAGIRI HULU","id":"RGT","n":"KAB. INDRAGIRI HULU"},{"v":"BLS - KAB. BENGKALIS","id":"BLS","n":"KAB. BENGKALIS"},{"v":"TBH - KAB. INDRAGIRI HILIR","id":"TBH","n":"KAB. INDRAGIRI HILIR"},{"v":"PKK - KAB. PELALAWAN","id":"PKK","n":"KAB. PELALAWAN"},{"v":"PRP - KAB. ROKAN HULU","id":"PRP","n":"KAB. ROKAN HULU"},{"v":"BGS - KAB. ROKAN HILIR","id":"BGS","n":"KAB. ROKAN HILIR"},{"v":"SSI - KAB. SIAK","id":"SSI","n":"KAB. SIAK"},{"v":"TLK - KAB. KUANTAN SINGINGI","id":"TLK","n":"KAB. KUANTAN SINGINGI"},{"v":"TTG - KAB. KEPULAUAN MERANTI","id":"TTG","n":"KAB. KEPULAUAN MERANTI"},{"v":"PBR - KOTA PEKANBARU","id":"PBR","n":"KOTA PEKANBARU"},{"v":"DUM - KOTA DUMAI","id":"DUM","n":"KOTA DUMAI"}],"1021":[{"v":"SUL - KAB. KERINCI","id":"SUL","n":"KAB. KERINCI"},{"v":"BKO - KAB. MERANGIN","id":"BKO","n":"KAB. MERANGIN"},{"v":"SRL - KAB. SAROLANGUN","id":"SRL","n":"KAB. SAROLANGUN"},{"v":"MBN - KAB. BATANGHARI","id":"MBN","n":"KAB. BATANGHARI"},{"v":"SNT - KAB. MUARO JAMBI","id":"SNT","n":"KAB. MUARO JAMBI"},{"v":"KLT - KAB. TANJUNG JABUNG BARAT","id":"KLT","n":"KAB. TANJUNG JABUNG BARAT"},{"v":"MSK - KAB. TANJUNG JABUNG TIMUR","id":"MSK","n":"KAB. TANJUNG JABUNG TIMUR"},{"v":"MRB - KAB. BUNGO","id":"MRB","n":"KAB. BUNGO"},{"v":"MRT - KAB. TEBO","id":"MRT","n":"KAB. TEBO"},{"v":"JMB - KOTA JAMBI","id":"JMB","n":"KOTA JAMBI"},{"v":"SPN - KOTA SUNGAI PENUH","id":"SPN","n":"KOTA SUNGAI PENUH"},{"v":"BTA - KAB. OGAN KOMERING ULU","id":"BTA","n":"KAB. OGAN KOMERING ULU"},{"v":"KAG - KAB. OGAN KOMERING ILIR","id":"KAG","n":"KAB. OGAN KOMERING ILIR"},{"v":"MRE - KAB. MUARA ENIM","id":"MRE","n":"KAB. MUARA ENIM"},{"v":"LHT - KAB. LAHAT","id":"LHT","n":"KAB. LAHAT"},{"v":"MBL - KAB. MUSI RAWAS","id":"MBL","n":"KAB. MUSI RAWAS"},{"v":"SKY - KAB. MUSI BANYUASIN","id":"SKY","n":"KAB. MUSI BANYUASIN"},{"v":"PKB - KAB. BANYUASIN","id":"PKB","n":"KAB. BANYUASIN"},{"v":"MTA - KAB. OGAN KOMERING ULU TIMUR","id":"MTA","n":"KAB. OGAN KOMERING ULU TIMUR"},{"v":"MRD - KAB. OGAN KOMERING ULU SELATAN","id":"MRD","n":"KAB. OGAN KOMERING ULU SELATAN"},{"v":"IDL - KAB. OGAN ILIR","id":"IDL","n":"KAB. OGAN ILIR"},{"v":"TBG - KAB. EMPAT LAWANG","id":"TBG","n":"KAB. EMPAT LAWANG"},{"v":"TLU - KAB. PENUKAL ABAB LEMATANG ILIR","id":"TLU","n":"KAB. PENUKAL ABAB LEMATANG ILIR"},{"v":"RPT - KAB. MUSI RAWAS UTARA","id":"RPT","n":"KAB. MUSI RAWAS UTARA"},{"v":"PLG - KOTA PALEMBANG","id":"PLG","n":"KOTA PALEMBANG"},{"v":"PGA - KOTA PAGAR ALAM","id":"PGA","n":"KOTA PAGAR ALAM"},{"v":"LLG - KOTA LUBUK LINGGAU","id":"LLG","n":"KOTA LUBUK LINGGAU"},{"v":"PBM - KOTA PRABUMULIH","id":"PBM","n":"KOTA PRABUMULIH"},{"v":"MNA - KAB. BENGKULU SELATAN","id":"MNA","n":"KAB. BENGKULU SELATAN"},{"v":"CRP - KAB. REJANG LEBONG","id":"CRP","n":"KAB. REJANG LEBONG"},{"v":"AGM - KAB. BENGKULU UTARA","id":"AGM","n":"KAB. BENGKULU UTARA"},{"v":"BTH - KAB. KAUR","id":"BTH","n":"KAB. KAUR"},{"v":"TIS - KAB. SELUMA","id":"TIS","n":"KAB. SELUMA"},{"v":"MKO - KAB. MUKOMUKO","id":"MKO","n":"KAB. MUKOMUKO"},{"v":"TBI - KAB. LEBONG","id":"TBI","n":"KAB. LEBONG"},{"v":"KPH - KAB. KEPAHIANG","id":"KPH","n":"KAB. KEPAHIANG"},{"v":"KRT - KAB. BENGKULU TENGAH","id":"KRT","n":"KAB. BENGKULU TENGAH"},{"v":"BGL - KOTA BENGKULU","id":"BGL","n":"KOTA BENGKULU"},{"v":"KLA - KAB. LAMPUNG SELATAN","id":"KLA","n":"KAB. LAMPUNG SELATAN"},{"v":"GNS - KAB. LAMPUNG TENGAH","id":"GNS","n":"KAB. LAMPUNG TENGAH"},{"v":"KTB - KAB. LAMPUNG UTARA","id":"KTB","n":"KAB. LAMPUNG UTARA"},{"v":"LWA - KAB. LAMPUNG BARAT","id":"LWA","n":"KAB. LAMPUNG BARAT"},{"v":"MGL - KAB. TULANG BAWANG","id":"MGL","n":"KAB. TULANG BAWANG"},{"v":"KOT - KAB. TANGGAMUS","id":"KOT","n":"KAB. TANGGAMUS"},{"v":"SDN - KAB. LAMPUNG TIMUR","id":"SDN","n":"KAB. LAMPUNG TIMUR"},{"v":"BBU - KAB. WAY KANAN","id":"BBU","n":"KAB. WAY KANAN"},{"v":"GDT - KAB. PESAWARAN","id":"GDT","n":"KAB. PESAWARAN"},{"v":"PRW - KAB. PRINGSEWU","id":"PRW","n":"KAB. PRINGSEWU"},{"v":"MSJ - KAB. MESUJI","id":"MSJ","n":"KAB. MESUJI"},{"v":"TWG - KAB. TULANG BAWANG BARAT","id":"TWG","n":"KAB. TULANG BAWANG BARAT"},{"v":"KRU - KAB. PESISIR BARAT","id":"KRU","n":"KAB. PESISIR BARAT"},{"v":"BDL - KOTA BANDAR LAMPUNG","id":"BDL","n":"KOTA BANDAR LAMPUNG"},{"v":"MET - KOTA METRO","id":"MET","n":"KOTA METRO"},{"v":"SGL - KAB. BANGKA","id":"SGL","n":"KAB. BANGKA"},{"v":"TPD - KAB. BELITUNG","id":"TPD","n":"KAB. BELITUNG"},{"v":"TBL - KAB. BANGKA SELATAN","id":"TBL","n":"KAB. BANGKA SELATAN"},{"v":"KBA - KAB. BANGKA TENGAH","id":"KBA","n":"KAB. BANGKA TENGAH"},{"v":"MTK - KAB. BANGKA BARAT","id":"MTK","n":"KAB. BANGKA BARAT"},{"v":"MGR - KAB. BELITUNG TIMUR","id":"MGR","n":"KAB. BELITUNG TIMUR"},{"v":"PGP - KOTA PANGKAL PINANG","id":"PGP","n":"KOTA PANGKAL PINANG"},{"v":"BSB - KAB. BINTAN","id":"BSB","n":"KAB. BINTAN"},{"v":"TBK - KAB. KARIMUN","id":"TBK","n":"KAB. KARIMUN"},{"v":"RNI - KAB. NATUNA","id":"RNI","n":"KAB. NATUNA"},{"v":"DKL - KAB. LINGGA","id":"DKL","n":"KAB. LINGGA"},{"v":"TRP - KAB. KEPULAUAN ANAMBAS","id":"TRP","n":"KAB. KEPULAUAN ANAMBAS"},{"v":"BTM - KOTA BATAM","id":"BTM","n":"KOTA BATAM"},{"v":"TPG - KOTA TANJUNG PINANG","id":"TPG","n":"KOTA TANJUNG PINANG"}],"2031":[{"v":"CLP - KAB. CILACAP","id":"CLP","n":"KAB. CILACAP"},{"v":"PWT - KAB. BANYUMAS","id":"PWT","n":"KAB. BANYUMAS"},{"v":"PBG - KAB. PURBALINGGA","id":"PBG","n":"KAB. PURBALINGGA"},{"v":"BNR - KAB. BANJARNEGARA","id":"BNR","n":"KAB. BANJARNEGARA"},{"v":"KBM - KAB. KEBUMEN","id":"KBM","n":"KAB. KEBUMEN"},{"v":"PWR - KAB. PURWOREJO","id":"PWR","n":"KAB. PURWOREJO"},{"v":"WSB - KAB. WONOSOBO","id":"WSB","n":"KAB. WONOSOBO"},{"v":"MKD - KAB. MAGELANG","id":"MKD","n":"KAB. MAGELANG"},{"v":"BYL - KAB. BOYOLALI","id":"BYL","n":"KAB. BOYOLALI"},{"v":"KLN - KAB. KLATEN","id":"KLN","n":"KAB. KLATEN"},{"v":"SKH - KAB. SUKOHARJO","id":"SKH","n":"KAB. SUKOHARJO"},{"v":"WNG - KAB. WONOGIRI","id":"WNG","n":"KAB. WONOGIRI"},{"v":"KRG - KAB. KARANGANYAR","id":"KRG","n":"KAB. KARANGANYAR"},{"v":"SGN - KAB. SRAGEN","id":"SGN","n":"KAB. SRAGEN"},{"v":"PWD - KAB. GROBOGAN","id":"PWD","n":"KAB. GROBOGAN"},{"v":"BLA - KAB. BLORA","id":"BLA","n":"KAB. BLORA"},{"v":"RBG - KAB. REMBANG","id":"RBG","n":"KAB. REMBANG"},{"v":"PTI - KAB. PATI","id":"PTI","n":"KAB. PATI"},{"v":"KDS - KAB. KUDUS","id":"KDS","n":"KAB. KUDUS"},{"v":"JPA - KAB. JEPARA","id":"JPA","n":"KAB. JEPARA"},{"v":"DMK - KAB. DEMAK","id":"DMK","n":"KAB. DEMAK"},{"v":"UNR - KAB. SEMARANG","id":"UNR","n":"KAB. SEMARANG"},{"v":"TMG - KAB. TEMANGGUNG","id":"TMG","n":"KAB. TEMANGGUNG"},{"v":"KDL - KAB. KENDAL","id":"KDL","n":"KAB. KENDAL"},{"v":"BTG - KAB. BATANG","id":"BTG","n":"KAB. BATANG"},{"v":"KJN - KAB. PEKALONGAN","id":"KJN","n":"KAB. PEKALONGAN"},{"v":"PML - KAB. PEMALANG","id":"PML","n":"KAB. PEMALANG"},{"v":"SLW - KAB. TEGAL","id":"SLW","n":"KAB. TEGAL"},{"v":"BBS - KAB. BREBES","id":"BBS","n":"KAB. BREBES"},{"v":"MGG - KOTA MAGELANG","id":"MGG","n":"KOTA MAGELANG"},{"v":"SKA - KOTA SURAKARTA","id":"SKA","n":"KOTA SURAKARTA"},{"v":"SLT - KOTA SALATIGA","id":"SLT","n":"KOTA SALATIGA"},{"v":"SMG - KOTA SEMARANG","id":"SMG","n":"KOTA SEMARANG"},{"v":"PKL - KOTA PEKALONGAN","id":"PKL","n":"KOTA PEKALONGAN"},{"v":"TGL - KOTA TEGAL","id":"TGL","n":"KOTA TEGAL"},{"v":"WAT - KAB. KULON PROGO","id":"WAT","n":"KAB. KULON PROGO"},{"v":"BTL - KAB. BANTUL","id":"BTL","n":"KAB. BANTUL"},{"v":"WNO - KAB. GUNUNG KIDUL","id":"WNO","n":"KAB. GUNUNG KIDUL"},{"v":"SMN - KAB. SLEMAN","id":"SMN","n":"KAB. SLEMAN"},{"v":"YOG - KOTA YOGYAKARTA","id":"YOG","n":"KOTA YOGYAKARTA"}],"2041":[{"v":"PRT - KAB. SUKABUMI","id":"PRT","n":"KAB. SUKABUMI"},{"v":"CJR - KAB. CIANJUR","id":"CJR","n":"KAB. CIANJUR"},{"v":"SOR - KAB. BANDUNG","id":"SOR","n":"KAB. BANDUNG"},{"v":"GRT - KAB. GARUT","id":"GRT","n":"KAB. GARUT"},{"v":"SPA - KAB. TASIKMALAYA","id":"SPA","n":"KAB. TASIKMALAYA"},{"v":"CMS - KAB. CIAMIS","id":"CMS","n":"KAB. CIAMIS"},{"v":"KNG - KAB. KUNINGAN","id":"KNG","n":"KAB. KUNINGAN"},{"v":"SBR - KAB. CIREBON","id":"SBR","n":"KAB. CIREBON"},{"v":"MJL - KAB. MAJALENGKA","id":"MJL","n":"KAB. MAJALENGKA"},{"v":"SMD - KAB. SUMEDANG","id":"SMD","n":"KAB. SUMEDANG"},{"v":"IDM - KAB. INDRAMAYU","id":"IDM","n":"KAB. INDRAMAYU"},{"v":"SBN - KAB. SUBANG","id":"SBN","n":"KAB. SUBANG"},{"v":"PWK - KAB. PURWAKARTA","id":"PWK","n":"KAB. PURWAKARTA"},{"v":"NPH - KAB. BANDUNG BARAT","id":"NPH","n":"KAB. BANDUNG BARAT"},{"v":"PRI - KAB. PANGANDARAN","id":"PRI","n":"KAB. PANGANDARAN"},{"v":"SKB - KOTA SUKABUMI","id":"SKB","n":"KOTA SUKABUMI"},{"v":"BDG - KOTA BANDUNG","id":"BDG","n":"KOTA BANDUNG"},{"v":"CBN - KOTA CIREBON","id":"CBN","n":"KOTA CIREBON"},{"v":"CMH - KOTA CIMAHI","id":"CMH","n":"KOTA CIMAHI"},{"v":"TSM - KOTA TASIKMALAYA","id":"TSM","n":"KOTA TASIKMALAYA"},{"v":"BJR - KOTA BANJAR","id":"BJR","n":"KOTA BANJAR"}],"2051":[{"v":"PCT - KAB. PACITAN","id":"PCT","n":"KAB. PACITAN"},{"v":"PNG - KAB. PONOROGO","id":"PNG","n":"KAB. PONOROGO"},{"v":"TRK - KAB. TRENGGALEK","id":"TRK","n":"KAB. TRENGGALEK"},{"v":"TLG - KAB. TULUNGAGUNG","id":"TLG","n":"KAB. TULUNGAGUNG"},{"v":"KNR - KAB. BLITAR","id":"KNR","n":"KAB. BLITAR"},{"v":"PAR - KAB. KEDIRI","id":"PAR","n":"KAB. KEDIRI"},{"v":"KPN - KAB. MALANG","id":"KPN","n":"KAB. MALANG"},{"v":"LMJ - KAB. LUMAJANG","id":"LMJ","n":"KAB. LUMAJANG"},{"v":"JMR - KAB. JEMBER","id":"JMR","n":"KAB. JEMBER"},{"v":"BYW - KAB. BANYUWANGI","id":"BYW","n":"KAB. BANYUWANGI"},{"v":"BDW - KAB. BONDOWOSO","id":"BDW","n":"KAB. BONDOWOSO"},{"v":"SIT - KAB. SITUBONDO","id":"SIT","n":"KAB. SITUBONDO"},{"v":"KRS - KAB. PROBOLINGGO","id":"KRS","n":"KAB. PROBOLINGGO"},{"v":"BNL - KAB. PASURUAN","id":"BNL","n":"KAB. PASURUAN"},{"v":"SDA - KAB. SIDOARJO","id":"SDA","n":"KAB. SIDOARJO"},{"v":"MJS - KAB. MOJOKERTO","id":"MJS","n":"KAB. MOJOKERTO"},{"v":"JBG - KAB. JOMBANG","id":"JBG","n":"KAB. JOMBANG"},{"v":"NGJ - KAB. NGANJUK","id":"NGJ","n":"KAB. NGANJUK"},{"v":"CRB - KAB. MADIUN","id":"CRB","n":"KAB. MADIUN"},{"v":"MGT - KAB. MAGETAN","id":"MGT","n":"KAB. MAGETAN"},{"v":"NGW - KAB. NGAWI","id":"NGW","n":"KAB. NGAWI"},{"v":"BJN - KAB. BOJONEGORO","id":"BJN","n":"KAB. BOJONEGORO"},{"v":"TBN - KAB. TUBAN","id":"TBN","n":"KAB. TUBAN"},{"v":"LMG - KAB. LAMONGAN","id":"LMG","n":"KAB. LAMONGAN"},{"v":"GSK - KAB. GRESIK","id":"GSK","n":"KAB. GRESIK"},{"v":"BKL - KAB. BANGKALAN","id":"BKL","n":"KAB. BANGKALAN"},{"v":"SPG - KAB. SAMPANG","id":"SPG","n":"KAB. SAMPANG"},{"v":"PMK - KAB. PAMEKASAN","id":"PMK","n":"KAB. PAMEKASAN"},{"v":"SMP - KAB. SUMENEP","id":"SMP","n":"KAB. SUMENEP"},{"v":"KDR - KOTA KEDIRI","id":"KDR","n":"KOTA KEDIRI"},{"v":"BLT - KOTA BLITAR","id":"BLT","n":"KOTA BLITAR"},{"v":"MLG - KOTA MALANG","id":"MLG","n":"KOTA MALANG"},{"v":"PBL - KOTA PROBOLINGGO","id":"PBL","n":"KOTA PROBOLINGGO"},{"v":"PSR - KOTA PASURUAN","id":"PSR","n":"KOTA PASURUAN"},{"v":"MJK - KOTA MOJOKERTO","id":"MJK","n":"KOTA MOJOKERTO"},{"v":"MAD - KOTA MADIUN","id":"MAD","n":"KOTA MADIUN"},{"v":"SBY - KOTA SURABAYA","id":"SBY","n":"KOTA SURABAYA"},{"v":"BTU - KOTA BATU","id":"BTU","n":"KOTA BATU"}],"3061":[{"v":"NGA - KAB. JEMBRANA","id":"NGA","n":"KAB. JEMBRANA"},{"v":"TAB - KAB. TABANAN","id":"TAB","n":"KAB. TABANAN"},{"v":"MNP - KAB. BADUNG","id":"MNP","n":"KAB. BADUNG"},{"v":"GIN - KAB. GIANYAR","id":"GIN","n":"KAB. GIANYAR"},{"v":"SRP - KAB. KLUNGKUNG","id":"SRP","n":"KAB. KLUNGKUNG"},{"v":"BLI - KAB. BANGLI","id":"BLI","n":"KAB. BANGLI"},{"v":"ALP - KAB. KARANGASEM","id":"ALP","n":"KAB. KARANGASEM"},{"v":"SGR - KAB. BULELENG","id":"SGR","n":"KAB. BULELENG"},{"v":"DPS - KOTA DENPASAR","id":"DPS","n":"KOTA DENPASAR"},{"v":"GRG - KAB. LOMBOK BARAT","id":"GRG","n":"KAB. LOMBOK BARAT"},{"v":"PYA - KAB. LOMBOK TENGAH","id":"PYA","n":"KAB. LOMBOK TENGAH"},{"v":"SLG - KAB. LOMBOK TIMUR","id":"SLG","n":"KAB. LOMBOK TIMUR"},{"v":"SBW - KAB. SUMBAWA","id":"SBW","n":"KAB. SUMBAWA"},{"v":"DPU - KAB. DOMPU","id":"DPU","n":"KAB. DOMPU"},{"v":"WOH - KAB. BIMA","id":"WOH","n":"KAB. BIMA"},{"v":"TLW - KAB. SUMBAWA BARAT","id":"TLW","n":"KAB. SUMBAWA BARAT"},{"v":"TJN - KAB. LOMBOK UTARA","id":"TJN","n":"KAB. LOMBOK UTARA"},{"v":"MTR - KOTA MATARAM","id":"MTR","n":"KOTA MATARAM"},{"v":"BIM - KOTA BIMA","id":"BIM","n":"KOTA BIMA"},{"v":"OLM - KAB. KUPANG","id":"OLM","n":"KAB. KUPANG"},{"v":"SOE - KAB. TIMOR TENGAH SELATAN","id":"SOE","n":"KAB. TIMOR TENGAH SELATAN"},{"v":"KFM - KAB. TIMOR TENGAH UTARA","id":"KFM","n":"KAB. TIMOR TENGAH UTARA"},{"v":"ATB - KAB. BELU","id":"ATB","n":"KAB. BELU"},{"v":"KLB - KAB. ALOR","id":"KLB","n":"KAB. ALOR"},{"v":"LRT - KAB. FLORES TIMUR","id":"LRT","n":"KAB. FLORES TIMUR"},{"v":"MME - KAB. SIKKA","id":"MME","n":"KAB. SIKKA"},{"v":"END - KAB. ENDE","id":"END","n":"KAB. ENDE"},{"v":"BJW - KAB. NGADA","id":"BJW","n":"KAB. NGADA"},{"v":"RTG - KAB. MANGGARAI","id":"RTG","n":"KAB. MANGGARAI"},{"v":"WGP - KAB. SUMBA TIMUR","id":"WGP","n":"KAB. SUMBA TIMUR"},{"v":"WKB - KAB. SUMBA BARAT","id":"WKB","n":"KAB. SUMBA BARAT"},{"v":"LWB - KAB. LEMBATA","id":"LWB","n":"KAB. LEMBATA"},{"v":"BAA - KAB. ROTE NDAO","id":"BAA","n":"KAB. ROTE NDAO"},{"v":"LBJ - KAB. MANGGARAI BARAT","id":"LBJ","n":"KAB. MANGGARAI BARAT"},{"v":"MBY - KAB. NAGEKEO","id":"MBY","n":"KAB. NAGEKEO"},{"v":"WBL - KAB. SUMBA TENGAH","id":"WBL","n":"KAB. SUMBA TENGAH"},{"v":"TAM - KAB. SUMBA BARAT DAYA","id":"TAM","n":"KAB. SUMBA BARAT DAYA"},{"v":"BRG - KAB. MANGGARAI TIMUR","id":"BRG","n":"KAB. MANGGARAI TIMUR"},{"v":"SBB - KAB. SABU RAIJUA","id":"SBB","n":"KAB. SABU RAIJUA"},{"v":"BET - KAB. MALAKA","id":"BET","n":"KAB. MALAKA"},{"v":"KPG - KOTA KUPANG","id":"KPG","n":"KOTA KUPANG"}],"3071":[{"v":"SBS - KAB. SAMBAS","id":"SBS","n":"KAB. SAMBAS"},{"v":"MPW - KAB. MEMPAWAH","id":"MPW","n":"KAB. MEMPAWAH"},{"v":"SAG - KAB. SANGGAU","id":"SAG","n":"KAB. SANGGAU"},{"v":"KTP - KAB. KETAPANG","id":"KTP","n":"KAB. KETAPANG"},{"v":"STG - KAB. SINTANG","id":"STG","n":"KAB. SINTANG"},{"v":"PTS - KAB. KAPUAS HULU","id":"PTS","n":"KAB. KAPUAS HULU"},{"v":"BKY - KAB. BENGKAYANG","id":"BKY","n":"KAB. BENGKAYANG"},{"v":"NBA - KAB. LANDAK","id":"NBA","n":"KAB. LANDAK"},{"v":"SED - KAB. SEKADAU","id":"SED","n":"KAB. SEKADAU"},{"v":"NGP - KAB. MELAWI","id":"NGP","n":"KAB. MELAWI"},{"v":"SKD - KAB. KAYONG UTARA","id":"SKD","n":"KAB. KAYONG UTARA"},{"v":"SRY - KAB. KUBU RAYA","id":"SRY","n":"KAB. KUBU RAYA"},{"v":"PTK - KOTA PONTIANAK","id":"PTK","n":"KOTA PONTIANAK"},{"v":"SKW - KOTA SINGKAWANG","id":"SKW","n":"KOTA SINGKAWANG"},{"v":"PBU - KAB. KOTAWARINGIN BARAT","id":"PBU","n":"KAB. KOTAWARINGIN BARAT"},{"v":"SPT - KAB. KOTAWARINGIN TIMUR","id":"SPT","n":"KAB. KOTAWARINGIN TIMUR"},{"v":"KLK - KAB. KAPUAS","id":"KLK","n":"KAB. KAPUAS"},{"v":"BNT - KAB. BARITO SELATAN","id":"BNT","n":"KAB. BARITO SELATAN"},{"v":"MTW - KAB. BARITO UTARA","id":"MTW","n":"KAB. BARITO UTARA"},{"v":"KSN - KAB. KATINGAN","id":"KSN","n":"KAB. KATINGAN"},{"v":"KLP - KAB. SERUYAN","id":"KLP","n":"KAB. SERUYAN"},{"v":"SKR - KAB. SUKAMARA","id":"SKR","n":"KAB. SUKAMARA"},{"v":"NGB - KAB. LAMANDAU","id":"NGB","n":"KAB. LAMANDAU"},{"v":"KKN - KAB. GUNUNG MAS","id":"KKN","n":"KAB. GUNUNG MAS"},{"v":"PPS - KAB. PULANG PISAU","id":"PPS","n":"KAB. PULANG PISAU"},{"v":"PRC - KAB. MURUNG RAYA","id":"PRC","n":"KAB. MURUNG RAYA"},{"v":"TML - KAB. BARITO TIMUR","id":"TML","n":"KAB. BARITO TIMUR"},{"v":"PLK - KOTA PALANGKARAYA","id":"PLK","n":"KOTA PALANGKARAYA"},{"v":"PLI - KAB. TANAH LAUT","id":"PLI","n":"KAB. TANAH LAUT"},{"v":"KBR - KAB. KOTABARU","id":"KBR","n":"KAB. KOTABARU"},{"v":"MTP - KAB. BANJAR","id":"MTP","n":"KAB. BANJAR"},{"v":"MRH - KAB. BARITO KUALA","id":"MRH","n":"KAB. BARITO KUALA"},{"v":"RTA - KAB. TAPIN","id":"RTA","n":"KAB. TAPIN"},{"v":"KDN - KAB. HULU SUNGAI SELATAN","id":"KDN","n":"KAB. HULU SUNGAI SELATAN"},{"v":"BRB - KAB. HULU SUNGAI TENGAH","id":"BRB","n":"KAB. HULU SUNGAI TENGAH"},{"v":"AMT - KAB. HULU SUNGAI UTARA","id":"AMT","n":"KAB. HULU SUNGAI UTARA"},{"v":"TJG - KAB. TABALONG","id":"TJG","n":"KAB. TABALONG"},{"v":"BLN - KAB. TANAH BUMBU","id":"BLN","n":"KAB. TANAH BUMBU"},{"v":"PRN - KAB. BALANGAN","id":"PRN","n":"KAB. BALANGAN"},{"v":"BJM - KOTA BANJARMASIN","id":"BJM","n":"KOTA BANJARMASIN"},{"v":"BJB - KOTA BANJARBARU","id":"BJB","n":"KOTA BANJARBARU"},{"v":"TNP - KAB. PASER","id":"TNP","n":"KAB. PASER"},{"v":"TRG - KAB. KUTAI KARTANEGARA","id":"TRG","n":"KAB. KUTAI KARTANEGARA"},{"v":"TJR - KAB. BERAU","id":"TJR","n":"KAB. BERAU"},{"v":"SDW - KAB. KUTAI BARAT","id":"SDW","n":"KAB. KUTAI BARAT"},{"v":"SGT - KAB. KUTAI TIMUR","id":"SGT","n":"KAB. KUTAI TIMUR"},{"v":"PNJ - KAB. PENAJAM PASER UTARA","id":"PNJ","n":"KAB. PENAJAM PASER UTARA"},{"v":"LBN - KAB. MAHAKAM ULU","id":"LBN","n":"KAB. MAHAKAM ULU"},{"v":"BPP - KOTA BALIKPAPAN","id":"BPP","n":"KOTA BALIKPAPAN"},{"v":"SMR - KOTA SAMARINDA","id":"SMR","n":"KOTA SAMARINDA"},{"v":"BON - KOTA BONTANG","id":"BON","n":"KOTA BONTANG"},{"v":"TJS - KAB. BULUNGAN","id":"TJS","n":"KAB. BULUNGAN"},{"v":"MLN - KAB. MALINAU","id":"MLN","n":"KAB. MALINAU"},{"v":"NNK - KAB. NUNUKAN","id":"NNK","n":"KAB. NUNUKAN"},{"v":"TDP - KAB. TANA TIDUNG","id":"TDP","n":"KAB. TANA TIDUNG"},{"v":"TRN - KOTA TARAKAN","id":"TRN","n":"KOTA TARAKAN"}],"3081":[{"v":"LLK - KAB. BOLAANG MONGONDOW","id":"LLK","n":"KAB. BOLAANG MONGONDOW"},{"v":"TDO - KAB. MINAHASA","id":"TDO","n":"KAB. MINAHASA"},{"v":"THN - KAB. KEPULAUAN SANGIHE","id":"THN","n":"KAB. KEPULAUAN SANGIHE"},{"v":"MGN - KAB. KEPULAUAN TALAUD","id":"MGN","n":"KAB. KEPULAUAN TALAUD"},{"v":"AMR - KAB. MINAHASA SELATAN","id":"AMR","n":"KAB. MINAHASA SELATAN"},{"v":"ARM - KAB. MINAHASA UTARA","id":"ARM","n":"KAB. MINAHASA UTARA"},{"v":"RTN - KAB. MINAHASA TENGGARA","id":"RTN","n":"KAB. MINAHASA TENGGARA"},{"v":"BRK - KAB. BOLAANG MONGONDOW UTARA","id":"BRK","n":"KAB. BOLAANG MONGONDOW UTARA"},{"v":"ODS - KAB. KEPULAUAN SIAU TAGULANDANG BIARO","id":"ODS","n":"KAB. KEPULAUAN SIAU TAGULANDANG BIARO"},{"v":"TTY - KAB. BOLAANG MONGONDOW TIMUR","id":"TTY","n":"KAB. BOLAANG MONGONDOW TIMUR"},{"v":"BLU - KAB. BOLAANG MONGONDOW SELATAN","id":"BLU","n":"KAB. BOLAANG MONGONDOW SELATAN"},{"v":"MDO - KOTA MANADO","id":"MDO","n":"KOTA MANADO"},{"v":"BIT - KOTA BITUNG","id":"BIT","n":"KOTA BITUNG"},{"v":"TMH - KOTA TOMOHON","id":"TMH","n":"KOTA TOMOHON"},{"v":"KTG - KOTA KOTAMOBAGU","id":"KTG","n":"KOTA KOTAMOBAGU"},{"v":"LWK - KAB. BANGGAI","id":"LWK","n":"KAB. BANGGAI"},{"v":"PSO - KAB. POSO","id":"PSO","n":"KAB. POSO"},{"v":"DGL - KAB. DONGGALA","id":"DGL","n":"KAB. DONGGALA"},{"v":"TLI - KAB. TOLI TOLI","id":"TLI","n":"KAB. TOLI TOLI"},{"v":"BUL - KAB. BUOL","id":"BUL","n":"KAB. BUOL"},{"v":"BKU - KAB. MOROWALI","id":"BKU","n":"KAB. MOROWALI"},{"v":"SKN - KAB. BANGGAI KEPULAUAN","id":"SKN","n":"KAB. BANGGAI KEPULAUAN"},{"v":"PRG - KAB. PARIGI MOUTONG","id":"PRG","n":"KAB. PARIGI MOUTONG"},{"v":"APN - KAB. TOJO UNA UNA","id":"APN","n":"KAB. TOJO UNA UNA"},{"v":"SGB - KAB. SIGI","id":"SGB","n":"KAB. SIGI"},{"v":"BGI - KAB. BANGGAI LAUT","id":"BGI","n":"KAB. BANGGAI LAUT"},{"v":"PTA - KAB. MOROWALI UTARA","id":"PTA","n":"KAB. MOROWALI UTARA"},{"v":"PAL - KOTA PALU","id":"PAL","n":"KOTA PALU"},{"v":"BTN - KAB. KEPULAUAN SELAYAR","id":"BTN","n":"KAB. KEPULAUAN SELAYAR"},{"v":"BLK - KAB. BULUKUMBA","id":"BLK","n":"KAB. BULUKUMBA"},{"v":"BTE - KAB. BANTAENG","id":"BTE","n":"KAB. BANTAENG"},{"v":"JNP - KAB. JENEPONTO","id":"JNP","n":"KAB. JENEPONTO"},{"v":"TKL - KAB. TAKALAR","id":"TKL","n":"KAB. TAKALAR"},{"v":"SGM - KAB. GOWA","id":"SGM","n":"KAB. GOWA"},{"v":"SNJ - KAB. SINJAI","id":"SNJ","n":"KAB. SINJAI"},{"v":"WTP - KAB. BONE","id":"WTP","n":"KAB. BONE"},{"v":"MRS - KAB. MAROS","id":"MRS","n":"KAB. MAROS"},{"v":"PKJ - KAB. PANGKAJENE DAN KEPULAUAN","id":"PKJ","n":"KAB. PANGKAJENE DAN KEPULAUAN"},{"v":"BRU - KAB. BARRU","id":"BRU","n":"KAB. BARRU"},{"v":"WSP - KAB. SOPPENG","id":"WSP","n":"KAB. SOPPENG"},{"v":"SKG - KAB. WAJO","id":"SKG","n":"KAB. WAJO"},{"v":"SDR - KAB. SIDENRENG RAPPANG","id":"SDR","n":"KAB. SIDENRENG RAPPANG"},{"v":"PIN - KAB. PINRANG","id":"PIN","n":"KAB. PINRANG"},{"v":"ERK - KAB. ENREKANG","id":"ERK","n":"KAB. ENREKANG"},{"v":"BLP - KAB. LUWU","id":"BLP","n":"KAB. LUWU"},{"v":"MKL - KAB. TANA TORAJA","id":"MKL","n":"KAB. TANA TORAJA"},{"v":"MSB - KAB. LUWU UTARA","id":"MSB","n":"KAB. LUWU UTARA"},{"v":"MLL - KAB. LUWU TIMUR","id":"MLL","n":"KAB. LUWU TIMUR"},{"v":"RTP - KAB. TORAJA UTARA","id":"RTP","n":"KAB. TORAJA UTARA"},{"v":"MKS - KOTA MAKASSAR","id":"MKS","n":"KOTA MAKASSAR"},{"v":"PRE - KOTA PARE PARE","id":"PRE","n":"KOTA PARE PARE"},{"v":"PLP - KOTA PALOPO","id":"PLP","n":"KOTA PALOPO"},{"v":"KKA - KAB. KOLAKA","id":"KKA","n":"KAB. KOLAKA"},{"v":"UNH - KAB. KONAWE","id":"UNH","n":"KAB. KONAWE"},{"v":"RAH - KAB. MUNA","id":"RAH","n":"KAB. MUNA"},{"v":"PSW - KAB. BUTON","id":"PSW","n":"KAB. BUTON"},{"v":"ADL - KAB. KONAWE SELATAN","id":"ADL","n":"KAB. KONAWE SELATAN"},{"v":"RMB - KAB. BOMBANA","id":"RMB","n":"KAB. BOMBANA"},{"v":"WGI - KAB. WAKATOBI","id":"WGI","n":"KAB. WAKATOBI"},{"v":"LSS - KAB. KOLAKA UTARA","id":"LSS","n":"KAB. KOLAKA UTARA"},{"v":"WGD - KAB. KONAWE UTARA","id":"WGD","n":"KAB. KONAWE UTARA"},{"v":"BRN - KAB. BUTON UTARA","id":"BRN","n":"KAB. BUTON UTARA"},{"v":"TRW - KAB. KOLAKA TIMUR","id":"TRW","n":"KAB. KOLAKA TIMUR"},{"v":"WBR - KAB. KONAWE KEPULAUAN","id":"WBR","n":"KAB. KONAWE KEPULAUAN"},{"v":"SWG - KAB. MUNA BARAT","id":"SWG","n":"KAB. MUNA BARAT"},{"v":"LKD - KAB. BUTON TENGAH","id":"LKD","n":"KAB. BUTON TENGAH"},{"v":"BGA - KAB. BUTON SELATAN","id":"BGA","n":"KAB. BUTON SELATAN"},{"v":"KDI - KOTA KENDARI","id":"KDI","n":"KOTA KENDARI"},{"v":"BAU - KOTA BAU BAU","id":"BAU","n":"KOTA BAU BAU"},{"v":"LBO - KAB. GORONTALO","id":"LBO","n":"KAB. GORONTALO"},{"v":"TMT - KAB. BOALEMO","id":"TMT","n":"KAB. BOALEMO"},{"v":"SWW - KAB. BONE BOLANGO","id":"SWW","n":"KAB. BONE BOLANGO"},{"v":"MAR - KAB. POHUWATO","id":"MAR","n":"KAB. POHUWATO"},{"v":"KDG - KAB. GORONTALO UTARA","id":"KDG","n":"KAB. GORONTALO UTARA"},{"v":"GTO - KOTA GORONTALO","id":"GTO","n":"KOTA GORONTALO"},{"v":"PKY - KAB. PASANGKAYU","id":"PKY","n":"KAB. PASANGKAYU"},{"v":"MMJ - KAB. MAMUJU","id":"MMJ","n":"KAB. MAMUJU"},{"v":"MMS - KAB. MAMASA","id":"MMS","n":"KAB. MAMASA"},{"v":"PLW - KAB. POLEWALI MANDAR","id":"PLW","n":"KAB. POLEWALI MANDAR"},{"v":"MJN - KAB. MAJENE","id":"MJN","n":"KAB. MAJENE"},{"v":"TBD - KAB. MAMUJU TENGAH","id":"TBD","n":"KAB. MAMUJU TENGAH"},{"v":"MSH - KAB. MALUKU TENGAH","id":"MSH","n":"KAB. MALUKU TENGAH"},{"v":"LGR - KAB. MALUKU TENGGARA","id":"LGR","n":"KAB. MALUKU TENGGARA"},{"v":"SML - KAB. KEPULAUAN TANIMBAR","id":"SML","n":"KAB. KEPULAUAN TANIMBAR"},{"v":"NLA - KAB. BURU","id":"NLA","n":"KAB. BURU"},{"v":"DTH - KAB. SERAM BAGIAN TIMUR","id":"DTH","n":"KAB. SERAM BAGIAN TIMUR"},{"v":"DRH - KAB. SERAM BAGIAN BARAT","id":"DRH","n":"KAB. SERAM BAGIAN BARAT"},{"v":"DBO - KAB. KEPULAUAN ARU","id":"DBO","n":"KAB. KEPULAUAN ARU"},{"v":"TKR - KAB. MALUKU BARAT DAYA","id":"TKR","n":"KAB. MALUKU BARAT DAYA"},{"v":"NRE - KAB. BURU SELATAN","id":"NRE","n":"KAB. BURU SELATAN"},{"v":"ABN - KOTA AMBON","id":"ABN","n":"KOTA AMBON"},{"v":"TUL - KOTA TUAL","id":"TUL","n":"KOTA TUAL"},{"v":"JLO - KAB. HALMAHERA BARAT","id":"JLO","n":"KAB. HALMAHERA BARAT"},{"v":"WDA - KAB. HALMAHERA TENGAH","id":"WDA","n":"KAB. HALMAHERA TENGAH"},{"v":"TOB - KAB. HALMAHERA UTARA","id":"TOB","n":"KAB. HALMAHERA UTARA"},{"v":"LBH - KAB. HALMAHERA SELATAN","id":"LBH","n":"KAB. HALMAHERA SELATAN"},{"v":"SNN - KAB. KEPULAUAN SULA","id":"SNN","n":"KAB. KEPULAUAN SULA"},{"v":"MAB - KAB. HALMAHERA TIMUR","id":"MAB","n":"KAB. HALMAHERA TIMUR"},{"v":"DRB - KAB. PULAU MOROTAI","id":"DRB","n":"KAB. PULAU MOROTAI"},{"v":"BBG - KAB. PULAU TALIABU","id":"BBG","n":"KAB. PULAU TALIABU"},{"v":"TTE - KOTA TERNATE","id":"TTE","n":"KOTA TERNATE"},{"v":"TDR - KOTA TIDORE KEPULAUAN","id":"TDR","n":"KOTA TIDORE KEPULAUAN"},{"v":"MRK - KAB. MERAUKE","id":"MRK","n":"KAB. MERAUKE"},{"v":"WMN - KAB. JAYAWIJAYA","id":"WMN","n":"KAB. JAYAWIJAYA"},{"v":"STN - KAB. JAYAPURA","id":"STN","n":"KAB. JAYAPURA"},{"v":"NBR - KAB. NABIRE","id":"NBR","n":"KAB. NABIRE"},{"v":"SRI - KAB. KEPULAUAN YAPEN","id":"SRI","n":"KAB. KEPULAUAN YAPEN"},{"v":"BIK - KAB. BIAK NUMFOR","id":"BIK","n":"KAB. BIAK NUMFOR"},{"v":"MLA - KAB. PUNCAK JAYA","id":"MLA","n":"KAB. PUNCAK JAYA"},{"v":"ERT - KAB. PANIAI","id":"ERT","n":"KAB. PANIAI"},{"v":"TMK - KAB. MIMIKA","id":"TMK","n":"KAB. MIMIKA"},{"v":"SMI - KAB. SARMI","id":"SMI","n":"KAB. SARMI"},{"v":"WRS - KAB. KEEROM","id":"WRS","n":"KAB. KEEROM"},{"v":"OSB - KAB. PEGUNUNGAN BINTANG","id":"OSB","n":"KAB. PEGUNUNGAN BINTANG"},{"v":"SMH - KAB. YAHUKIMO","id":"SMH","n":"KAB. YAHUKIMO"},{"v":"KBG - KAB. TOLIKARA","id":"KBG","n":"KAB. TOLIKARA"},{"v":"BTW - KAB. WAROPEN","id":"BTW","n":"KAB. WAROPEN"},{"v":"TMR - KAB. BOVEN DIGOEL","id":"TMR","n":"KAB. BOVEN DIGOEL"},{"v":"KEP - KAB. MAPPI","id":"KEP","n":"KAB. MAPPI"},{"v":"AGS - KAB. ASMAT","id":"AGS","n":"KAB. ASMAT"},{"v":"SRW - KAB. SUPIORI","id":"SRW","n":"KAB. SUPIORI"},{"v":"BMS - KAB. MAMBERAMO RAYA","id":"BMS","n":"KAB. MAMBERAMO RAYA"},{"v":"KOB - KAB. MAMBERAMO TENGAH","id":"KOB","n":"KAB. MAMBERAMO TENGAH"},{"v":"ELL - KAB. YALIMO","id":"ELL","n":"KAB. YALIMO"},{"v":"TOM - KAB. LANNY JAYA","id":"TOM","n":"KAB. LANNY JAYA"},{"v":"KYM - KAB. NDUGA","id":"KYM","n":"KAB. NDUGA"},{"v":"ILG - KAB. PUNCAK","id":"ILG","n":"KAB. PUNCAK"},{"v":"KGM - KAB. DOGIYAI","id":"KGM","n":"KAB. DOGIYAI"},{"v":"SGP - KAB. INTAN JAYA","id":"SGP","n":"KAB. INTAN JAYA"},{"v":"TGI - KAB. DEIYAI","id":"TGI","n":"KAB. DEIYAI"},{"v":"JPR - KOTA JAYAPURA","id":"JPR","n":"KOTA JAYAPURA"},{"v":"AMS - KAB. SORONG","id":"AMS","n":"KAB. SORONG"},{"v":"MNK - KAB. MANOKWARI","id":"MNK","n":"KAB. MANOKWARI"},{"v":"FAK - KAB. FAK FAK","id":"FAK","n":"KAB. FAK FAK"},{"v":"TMB - KAB. SORONG SELATAN","id":"TMB","n":"KAB. SORONG SELATAN"},{"v":"WSI - KAB. RAJA AMPAT","id":"WSI","n":"KAB. RAJA AMPAT"},{"v":"BTI - KAB. TELUK BINTUNI","id":"BTI","n":"KAB. TELUK BINTUNI"},{"v":"RSI - KAB. TELUK WONDAMA","id":"RSI","n":"KAB. TELUK WONDAMA"},{"v":"KMN - KAB. KAIMANA","id":"KMN","n":"KAB. KAIMANA"},{"v":"FEF - KAB. TAMBRAUW","id":"FEF","n":"KAB. TAMBRAUW"},{"v":"AFT - KAB. MAYBRAT","id":"AFT","n":"KAB. MAYBRAT"},{"v":"RSK - KAB. MANOKWARI SELATAN","id":"RSK","n":"KAB. MANOKWARI SELATAN"},{"v":"AGI - KAB. PEGUNUNGAN ARFAK","id":"AGI","n":"KAB. PEGUNUNGAN ARFAK"},{"v":"SRN - KOTA SORONG","id":"SRN","n":"KOTA SORONG"}],"4091":[{"v":"PPR - KAB. KEPULAUAN SERIBU","id":"PPR","n":"KAB. KEPULAUAN SERIBU"},{"v":"TNA - KOTA JAKARTA PUSAT","id":"TNA","n":"KOTA JAKARTA PUSAT"},{"v":"TJP - KOTA JAKARTA UTARA","id":"TJP","n":"KOTA JAKARTA UTARA"},{"v":"KBN - KOTA JAKARTA BARAT","id":"KBN","n":"KOTA JAKARTA BARAT"},{"v":"KYB - KOTA JAKARTA SELATAN","id":"KYB","n":"KOTA JAKARTA SELATAN"},{"v":"CKG - KOTA JAKARTA TIMUR","id":"CKG","n":"KOTA JAKARTA TIMUR"},{"v":"CBI - KAB. BOGOR","id":"CBI","n":"KAB. BOGOR"},{"v":"KWG - KAB. KARAWANG","id":"KWG","n":"KAB. KARAWANG"},{"v":"CKR - KAB. BEKASI","id":"CKR","n":"KAB. BEKASI"},{"v":"BGR - KOTA BOGOR","id":"BGR","n":"KOTA BOGOR"},{"v":"BKS - KOTA BEKASI","id":"BKS","n":"KOTA BEKASI"},{"v":"DPK - KOTA DEPOK","id":"DPK","n":"KOTA DEPOK"},{"v":"PDG - KAB. PANDEGLANG","id":"PDG","n":"KAB. PANDEGLANG"},{"v":"RKB - KAB. LEBAK","id":"RKB","n":"KAB. LEBAK"},{"v":"TGR - KAB. TANGERANG","id":"TGR","n":"KAB. TANGERANG"},{"v":"CRU - KAB. SERANG","id":"CRU","n":"KAB. SERANG"},{"v":"TNG - KOTA TANGERANG","id":"TNG","n":"KOTA TANGERANG"},{"v":"CLG - KOTA CILEGON","id":"CLG","n":"KOTA CILEGON"},{"v":"SRG - KOTA SERANG","id":"SRG","n":"KOTA SERANG"},{"v":"CPT - KOTA TANGERANG SELATAN","id":"CPT","n":"KOTA TANGERANG SELATAN"}]};
+
+  function _populateCityDropdown(subVal) {
+    const sel = document.getElementById('fCityName');
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— Pilih City —</option>';
+    if (!subVal || !_CITY_DB[subVal]) { _updateFuncLoc(); return; }
+    _CITY_DB[subVal].forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = c.v;
+      sel.appendChild(o);
+    });
+    if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+    _updateFuncLoc();
+  }
+
+  function _normalizeSiteId(raw) {
+    // Hapus semua "-", bentuk: 3 huruf + minimal 3 angka (leading zero jika perlu)
+    const s = raw.replace(/-/g,'').toUpperCase().trim();
+    const letters = s.replace(/[^A-Z]/g,'').substring(0,3);
+    const nums    = s.replace(/[^0-9]/g,'');
+    if (!letters) return s.substring(0,6);
+    const numPadded = nums.length < 3 ? nums.padStart(3,'0') : nums;
+    return letters + numPadded;
+  }
+
+  function _updateFuncLoc() {
+    const sub  = (document.getElementById('fSubregion')  || {}).value || '';
+    const city = (document.getElementById('fCityName')   || {}).value || '';
+    const rawSid = (document.getElementById('fSiteId')   || {}).value || '';
+    const sid  = rawSid ? _normalizeSiteId(rawSid) : '';
+    const fl   = document.getElementById('fFuncLoc');
+    if (!fl) return;
+    fl.value = (sub && city && sid) ? sub+'-'+city+'-'+sid : '';
   }
 
   // ── Helper: get subregion label from code ─────────────
@@ -5635,6 +5796,527 @@ ${sigSection}
     };
     return map[String(code)] || code;
   }
+
+  // ── City Data (dari Validation_City.xlsx) ──────────────
+  const CITY_DATA = [
+    {c:'TTN',n:'KAB. ACEH SELATAN',s:'1011'},
+    {c:'KTN',n:'KAB. ACEH TENGGARA',s:'1011'},
+    {c:'IRY',n:'KAB. ACEH TIMUR',s:'1011'},
+    {c:'TKN',n:'KAB. ACEH TENGAH',s:'1011'},
+    {c:'MBO',n:'KAB. ACEH BARAT',s:'1011'},
+    {c:'JTH',n:'KAB. ACEH BESAR',s:'1011'},
+    {c:'SGI',n:'KAB. PIDIE',s:'1011'},
+    {c:'LSK',n:'KAB. ACEH UTARA',s:'1011'},
+    {c:'SNB',n:'KAB. SIMEULUE',s:'1011'},
+    {c:'SKL',n:'KAB. ACEH SINGKIL',s:'1011'},
+    {c:'BRE',n:'KAB. BIREUEN',s:'1011'},
+    {c:'BPD',n:'KAB. ACEH BARAT DAYA',s:'1011'},
+    {c:'BKJ',n:'KAB. GAYO LUES',s:'1011'},
+    {c:'CAG',n:'KAB. ACEH JAYA',s:'1011'},
+    {c:'SKM',n:'KAB. NAGAN RAYA',s:'1011'},
+    {c:'KRB',n:'KAB. ACEH TAMIANG',s:'1011'},
+    {c:'STR',n:'KAB. BENER MERIAH',s:'1011'},
+    {c:'MRN',n:'KAB. PIDIE JAYA',s:'1011'},
+    {c:'BNA',n:'KOTA BANDA ACEH',s:'1011'},
+    {c:'SAB',n:'KOTA SABANG',s:'1011'},
+    {c:'LSM',n:'KOTA LHOKSEUMAWE',s:'1011'},
+    {c:'LGS',n:'KOTA LANGSA',s:'1011'},
+    {c:'SUS',n:'KOTA SUBULUSSALAM',s:'1011'},
+    {c:'PDN',n:'KAB. TAPANULI TENGAH',s:'1011'},
+    {c:'TRT',n:'KAB. TAPANULI UTARA',s:'1011'},
+    {c:'SPR',n:'KAB. TAPANULI SELATAN',s:'1011'},
+    {c:'GDO',n:'KAB. NIAS',s:'1011'},
+    {c:'STB',n:'KAB. LANGKAT',s:'1011'},
+    {c:'KBJ',n:'KAB. KARO',s:'1011'},
+    {c:'LBP',n:'KAB. DELI SERDANG',s:'1011'},
+    {c:'RYA',n:'KAB. SIMALUNGUN',s:'1011'},
+    {c:'KIS',n:'KAB. ASAHAN',s:'1011'},
+    {c:'RAP',n:'KAB. LABUHANBATU',s:'1011'},
+    {c:'SDK',n:'KAB. DAIRI',s:'1011'},
+    {c:'BLG',n:'KAB. TOBA',s:'1011'},
+    {c:'PYB',n:'KAB. MANDAILING NATAL',s:'1011'},
+    {c:'TLD',n:'KAB. NIAS SELATAN',s:'1011'},
+    {c:'SAL',n:'KAB. PAKPAK BHARAT',s:'1011'},
+    {c:'DLS',n:'KAB. HUMBANG HASUNDUTAN',s:'1011'},
+    {c:'PRR',n:'KAB. SAMOSIR',s:'1011'},
+    {c:'SRH',n:'KAB. SERDANG BEDAGAI',s:'1011'},
+    {c:'LMP',n:'KAB. BATU BARA',s:'1011'},
+    {c:'GNT',n:'KAB. PADANG LAWAS UTARA',s:'1011'},
+    {c:'SBH',n:'KAB. PADANG LAWAS',s:'1011'},
+    {c:'KPI',n:'KAB. LABUHANBATU SELATAN',s:'1011'},
+    {c:'AKK',n:'KAB. LABUHANBATU UTARA',s:'1011'},
+    {c:'LTU',n:'KAB. NIAS UTARA',s:'1011'},
+    {c:'LHM',n:'KAB. NIAS BARAT',s:'1011'},
+    {c:'MDN',n:'KOTA MEDAN',s:'1011'},
+    {c:'PMS',n:'KOTA PEMATANG SIANTAR',s:'1011'},
+    {c:'SBG',n:'KOTA SIBOLGA',s:'1011'},
+    {c:'TJB',n:'KOTA TANJUNG BALAI',s:'1011'},
+    {c:'BNJ',n:'KOTA BINJAI',s:'1011'},
+    {c:'TBT',n:'KOTA TEBING TINGGI',s:'1011'},
+    {c:'PSP',n:'KOTA PADANG SIDEMPUAN',s:'1011'},
+    {c:'GST',n:'KOTA GUNUNGSITOLI',s:'1011'},
+    {c:'PNN',n:'KAB. PESISIR SELATAN',s:'1011'},
+    {c:'ARS',n:'KAB. SOLOK',s:'1011'},
+    {c:'MRJ',n:'KAB. SIJUNJUNG',s:'1011'},
+    {c:'BSK',n:'KAB. TANAH DATAR',s:'1011'},
+    {c:'NPM',n:'KAB. PADANG PARIAMAN',s:'1011'},
+    {c:'LBB',n:'KAB. AGAM',s:'1011'},
+    {c:'SRK',n:'KAB. LIMA PULUH KOTA',s:'1011'},
+    {c:'LBS',n:'KAB. PASAMAN',s:'1011'},
+    {c:'TPT',n:'KAB. KEPULAUAN MENTAWAI',s:'1011'},
+    {c:'PLJ',n:'KAB. DHARMASRAYA',s:'1011'},
+    {c:'PDA',n:'KAB. SOLOK SELATAN',s:'1011'},
+    {c:'SPE',n:'KAB. PASAMAN BARAT',s:'1011'},
+    {c:'PAD',n:'KOTA PADANG',s:'1011'},
+    {c:'SLK',n:'KOTA SOLOK',s:'1011'},
+    {c:'SWL',n:'KOTA SAWAHLUNTO',s:'1011'},
+    {c:'PPJ',n:'KOTA PADANG PANJANG',s:'1011'},
+    {c:'BKT',n:'KOTA BUKITTINGGI',s:'1011'},
+    {c:'PYH',n:'KOTA PAYAKUMBUH',s:'1011'},
+    {c:'PMN',n:'KOTA PARIAMAN',s:'1011'},
+    {c:'BKN',n:'KAB. KAMPAR',s:'1011'},
+    {c:'RGT',n:'KAB. INDRAGIRI HULU',s:'1011'},
+    {c:'BLS',n:'KAB. BENGKALIS',s:'1011'},
+    {c:'TBH',n:'KAB. INDRAGIRI HILIR',s:'1011'},
+    {c:'PKK',n:'KAB. PELALAWAN',s:'1011'},
+    {c:'PRP',n:'KAB. ROKAN HULU',s:'1011'},
+    {c:'BGS',n:'KAB. ROKAN HILIR',s:'1011'},
+    {c:'SSI',n:'KAB. SIAK',s:'1011'},
+    {c:'TLK',n:'KAB. KUANTAN SINGINGI',s:'1011'},
+    {c:'TTG',n:'KAB. KEPULAUAN MERANTI',s:'1011'},
+    {c:'PBR',n:'KOTA PEKANBARU',s:'1011'},
+    {c:'DUM',n:'KOTA DUMAI',s:'1011'},
+    {c:'SUL',n:'KAB. KERINCI',s:'1021'},
+    {c:'BKO',n:'KAB. MERANGIN',s:'1021'},
+    {c:'SRL',n:'KAB. SAROLANGUN',s:'1021'},
+    {c:'MBN',n:'KAB. BATANGHARI',s:'1021'},
+    {c:'SNT',n:'KAB. MUARO JAMBI',s:'1021'},
+    {c:'KLT',n:'KAB. TANJUNG JABUNG BARAT',s:'1021'},
+    {c:'MSK',n:'KAB. TANJUNG JABUNG TIMUR',s:'1021'},
+    {c:'MRB',n:'KAB. BUNGO',s:'1021'},
+    {c:'MRT',n:'KAB. TEBO',s:'1021'},
+    {c:'JMB',n:'KOTA JAMBI',s:'1021'},
+    {c:'SPN',n:'KOTA SUNGAI PENUH',s:'1021'},
+    {c:'BTA',n:'KAB. OGAN KOMERING ULU',s:'1021'},
+    {c:'KAG',n:'KAB. OGAN KOMERING ILIR',s:'1021'},
+    {c:'MRE',n:'KAB. MUARA ENIM',s:'1021'},
+    {c:'LHT',n:'KAB. LAHAT',s:'1021'},
+    {c:'MBL',n:'KAB. MUSI RAWAS',s:'1021'},
+    {c:'SKY',n:'KAB. MUSI BANYUASIN',s:'1021'},
+    {c:'PKB',n:'KAB. BANYUASIN',s:'1021'},
+    {c:'MTA',n:'KAB. OGAN KOMERING ULU TIMUR',s:'1021'},
+    {c:'MRD',n:'KAB. OGAN KOMERING ULU SELATAN',s:'1021'},
+    {c:'IDL',n:'KAB. OGAN ILIR',s:'1021'},
+    {c:'TBG',n:'KAB. EMPAT LAWANG',s:'1021'},
+    {c:'TLU',n:'KAB. PENUKAL ABAB LEMATANG ILIR',s:'1021'},
+    {c:'RPT',n:'KAB. MUSI RAWAS UTARA',s:'1021'},
+    {c:'PLG',n:'KOTA PALEMBANG',s:'1021'},
+    {c:'PGA',n:'KOTA PAGAR ALAM',s:'1021'},
+    {c:'LLG',n:'KOTA LUBUK LINGGAU',s:'1021'},
+    {c:'PBM',n:'KOTA PRABUMULIH',s:'1021'},
+    {c:'MNA',n:'KAB. BENGKULU SELATAN',s:'1021'},
+    {c:'CRP',n:'KAB. REJANG LEBONG',s:'1021'},
+    {c:'AGM',n:'KAB. BENGKULU UTARA',s:'1021'},
+    {c:'BTH',n:'KAB. KAUR',s:'1021'},
+    {c:'TIS',n:'KAB. SELUMA',s:'1021'},
+    {c:'MKO',n:'KAB. MUKOMUKO',s:'1021'},
+    {c:'TBI',n:'KAB. LEBONG',s:'1021'},
+    {c:'KPH',n:'KAB. KEPAHIANG',s:'1021'},
+    {c:'KRT',n:'KAB. BENGKULU TENGAH',s:'1021'},
+    {c:'BGL',n:'KOTA BENGKULU',s:'1021'},
+    {c:'KLA',n:'KAB. LAMPUNG SELATAN',s:'1021'},
+    {c:'GNS',n:'KAB. LAMPUNG TENGAH',s:'1021'},
+    {c:'KTB',n:'KAB. LAMPUNG UTARA',s:'1021'},
+    {c:'LWA',n:'KAB. LAMPUNG BARAT',s:'1021'},
+    {c:'MGL',n:'KAB. TULANG BAWANG',s:'1021'},
+    {c:'KOT',n:'KAB. TANGGAMUS',s:'1021'},
+    {c:'SDN',n:'KAB. LAMPUNG TIMUR',s:'1021'},
+    {c:'BBU',n:'KAB. WAY KANAN',s:'1021'},
+    {c:'GDT',n:'KAB. PESAWARAN',s:'1021'},
+    {c:'PRW',n:'KAB. PRINGSEWU',s:'1021'},
+    {c:'MSJ',n:'KAB. MESUJI',s:'1021'},
+    {c:'TWG',n:'KAB. TULANG BAWANG BARAT',s:'1021'},
+    {c:'KRU',n:'KAB. PESISIR BARAT',s:'1021'},
+    {c:'BDL',n:'KOTA BANDAR LAMPUNG',s:'1021'},
+    {c:'MET',n:'KOTA METRO',s:'1021'},
+    {c:'SGL',n:'KAB. BANGKA',s:'1021'},
+    {c:'TPD',n:'KAB. BELITUNG',s:'1021'},
+    {c:'TBL',n:'KAB. BANGKA SELATAN',s:'1021'},
+    {c:'KBA',n:'KAB. BANGKA TENGAH',s:'1021'},
+    {c:'MTK',n:'KAB. BANGKA BARAT',s:'1021'},
+    {c:'MGR',n:'KAB. BELITUNG TIMUR',s:'1021'},
+    {c:'PGP',n:'KOTA PANGKAL PINANG',s:'1021'},
+    {c:'BSB',n:'KAB. BINTAN',s:'1021'},
+    {c:'TBK',n:'KAB. KARIMUN',s:'1021'},
+    {c:'RNI',n:'KAB. NATUNA',s:'1021'},
+    {c:'DKL',n:'KAB. LINGGA',s:'1021'},
+    {c:'TRP',n:'KAB. KEPULAUAN ANAMBAS',s:'1021'},
+    {c:'BTM',n:'KOTA BATAM',s:'1021'},
+    {c:'TPG',n:'KOTA TANJUNG PINANG',s:'1021'},
+    {c:'CLP',n:'KAB. CILACAP',s:'2031'},
+    {c:'PWT',n:'KAB. BANYUMAS',s:'2031'},
+    {c:'PBG',n:'KAB. PURBALINGGA',s:'2031'},
+    {c:'BNR',n:'KAB. BANJARNEGARA',s:'2031'},
+    {c:'KBM',n:'KAB. KEBUMEN',s:'2031'},
+    {c:'PWR',n:'KAB. PURWOREJO',s:'2031'},
+    {c:'WSB',n:'KAB. WONOSOBO',s:'2031'},
+    {c:'MKD',n:'KAB. MAGELANG',s:'2031'},
+    {c:'BYL',n:'KAB. BOYOLALI',s:'2031'},
+    {c:'KLN',n:'KAB. KLATEN',s:'2031'},
+    {c:'SKH',n:'KAB. SUKOHARJO',s:'2031'},
+    {c:'WNG',n:'KAB. WONOGIRI',s:'2031'},
+    {c:'KRG',n:'KAB. KARANGANYAR',s:'2031'},
+    {c:'SGN',n:'KAB. SRAGEN',s:'2031'},
+    {c:'PWD',n:'KAB. GROBOGAN',s:'2031'},
+    {c:'BLA',n:'KAB. BLORA',s:'2031'},
+    {c:'RBG',n:'KAB. REMBANG',s:'2031'},
+    {c:'PTI',n:'KAB. PATI',s:'2031'},
+    {c:'KDS',n:'KAB. KUDUS',s:'2031'},
+    {c:'JPA',n:'KAB. JEPARA',s:'2031'},
+    {c:'DMK',n:'KAB. DEMAK',s:'2031'},
+    {c:'UNR',n:'KAB. SEMARANG',s:'2031'},
+    {c:'TMG',n:'KAB. TEMANGGUNG',s:'2031'},
+    {c:'KDL',n:'KAB. KENDAL',s:'2031'},
+    {c:'BTG',n:'KAB. BATANG',s:'2031'},
+    {c:'KJN',n:'KAB. PEKALONGAN',s:'2031'},
+    {c:'PML',n:'KAB. PEMALANG',s:'2031'},
+    {c:'SLW',n:'KAB. TEGAL',s:'2031'},
+    {c:'BBS',n:'KAB. BREBES',s:'2031'},
+    {c:'MGG',n:'KOTA MAGELANG',s:'2031'},
+    {c:'SKA',n:'KOTA SURAKARTA',s:'2031'},
+    {c:'SLT',n:'KOTA SALATIGA',s:'2031'},
+    {c:'SMG',n:'KOTA SEMARANG',s:'2031'},
+    {c:'PKL',n:'KOTA PEKALONGAN',s:'2031'},
+    {c:'TGL',n:'KOTA TEGAL',s:'2031'},
+    {c:'WAT',n:'KAB. KULON PROGO',s:'2031'},
+    {c:'BTL',n:'KAB. BANTUL',s:'2031'},
+    {c:'WNO',n:'KAB. GUNUNG KIDUL',s:'2031'},
+    {c:'SMN',n:'KAB. SLEMAN',s:'2031'},
+    {c:'YOG',n:'KOTA YOGYAKARTA',s:'2031'},
+    {c:'PRT',n:'KAB. SUKABUMI',s:'2041'},
+    {c:'CJR',n:'KAB. CIANJUR',s:'2041'},
+    {c:'SOR',n:'KAB. BANDUNG',s:'2041'},
+    {c:'GRT',n:'KAB. GARUT',s:'2041'},
+    {c:'SPA',n:'KAB. TASIKMALAYA',s:'2041'},
+    {c:'CMS',n:'KAB. CIAMIS',s:'2041'},
+    {c:'KNG',n:'KAB. KUNINGAN',s:'2041'},
+    {c:'SBR',n:'KAB. CIREBON',s:'2041'},
+    {c:'MJL',n:'KAB. MAJALENGKA',s:'2041'},
+    {c:'SMD',n:'KAB. SUMEDANG',s:'2041'},
+    {c:'IDM',n:'KAB. INDRAMAYU',s:'2041'},
+    {c:'SBN',n:'KAB. SUBANG',s:'2041'},
+    {c:'PWK',n:'KAB. PURWAKARTA',s:'2041'},
+    {c:'NPH',n:'KAB. BANDUNG BARAT',s:'2041'},
+    {c:'PRI',n:'KAB. PANGANDARAN',s:'2041'},
+    {c:'SKB',n:'KOTA SUKABUMI',s:'2041'},
+    {c:'BDG',n:'KOTA BANDUNG',s:'2041'},
+    {c:'CBN',n:'KOTA CIREBON',s:'2041'},
+    {c:'CMH',n:'KOTA CIMAHI',s:'2041'},
+    {c:'TSM',n:'KOTA TASIKMALAYA',s:'2041'},
+    {c:'BJR',n:'KOTA BANJAR',s:'2041'},
+    {c:'PCT',n:'KAB. PACITAN',s:'2051'},
+    {c:'PNG',n:'KAB. PONOROGO',s:'2051'},
+    {c:'TRK',n:'KAB. TRENGGALEK',s:'2051'},
+    {c:'TLG',n:'KAB. TULUNGAGUNG',s:'2051'},
+    {c:'KNR',n:'KAB. BLITAR',s:'2051'},
+    {c:'PAR',n:'KAB. KEDIRI',s:'2051'},
+    {c:'KPN',n:'KAB. MALANG',s:'2051'},
+    {c:'LMJ',n:'KAB. LUMAJANG',s:'2051'},
+    {c:'JMR',n:'KAB. JEMBER',s:'2051'},
+    {c:'BYW',n:'KAB. BANYUWANGI',s:'2051'},
+    {c:'BDW',n:'KAB. BONDOWOSO',s:'2051'},
+    {c:'SIT',n:'KAB. SITUBONDO',s:'2051'},
+    {c:'KRS',n:'KAB. PROBOLINGGO',s:'2051'},
+    {c:'BNL',n:'KAB. PASURUAN',s:'2051'},
+    {c:'SDA',n:'KAB. SIDOARJO',s:'2051'},
+    {c:'MJS',n:'KAB. MOJOKERTO',s:'2051'},
+    {c:'JBG',n:'KAB. JOMBANG',s:'2051'},
+    {c:'NGJ',n:'KAB. NGANJUK',s:'2051'},
+    {c:'CRB',n:'KAB. MADIUN',s:'2051'},
+    {c:'MGT',n:'KAB. MAGETAN',s:'2051'},
+    {c:'NGW',n:'KAB. NGAWI',s:'2051'},
+    {c:'BJN',n:'KAB. BOJONEGORO',s:'2051'},
+    {c:'TBN',n:'KAB. TUBAN',s:'2051'},
+    {c:'LMG',n:'KAB. LAMONGAN',s:'2051'},
+    {c:'GSK',n:'KAB. GRESIK',s:'2051'},
+    {c:'BKL',n:'KAB. BANGKALAN',s:'2051'},
+    {c:'SPG',n:'KAB. SAMPANG',s:'2051'},
+    {c:'PMK',n:'KAB. PAMEKASAN',s:'2051'},
+    {c:'SMP',n:'KAB. SUMENEP',s:'2051'},
+    {c:'KDR',n:'KOTA KEDIRI',s:'2051'},
+    {c:'BLT',n:'KOTA BLITAR',s:'2051'},
+    {c:'MLG',n:'KOTA MALANG',s:'2051'},
+    {c:'PBL',n:'KOTA PROBOLINGGO',s:'2051'},
+    {c:'PSR',n:'KOTA PASURUAN',s:'2051'},
+    {c:'MJK',n:'KOTA MOJOKERTO',s:'2051'},
+    {c:'MAD',n:'KOTA MADIUN',s:'2051'},
+    {c:'SBY',n:'KOTA SURABAYA',s:'2051'},
+    {c:'BTU',n:'KOTA BATU',s:'2051'},
+    {c:'NGA',n:'KAB. JEMBRANA',s:'3061'},
+    {c:'TAB',n:'KAB. TABANAN',s:'3061'},
+    {c:'MNP',n:'KAB. BADUNG',s:'3061'},
+    {c:'GIN',n:'KAB. GIANYAR',s:'3061'},
+    {c:'SRP',n:'KAB. KLUNGKUNG',s:'3061'},
+    {c:'BLI',n:'KAB. BANGLI',s:'3061'},
+    {c:'ALP',n:'KAB. KARANGASEM',s:'3061'},
+    {c:'SGR',n:'KAB. BULELENG',s:'3061'},
+    {c:'DPS',n:'KOTA DENPASAR',s:'3061'},
+    {c:'GRG',n:'KAB. LOMBOK BARAT',s:'3061'},
+    {c:'PYA',n:'KAB. LOMBOK TENGAH',s:'3061'},
+    {c:'SLG',n:'KAB. LOMBOK TIMUR',s:'3061'},
+    {c:'SBW',n:'KAB. SUMBAWA',s:'3061'},
+    {c:'DPU',n:'KAB. DOMPU',s:'3061'},
+    {c:'WOH',n:'KAB. BIMA',s:'3061'},
+    {c:'TLW',n:'KAB. SUMBAWA BARAT',s:'3061'},
+    {c:'TJN',n:'KAB. LOMBOK UTARA',s:'3061'},
+    {c:'MTR',n:'KOTA MATARAM',s:'3061'},
+    {c:'BIM',n:'KOTA BIMA',s:'3061'},
+    {c:'OLM',n:'KAB. KUPANG',s:'3061'},
+    {c:'SOE',n:'KAB. TIMOR TENGAH SELATAN',s:'3061'},
+    {c:'KFM',n:'KAB. TIMOR TENGAH UTARA',s:'3061'},
+    {c:'ATB',n:'KAB. BELU',s:'3061'},
+    {c:'KLB',n:'KAB. ALOR',s:'3061'},
+    {c:'LRT',n:'KAB. FLORES TIMUR',s:'3061'},
+    {c:'MME',n:'KAB. SIKKA',s:'3061'},
+    {c:'END',n:'KAB. ENDE',s:'3061'},
+    {c:'BJW',n:'KAB. NGADA',s:'3061'},
+    {c:'RTG',n:'KAB. MANGGARAI',s:'3061'},
+    {c:'WGP',n:'KAB. SUMBA TIMUR',s:'3061'},
+    {c:'WKB',n:'KAB. SUMBA BARAT',s:'3061'},
+    {c:'LWB',n:'KAB. LEMBATA',s:'3061'},
+    {c:'BAA',n:'KAB. ROTE NDAO',s:'3061'},
+    {c:'LBJ',n:'KAB. MANGGARAI BARAT',s:'3061'},
+    {c:'MBY',n:'KAB. NAGEKEO',s:'3061'},
+    {c:'WBL',n:'KAB. SUMBA TENGAH',s:'3061'},
+    {c:'TAM',n:'KAB. SUMBA BARAT DAYA',s:'3061'},
+    {c:'BRG',n:'KAB. MANGGARAI TIMUR',s:'3061'},
+    {c:'SBB',n:'KAB. SABU RAIJUA',s:'3061'},
+    {c:'BET',n:'KAB. MALAKA',s:'3061'},
+    {c:'KPG',n:'KOTA KUPANG',s:'3061'},
+    {c:'SBS',n:'KAB. SAMBAS',s:'3071'},
+    {c:'MPW',n:'KAB. MEMPAWAH',s:'3071'},
+    {c:'SAG',n:'KAB. SANGGAU',s:'3071'},
+    {c:'KTP',n:'KAB. KETAPANG',s:'3071'},
+    {c:'STG',n:'KAB. SINTANG',s:'3071'},
+    {c:'PTS',n:'KAB. KAPUAS HULU',s:'3071'},
+    {c:'BKY',n:'KAB. BENGKAYANG',s:'3071'},
+    {c:'NBA',n:'KAB. LANDAK',s:'3071'},
+    {c:'SED',n:'KAB. SEKADAU',s:'3071'},
+    {c:'NGP',n:'KAB. MELAWI',s:'3071'},
+    {c:'SKD',n:'KAB. KAYONG UTARA',s:'3071'},
+    {c:'SRY',n:'KAB. KUBU RAYA',s:'3071'},
+    {c:'PTK',n:'KOTA PONTIANAK',s:'3071'},
+    {c:'SKW',n:'KOTA SINGKAWANG',s:'3071'},
+    {c:'PBU',n:'KAB. KOTAWARINGIN BARAT',s:'3071'},
+    {c:'SPT',n:'KAB. KOTAWARINGIN TIMUR',s:'3071'},
+    {c:'KLK',n:'KAB. KAPUAS',s:'3071'},
+    {c:'BNT',n:'KAB. BARITO SELATAN',s:'3071'},
+    {c:'MTW',n:'KAB. BARITO UTARA',s:'3071'},
+    {c:'KSN',n:'KAB. KATINGAN',s:'3071'},
+    {c:'KLP',n:'KAB. SERUYAN',s:'3071'},
+    {c:'SKR',n:'KAB. SUKAMARA',s:'3071'},
+    {c:'NGB',n:'KAB. LAMANDAU',s:'3071'},
+    {c:'KKN',n:'KAB. GUNUNG MAS',s:'3071'},
+    {c:'PPS',n:'KAB. PULANG PISAU',s:'3071'},
+    {c:'PRC',n:'KAB. MURUNG RAYA',s:'3071'},
+    {c:'TML',n:'KAB. BARITO TIMUR',s:'3071'},
+    {c:'PLK',n:'KOTA PALANGKARAYA',s:'3071'},
+    {c:'PLI',n:'KAB. TANAH LAUT',s:'3071'},
+    {c:'KBR',n:'KAB. KOTABARU',s:'3071'},
+    {c:'MTP',n:'KAB. BANJAR',s:'3071'},
+    {c:'MRH',n:'KAB. BARITO KUALA',s:'3071'},
+    {c:'RTA',n:'KAB. TAPIN',s:'3071'},
+    {c:'KDN',n:'KAB. HULU SUNGAI SELATAN',s:'3071'},
+    {c:'BRB',n:'KAB. HULU SUNGAI TENGAH',s:'3071'},
+    {c:'AMT',n:'KAB. HULU SUNGAI UTARA',s:'3071'},
+    {c:'TJG',n:'KAB. TABALONG',s:'3071'},
+    {c:'BLN',n:'KAB. TANAH BUMBU',s:'3071'},
+    {c:'PRN',n:'KAB. BALANGAN',s:'3071'},
+    {c:'BJM',n:'KOTA BANJARMASIN',s:'3071'},
+    {c:'BJB',n:'KOTA BANJARBARU',s:'3071'},
+    {c:'TNP',n:'KAB. PASER',s:'3071'},
+    {c:'TRG',n:'KAB. KUTAI KARTANEGARA',s:'3071'},
+    {c:'TJR',n:'KAB. BERAU',s:'3071'},
+    {c:'SDW',n:'KAB. KUTAI BARAT',s:'3071'},
+    {c:'SGT',n:'KAB. KUTAI TIMUR',s:'3071'},
+    {c:'PNJ',n:'KAB. PENAJAM PASER UTARA',s:'3071'},
+    {c:'LBN',n:'KAB. MAHAKAM ULU',s:'3071'},
+    {c:'BPP',n:'KOTA BALIKPAPAN',s:'3071'},
+    {c:'SMR',n:'KOTA SAMARINDA',s:'3071'},
+    {c:'BON',n:'KOTA BONTANG',s:'3071'},
+    {c:'TJS',n:'KAB. BULUNGAN',s:'3071'},
+    {c:'MLN',n:'KAB. MALINAU',s:'3071'},
+    {c:'NNK',n:'KAB. NUNUKAN',s:'3071'},
+    {c:'TDP',n:'KAB. TANA TIDUNG',s:'3071'},
+    {c:'TRN',n:'KOTA TARAKAN',s:'3071'},
+    {c:'LLK',n:'KAB. BOLAANG MONGONDOW',s:'3081'},
+    {c:'TDO',n:'KAB. MINAHASA',s:'3081'},
+    {c:'THN',n:'KAB. KEPULAUAN SANGIHE',s:'3081'},
+    {c:'MGN',n:'KAB. KEPULAUAN TALAUD',s:'3081'},
+    {c:'AMR',n:'KAB. MINAHASA SELATAN',s:'3081'},
+    {c:'ARM',n:'KAB. MINAHASA UTARA',s:'3081'},
+    {c:'RTN',n:'KAB. MINAHASA TENGGARA',s:'3081'},
+    {c:'BRK',n:'KAB. BOLAANG MONGONDOW UTARA',s:'3081'},
+    {c:'ODS',n:'KAB. KEPULAUAN SIAU TAGULANDANG BIARO',s:'3081'},
+    {c:'TTY',n:'KAB. BOLAANG MONGONDOW TIMUR',s:'3081'},
+    {c:'BLU',n:'KAB. BOLAANG MONGONDOW SELATAN',s:'3081'},
+    {c:'MDO',n:'KOTA MANADO',s:'3081'},
+    {c:'BIT',n:'KOTA BITUNG',s:'3081'},
+    {c:'TMH',n:'KOTA TOMOHON',s:'3081'},
+    {c:'KTG',n:'KOTA KOTAMOBAGU',s:'3081'},
+    {c:'LWK',n:'KAB. BANGGAI',s:'3081'},
+    {c:'PSO',n:'KAB. POSO',s:'3081'},
+    {c:'DGL',n:'KAB. DONGGALA',s:'3081'},
+    {c:'TLI',n:'KAB. TOLI TOLI',s:'3081'},
+    {c:'BUL',n:'KAB. BUOL',s:'3081'},
+    {c:'BKU',n:'KAB. MOROWALI',s:'3081'},
+    {c:'SKN',n:'KAB. BANGGAI KEPULAUAN',s:'3081'},
+    {c:'PRG',n:'KAB. PARIGI MOUTONG',s:'3081'},
+    {c:'APN',n:'KAB. TOJO UNA UNA',s:'3081'},
+    {c:'SGB',n:'KAB. SIGI',s:'3081'},
+    {c:'BGI',n:'KAB. BANGGAI LAUT',s:'3081'},
+    {c:'PTA',n:'KAB. MOROWALI UTARA',s:'3081'},
+    {c:'PAL',n:'KOTA PALU',s:'3081'},
+    {c:'BTN',n:'KAB. KEPULAUAN SELAYAR',s:'3081'},
+    {c:'BLK',n:'KAB. BULUKUMBA',s:'3081'},
+    {c:'BTE',n:'KAB. BANTAENG',s:'3081'},
+    {c:'JNP',n:'KAB. JENEPONTO',s:'3081'},
+    {c:'TKL',n:'KAB. TAKALAR',s:'3081'},
+    {c:'SGM',n:'KAB. GOWA',s:'3081'},
+    {c:'SNJ',n:'KAB. SINJAI',s:'3081'},
+    {c:'WTP',n:'KAB. BONE',s:'3081'},
+    {c:'MRS',n:'KAB. MAROS',s:'3081'},
+    {c:'PKJ',n:'KAB. PANGKAJENE DAN KEPULAUAN',s:'3081'},
+    {c:'BRU',n:'KAB. BARRU',s:'3081'},
+    {c:'WSP',n:'KAB. SOPPENG',s:'3081'},
+    {c:'SKG',n:'KAB. WAJO',s:'3081'},
+    {c:'SDR',n:'KAB. SIDENRENG RAPPANG',s:'3081'},
+    {c:'PIN',n:'KAB. PINRANG',s:'3081'},
+    {c:'ERK',n:'KAB. ENREKANG',s:'3081'},
+    {c:'BLP',n:'KAB. LUWU',s:'3081'},
+    {c:'MKL',n:'KAB. TANA TORAJA',s:'3081'},
+    {c:'MSB',n:'KAB. LUWU UTARA',s:'3081'},
+    {c:'MLL',n:'KAB. LUWU TIMUR',s:'3081'},
+    {c:'RTP',n:'KAB. TORAJA UTARA',s:'3081'},
+    {c:'MKS',n:'KOTA MAKASSAR',s:'3081'},
+    {c:'PRE',n:'KOTA PARE PARE',s:'3081'},
+    {c:'PLP',n:'KOTA PALOPO',s:'3081'},
+    {c:'KKA',n:'KAB. KOLAKA',s:'3081'},
+    {c:'UNH',n:'KAB. KONAWE',s:'3081'},
+    {c:'RAH',n:'KAB. MUNA',s:'3081'},
+    {c:'PSW',n:'KAB. BUTON',s:'3081'},
+    {c:'ADL',n:'KAB. KONAWE SELATAN',s:'3081'},
+    {c:'RMB',n:'KAB. BOMBANA',s:'3081'},
+    {c:'WGI',n:'KAB. WAKATOBI',s:'3081'},
+    {c:'LSS',n:'KAB. KOLAKA UTARA',s:'3081'},
+    {c:'WGD',n:'KAB. KONAWE UTARA',s:'3081'},
+    {c:'BRN',n:'KAB. BUTON UTARA',s:'3081'},
+    {c:'TRW',n:'KAB. KOLAKA TIMUR',s:'3081'},
+    {c:'WBR',n:'KAB. KONAWE KEPULAUAN',s:'3081'},
+    {c:'SWG',n:'KAB. MUNA BARAT',s:'3081'},
+    {c:'LKD',n:'KAB. BUTON TENGAH',s:'3081'},
+    {c:'BGA',n:'KAB. BUTON SELATAN',s:'3081'},
+    {c:'KDI',n:'KOTA KENDARI',s:'3081'},
+    {c:'BAU',n:'KOTA BAU BAU',s:'3081'},
+    {c:'LBO',n:'KAB. GORONTALO',s:'3081'},
+    {c:'TMT',n:'KAB. BOALEMO',s:'3081'},
+    {c:'SWW',n:'KAB. BONE BOLANGO',s:'3081'},
+    {c:'MAR',n:'KAB. POHUWATO',s:'3081'},
+    {c:'KDG',n:'KAB. GORONTALO UTARA',s:'3081'},
+    {c:'GTO',n:'KOTA GORONTALO',s:'3081'},
+    {c:'PKY',n:'KAB. PASANGKAYU',s:'3081'},
+    {c:'MMJ',n:'KAB. MAMUJU',s:'3081'},
+    {c:'MMS',n:'KAB. MAMASA',s:'3081'},
+    {c:'PLW',n:'KAB. POLEWALI MANDAR',s:'3081'},
+    {c:'MJN',n:'KAB. MAJENE',s:'3081'},
+    {c:'TBD',n:'KAB. MAMUJU TENGAH',s:'3081'},
+    {c:'MSH',n:'KAB. MALUKU TENGAH',s:'3081'},
+    {c:'LGR',n:'KAB. MALUKU TENGGARA',s:'3081'},
+    {c:'SML',n:'KAB. KEPULAUAN TANIMBAR',s:'3081'},
+    {c:'NLA',n:'KAB. BURU',s:'3081'},
+    {c:'DTH',n:'KAB. SERAM BAGIAN TIMUR',s:'3081'},
+    {c:'DRH',n:'KAB. SERAM BAGIAN BARAT',s:'3081'},
+    {c:'DBO',n:'KAB. KEPULAUAN ARU',s:'3081'},
+    {c:'TKR',n:'KAB. MALUKU BARAT DAYA',s:'3081'},
+    {c:'NRE',n:'KAB. BURU SELATAN',s:'3081'},
+    {c:'ABN',n:'KOTA AMBON',s:'3081'},
+    {c:'TUL',n:'KOTA TUAL',s:'3081'},
+    {c:'JLO',n:'KAB. HALMAHERA BARAT',s:'3081'},
+    {c:'WDA',n:'KAB. HALMAHERA TENGAH',s:'3081'},
+    {c:'TOB',n:'KAB. HALMAHERA UTARA',s:'3081'},
+    {c:'LBH',n:'KAB. HALMAHERA SELATAN',s:'3081'},
+    {c:'SNN',n:'KAB. KEPULAUAN SULA',s:'3081'},
+    {c:'MAB',n:'KAB. HALMAHERA TIMUR',s:'3081'},
+    {c:'DRB',n:'KAB. PULAU MOROTAI',s:'3081'},
+    {c:'BBG',n:'KAB. PULAU TALIABU',s:'3081'},
+    {c:'TTE',n:'KOTA TERNATE',s:'3081'},
+    {c:'TDR',n:'KOTA TIDORE KEPULAUAN',s:'3081'},
+    {c:'MRK',n:'KAB. MERAUKE',s:'3081'},
+    {c:'WMN',n:'KAB. JAYAWIJAYA',s:'3081'},
+    {c:'STN',n:'KAB. JAYAPURA',s:'3081'},
+    {c:'NBR',n:'KAB. NABIRE',s:'3081'},
+    {c:'SRI',n:'KAB. KEPULAUAN YAPEN',s:'3081'},
+    {c:'BIK',n:'KAB. BIAK NUMFOR',s:'3081'},
+    {c:'MLA',n:'KAB. PUNCAK JAYA',s:'3081'},
+    {c:'ERT',n:'KAB. PANIAI',s:'3081'},
+    {c:'TMK',n:'KAB. MIMIKA',s:'3081'},
+    {c:'SMI',n:'KAB. SARMI',s:'3081'},
+    {c:'WRS',n:'KAB. KEEROM',s:'3081'},
+    {c:'OSB',n:'KAB. PEGUNUNGAN BINTANG',s:'3081'},
+    {c:'SMH',n:'KAB. YAHUKIMO',s:'3081'},
+    {c:'KBG',n:'KAB. TOLIKARA',s:'3081'},
+    {c:'BTW',n:'KAB. WAROPEN',s:'3081'},
+    {c:'TMR',n:'KAB. BOVEN DIGOEL',s:'3081'},
+    {c:'KEP',n:'KAB. MAPPI',s:'3081'},
+    {c:'AGS',n:'KAB. ASMAT',s:'3081'},
+    {c:'SRW',n:'KAB. SUPIORI',s:'3081'},
+    {c:'BMS',n:'KAB. MAMBERAMO RAYA',s:'3081'},
+    {c:'KOB',n:'KAB. MAMBERAMO TENGAH',s:'3081'},
+    {c:'ELL',n:'KAB. YALIMO',s:'3081'},
+    {c:'TOM',n:'KAB. LANNY JAYA',s:'3081'},
+    {c:'KYM',n:'KAB. NDUGA',s:'3081'},
+    {c:'ILG',n:'KAB. PUNCAK',s:'3081'},
+    {c:'KGM',n:'KAB. DOGIYAI',s:'3081'},
+    {c:'SGP',n:'KAB. INTAN JAYA',s:'3081'},
+    {c:'TGI',n:'KAB. DEIYAI',s:'3081'},
+    {c:'JPR',n:'KOTA JAYAPURA',s:'3081'},
+    {c:'AMS',n:'KAB. SORONG',s:'3081'},
+    {c:'MNK',n:'KAB. MANOKWARI',s:'3081'},
+    {c:'FAK',n:'KAB. FAK FAK',s:'3081'},
+    {c:'TMB',n:'KAB. SORONG SELATAN',s:'3081'},
+    {c:'WSI',n:'KAB. RAJA AMPAT',s:'3081'},
+    {c:'BTI',n:'KAB. TELUK BINTUNI',s:'3081'},
+    {c:'RSI',n:'KAB. TELUK WONDAMA',s:'3081'},
+    {c:'KMN',n:'KAB. KAIMANA',s:'3081'},
+    {c:'FEF',n:'KAB. TAMBRAUW',s:'3081'},
+    {c:'AFT',n:'KAB. MAYBRAT',s:'3081'},
+    {c:'RSK',n:'KAB. MANOKWARI SELATAN',s:'3081'},
+    {c:'AGI',n:'KAB. PEGUNUNGAN ARFAK',s:'3081'},
+    {c:'SRN',n:'KOTA SORONG',s:'3081'},
+    {c:'PPR',n:'KAB. KEPULAUAN SERIBU',s:'4091'},
+    {c:'TNA',n:'KOTA JAKARTA PUSAT',s:'4091'},
+    {c:'TJP',n:'KOTA JAKARTA UTARA',s:'4091'},
+    {c:'KBN',n:'KOTA JAKARTA BARAT',s:'4091'},
+    {c:'KYB',n:'KOTA JAKARTA SELATAN',s:'4091'},
+    {c:'CKG',n:'KOTA JAKARTA TIMUR',s:'4091'},
+    {c:'CBI',n:'KAB. BOGOR',s:'4091'},
+    {c:'KWG',n:'KAB. KARAWANG',s:'4091'},
+    {c:'CKR',n:'KAB. BEKASI',s:'4091'},
+    {c:'BGR',n:'KOTA BOGOR',s:'4091'},
+    {c:'BKS',n:'KOTA BEKASI',s:'4091'},
+    {c:'DPK',n:'KOTA DEPOK',s:'4091'},
+    {c:'PDG',n:'KAB. PANDEGLANG',s:'4091'},
+    {c:'RKB',n:'KAB. LEBAK',s:'4091'},
+    {c:'TGR',n:'KAB. TANGERANG',s:'4091'},
+    {c:'CRU',n:'KAB. SERANG',s:'4091'},
+    {c:'TNG',n:'KOTA TANGERANG',s:'4091'},
+    {c:'CLG',n:'KOTA CILEGON',s:'4091'},
+    {c:'SRG',n:'KOTA SERANG',s:'4091'},
+    {c:'CPT',n:'KOTA TANGERANG SELATAN',s:'4091'}
+  ];
+  // Lookup by code
+  const CITY_MAP = {};
+  CITY_DATA.forEach(c => { CITY_MAP[c.c] = c; });
 
   // ── Helper: build consistent file/folder name ──────────
   // Format: subregion_divisi_siteid_sitename_actcode_date_noUrut
@@ -6038,6 +6720,11 @@ Lokasi Lantai : ${f.floorLocation || '-'}\n` +
       _set('fDate', draft.date); _set('fSiteName', draft.siteName); _set('fSiteId', draft.siteId);
       _set('fTypeSite', draft.typeSite); _set('fPicName', draft.picName); _set('fDivision', draft.division);
       _set('fSubregion', draft.subregion);
+      // Populate city dropdown sesuai subregion, lalu restore city & funcLoc
+      if (draft.subregion) _populateCityDropdown(draft.subregion);
+      if (draft.cityName) { const c = document.getElementById('fCityName'); if (c) c.value = draft.cityName; }
+      const flEl = document.getElementById('fFuncLoc');
+      if (flEl && draft.funcLoc) flEl.value = draft.funcLoc; else _updateFuncLoc();
       _set('fCoordLat', draft.coordLat); _set('fCoordLng', draft.coordLng);
       _set('fFloorLocation', draft.floorLocation);
       // Context fields
@@ -6107,7 +6794,7 @@ Lokasi Lantai : ${f.floorLocation || '-'}\n` +
   }
 
   // Auto-save setiap perubahan input
-  document.querySelectorAll('#fDate,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fSubregion,#fFloorLocation,#fAddNotes,#fDismantleReason,#fWarehouse,#fReplaceReason').forEach(el => {
+  document.querySelectorAll('#fDate,#fSiteName,#fSiteId,#fTypeSite,#fPicName,#fDivision,#fSubregion,#fCityName,#fFloorLocation,#fAddNotes,#fDismantleReason,#fWarehouse,#fReplaceReason').forEach(el => {
     el.addEventListener('change', _autoSave);
     el.addEventListener('input',  _autoSave);
   });
@@ -7580,15 +8267,15 @@ Lokasi Lantai : ${f.floorLocation || '-'}\n` +
                 <p>1. Foto device secara keseluruhan (perhatikan timestamp)</p>
                 <p>2. Foto SN device — lokasi SN per model:</p>
                 <ul class="gdl-ul">
-                  <li><b>ZTE C320</b> — sisi kanan perangkat</li>
+                  <li><b>ZTE C320</b> — sisi kanan perangkat (awalan SN: 7xxx)</li>
                   <li><b>ZTE C620</b> — atas kanan atau sisi kanan (awalan SN: 7xxx)</li>
-                  <li><b>Huawei EA5800-X2</b> — body perangkat</li>
+                  <li><b>Huawei EA5800-X2</b> — body perangkat dengan ket  (H90K4BPSB)</li>
                 </ul>
                 <p>3. Foto SN masing-masing modul:</p>
                 <ul class="gdl-ul">
                   <li><b>C320:</b> modul GTGH dan SMXA</li>
                   <li><b>C620:</b> modul HFTL/GFGH, SPUF, PRSF</li>
-                  <li><b>EA5800-X2:</b> modul MPSFE, PISC, FLHFE</li>
+                  <li><b>EA5800-X2:</b> modul MPSFE, PISC, FLHFE, FMSA</li>
                 </ul>
                 <p>4. Catat Qty SFP terpasang di field <b>"Jumlah SFP"</b></p>
               </div>
