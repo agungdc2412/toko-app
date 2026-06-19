@@ -4666,7 +4666,7 @@ map.on('click',function(e){
       picPhoto:        picPhotoData,
       division:        _v('fDivision'),
       subregion:       _v('fSubregion'),
-      cityName:        _v('fCityName'),
+      cityName:        _getCityFullName(),
       funcLoc:         document.getElementById('fFuncLoc') ? document.getElementById('fFuncLoc').value : '',
       coordLat:        _v('fCoordLat'),
       coordLng:        _v('fCoordLng'),
@@ -5679,6 +5679,16 @@ ${sigSection}
   }
 
   function onCityChange() { _updateFuncLoc(); _autoSave(); }
+
+  // ── Helper: ambil teks lengkap City Name (kode + nama) dari dropdown ──
+  // Dipakai untuk output (email/report/export) — bukan untuk generate Functional Location.
+  // Functional Location tetap memakai kode city via document.getElementById('fCityName').value
+  function _getCityFullName() {
+    const el = document.getElementById('fCityName');
+    if (!el || !el.value) return ''; // belum dipilih
+    const opt = el.options[el.selectedIndex];
+    return opt ? opt.textContent.trim() : el.value;
+  }
 
   function _updateFuncLoc() {
     const subregion = (document.getElementById('fSubregion')?.value || '').trim();
