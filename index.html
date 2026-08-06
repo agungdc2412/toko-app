@@ -6114,18 +6114,31 @@ ${mapLink}
       const pnCell = isReplace
         ? `<span style="font-size:10px;color:#A32D2D;">${escHtml(d.pnOld||d.partNumber||'—')}</span><br><span style="font-size:10px;color:#3B6D11;">${escHtml(d.pnNew||d.partNumber||'—')}</span>`
         : escHtml(d.partNumber||'—');
+      // Kolom Foto — thumbnail asli (sama seperti versi tampilan layar), bukan checkmark F.Full/F.Type/F.S/N
+      const photosZip = [];
+      if (d.photos.full)  photosZip.push(`<img src="${d.photos.full}"  title="Full"  style="${_pdfImgStyle}">`);
+      if (d.photos.zoom)  photosZip.push(`<img src="${d.photos.zoom}"  title="Type"  style="${_pdfImgStyle}">`);
+      if (d.photos.label) photosZip.push(`<img src="${d.photos.label}" title="S/N"   style="${_pdfImgStyle}">`);
+      if (d.photos.pn)    photosZip.push(`<img src="${d.photos.pn}"    title="P/N"   style="${_pdfImgStyle}">`);
+      const photoCellZip = photosZip.length > 0
+        ? `<div style="display:flex;gap:4px;flex-wrap:wrap;">${photosZip.join('')}</div>`
+        : '<span style="color:#aaa;font-size:11px;">—</span>';
       return `<tr><td>${i+1}</td><td>${isReplace?'<b style="color:#BA7517">Replace</b>':d.type==='module'?'<b>Module</b>':'Single'}</td>
         <td>${deviceNameCell}</td>
         <td>${snCell}</td><td>${pnCell}</td>
         <td style="text-align:center;color:${d.statusDevice==='Active'?'green':d.statusDevice==='Damage'?'red':'#BA7517'}">${d.statusDevice||'-'}</td>
-        <td style="text-align:center">${d.photos.full?'✓':'-'}</td>
-        <td style="text-align:center">${d.photos.zoom?'✓':'-'}</td>
-        <td style="text-align:center">${d.photos.label?'✓':'-'}</td></tr>`;
+        <td>${photoCellZip}</td></tr>`;
     }).join('');
     const mapLink = (f.coordLat && f.coordLng)
       ? `<p style="margin-top:6px;font-size:12px;">🗺️ <a href="https://www.google.com/maps?q=${f.coordLat},${f.coordLng}" target="_blank">Lihat di Google Maps</a></p>` : '';
+    // Foto PIC & Tanda Tangan — ditampilkan berdampingan di footer (sama seperti versi layar)
+    const picSectionZip = f.picPhoto
+      ? `<div style="display:inline-block;margin-right:24px;vertical-align:top;">
+           <p style="font-size:11px;color:#666;margin-bottom:4px;">Foto PIC:</p>
+           <img src="${f.picPhoto.url}" style="height:64px;border-radius:6px;border:1px solid #eee;">
+         </div>` : '';
     const sigSection = f.signature
-      ? `<div style="margin-top:24px;border-top:1px solid #eee;padding-top:14px;"><p style="font-size:11px;color:#666;margin-bottom:4px;">Tanda Tangan PIC:</p><img src="${f.signature}" style="height:64px;border:1px solid #eee;border-radius:4px;padding:3px;"></div>` : '';
+      ? `<div style="display:inline-block;vertical-align:top;"><p style="font-size:11px;color:#666;margin-bottom:4px;">Tanda Tangan PIC:</p><img src="${f.signature}" style="height:64px;border:1px solid #eee;border-radius:4px;padding:3px;"></div>` : '';
     return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Asset Tagging - ${escHtml(f.siteName)}</title>
 <style>
 body{font-family:Arial,sans-serif;padding:28px;color:#111;font-size:13px;}
@@ -6159,9 +6172,9 @@ tr:nth-child(even) td{background:#f9f9f9;}
   ${extraInfo}
 </div>
 ${mapLink}
-<table><thead><tr><th>#</th><th>Tipe</th><th>Nama Device</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>F.Full</th><th>F.Type</th><th>F.S/N</th></tr></thead>
+<table><thead><tr><th>#</th><th>Tipe</th><th>Nama Device</th><th>Serial Number</th><th>Part Number</th><th>Status</th><th>Foto</th></tr></thead>
 <tbody>${rows}</tbody></table>
-${sigSection}
+<div style="margin-top:24px;border-top:1px solid #eee;padding-top:14px;">${picSectionZip}${sigSection}</div>
 </body></html>`;
   }
 
