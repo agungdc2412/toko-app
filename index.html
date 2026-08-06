@@ -5918,8 +5918,23 @@ ${mapLink}
     const dateSAP  = toSapDate(f.date);
     const latLng   = (f.coordLat && f.coordLng) ? `${f.coordLat}, ${f.coordLng}` : '';
     const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
-    // Description Functional Location: "ISP-{TypeSite} {NamaSite}" — contoh: ISP-HUB APT ACB
-    const siteDescription = (f.typeSite && f.siteName) ? `ISP-${f.typeSite} ${f.siteName}` : (f.siteName || '');
+    // Description Functional Location — CAPITAL semua, beda antara Lev3 & Lev4:
+    //   Lev3 : "SITE {NAMA SITE}"              contoh: SITE GRAHA MAMPANG
+    //   Lev4 : "SITE {NAMA SITE} LT.{FLOOR}"    contoh: SITE GRAHA MAMPANG LT.B2
+    const siteNameUpper   = (f.siteName || '').toUpperCase();
+    const descLev3 = siteNameUpper ? `SITE ${siteNameUpper}` : '';
+    const descLev4 = siteNameUpper
+      ? (f.floor ? `SITE ${siteNameUpper} LT.${f.floor.toUpperCase()}` : `SITE ${siteNameUpper}`)
+      : '';
+
+    // ── Breakdown Functional Location per level (Lev2/Lev3/Lev4) ──
+    // f.funcLoc = Lev4 penuh, contoh: 4091-KYB-KYB071-5A
+    // Lev3 = tanpa segmen Floor terakhir  → 4091-KYB-KYB071
+    // Lev2 = Subregion-City saja          → 4091-KYB
+    const _flSegs     = (f.funcLoc || '').split('-');
+    const funcLocLev4 = f.funcLoc || '';                                          // Subregion-City-SiteID-Floor
+    const funcLocLev3 = _flSegs.length >= 3 ? _flSegs.slice(0, 3).join('-') : ''; // Subregion-City-SiteID
+    const funcLocLev2 = _flSegs.length >= 2 ? _flSegs.slice(0, 2).join('-') : ''; // Subregion-City
 
     // ── SHEET 1: Detail Tagging (format tabel: 1 baris PER DEVICE, konteks site diulang tiap baris) ──
     const dtHeaders = [
@@ -5979,16 +5994,35 @@ ${mapLink}
       'Other City (Kelurahan/Desa)','District (Kecamatan)','City','Postal Code','Region (Province Code)',
       'Country','Telephone (without country code)','Telephone Extension',
     ];
-    const flRow = [
-      f.funcLoc || '', 'ZFS03', siteDescription, '', dateSAP,
+    // Baris data lain (lokasi, plant, dsb) sama untuk Lev 3 & Lev 4 — hanya
+    // FuncLoc / Superior FunctLoc / Floor yang berbeda per level.
+    const _flCommonTail = [
       f.plant || '', '', cityCode, f.maintPlant || '',
       f.workCenter || '', f.costCenter || '', '', '', latLng,
       '', f.siteName || '', '', '', f.street || '', '',
-      '', '', f.floor || '', f.rtRw || '', '',
+      '', '', /*Floor placeholder, diisi per-baris*/ '', f.rtRw || '', '',
       f.subDistrict || '', f.district || '', f.plantSection || '', f.postalCode || '', f.region || '',
       f.country || '', '', '',
     ];
-    const wsFl = XLSX.utils.aoa_to_sheet([flHeaders, flRow]);
+    // Index kolom "Floor" di dalam _flCommonTail (array ini mewakili kolom ke-6 s.d. ke-33
+    // dari flHeaders, yaitu index 5..32; "Floor" ada di flHeaders index 22 → index 17 di tail ini)
+    const FLOOR_IDX_IN_TAIL = 17;
+
+    const flRowLev3 = [
+      funcLocLev3, 'ZFS03', descLev3, funcLocLev2, dateSAP,
+      ..._flCommonTail,
+    ];
+    const flRowLev4 = [
+      funcLocLev4, 'ZFS03', descLev4, funcLocLev3, dateSAP,
+      ..._flCommonTail,
+    ];
+    // Isi Floor: Lev3 tidak punya segmen Floor (kosong), Lev4 pakai f.floor
+    flRowLev4[5 + FLOOR_IDX_IN_TAIL] = f.floor || '';
+
+    const flRows = [flHeaders];
+    if (funcLocLev3) flRows.push(flRowLev3);   // hanya buat baris Lev3 kalau datanya lengkap
+    if (funcLocLev4) flRows.push(flRowLev4);
+    const wsFl = XLSX.utils.aoa_to_sheet(flRows);
     wsFl['!cols'] = flHeaders.map(() => ({ wch: 17 }));
     styleHeaderRow(wsFl, flHeaders, 0);
     XLSX.utils.book_append_sheet(wb, wsFl, 'Functional Location');
