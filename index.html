@@ -4361,6 +4361,11 @@ map.on('click',function(e){
     const nameNewId  = 'namenew_'  + d.id;
     const pnOldId    = 'pnold_'    + d.id;
     const pnNewId    = 'pnnew_'    + d.id;
+    // FIX: Replace pada device bertipe "module" harus pakai katalog MODUL,
+    // bukan katalog single device — sebelumnya selalu pakai _acFilter (single).
+    // Pakai versi FLAT (_acFilterModuleReplace) supaya seluruh komponen di dalam
+    // chassis (bukan cuma nama chassis-nya) juga bisa dipilih saat Replace.
+    const _acFn = d.type === 'module' ? '_acFilterModuleReplace' : '_acFilter';
     return `
       <div class="device-card-body">
 
@@ -4377,13 +4382,13 @@ map.on('click',function(e){
               <div class="device-ac-wrap" style="flex:1;min-width:0;">
                 <input type="text" id="${nameOldId}" class="form-input" style="width:100%;" placeholder="Nama device yang dilepas..."
                   value="${escHtml(d.deviceNameOld||d.deviceName||'')}" autocomplete="off"
-                  oninput="updateDevice('${d.id}','deviceNameOld',this.value);(function(v){var _d=devices.find(function(x){return x.id==='${d.id}';});if(_d&&!_d.deviceNameNew)updateDeviceTitle('${d.id}',v,${i});})(this.value);_acFilter('${d.id}_old',this.value,this)"
-                  onfocus="_acFilter('${d.id}_old',this.value,this)"
+                  oninput="updateDevice('${d.id}','deviceNameOld',this.value);(function(v){var _d=devices.find(function(x){return x.id==='${d.id}';});if(_d&&!_d.deviceNameNew)updateDeviceTitle('${d.id}',v,${i});})(this.value);${_acFn}('${d.id}_old',this.value,this)"
+                  onfocus="${_acFn}('${d.id}_old',this.value,this)"
                   onkeydown="_acKeyNav(event,'${d.id}_old')">
                 <div class="device-ac-dropdown" id="ac_${d.id}_old"></div>
               </div>
               <button class="stt-btn" title="Ucapkan Nama Lama"
-                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameOld',t);var el=document.getElementById('${nameOldId}');if(el){el.value=t;_acFilter('${d.id}_old',t,el);}}.bind(this))">${_icoMic}</button>
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameOld',t);var el=document.getElementById('${nameOldId}');if(el){el.value=t;${_acFn}('${d.id}_old',t,el);}}.bind(this))">${_icoMic}</button>
             </div>
           </div>
 
@@ -4461,13 +4466,13 @@ map.on('click',function(e){
               <div class="device-ac-wrap" style="flex:1;min-width:0;">
                 <input type="text" id="${nameNewId}" class="form-input" style="width:100%;" placeholder="Nama device pengganti..."
                   value="${escHtml(d.deviceNameNew||d.deviceName||'')}" autocomplete="off"
-                  oninput="updateDevice('${d.id}','deviceNameNew',this.value);updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});_acFilter('${d.id}_new',this.value,this)"
-                  onfocus="_acFilter('${d.id}_new',this.value,this)"
+                  oninput="updateDevice('${d.id}','deviceNameNew',this.value);updateDevice('${d.id}','deviceName',this.value);updateDeviceTitle('${d.id}',this.value,${i});${_acFn}('${d.id}_new',this.value,this)"
+                  onfocus="${_acFn}('${d.id}_new',this.value,this)"
                   onkeydown="_acKeyNav(event,'${d.id}_new')">
                 <div class="device-ac-dropdown" id="ac_${d.id}_new"></div>
               </div>
               <button class="stt-btn" title="Ucapkan Nama Baru"
-                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameNew',t);updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var el=document.getElementById('${nameNewId}');if(el){el.value=t;_acFilter('${d.id}_new',t,el);}}.bind(this))">${_icoMic}</button>
+                onclick="startSTTInline(this,function(t){updateDevice('${d.id}','deviceNameNew',t);updateDevice('${d.id}','deviceName',t);updateDeviceTitle('${d.id}',t,${i});var el=document.getElementById('${nameNewId}');if(el){el.value=t;${_acFn}('${d.id}_new',t,el);}}.bind(this))">${_icoMic}</button>
             </div>
           </div>
 
@@ -7918,6 +7923,24 @@ Floor         : ${f.floor || '-'}\n` +
 
   const _MODULE_CATALOG = {"OLT HUAWEI SMARTAX EA5800_X2":[{"name":"OLT HUAWEI SMARTAX EA5800_X2","pn":"","remark":"Modul","ot":"ISP-110300","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT HUAWEI MPSFE-G (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT HUAWEI MPSFE-G (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"POWER OLT HUAWEI PISC (1)","pn":"H901PISC","remark":"Sub-Modul","ot":"ISP-110304","cat":"A","ec":"A"},{"name":"POWER OLT HUAWEI PISC (2)","pn":"H901PISC","remark":"Sub-Modul","ot":"ISP-110304","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT HUAWEI FLHFE (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT HUAWEI FLHFE (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"},{"name":"FAN OLT HUAWEI FMSA","pn":"H90F1FMSA","remark":"Sub-Modul","ot":"ISP-110303","cat":"A","ec":"A"}],"OLT ZTE C320":[{"name":"OLT ZTE C320","pn":"","remark":"Modul","ot":"ISP-110300","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE GTGH C320 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE GTGH C320 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT ZTE SMXA C320 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT ZTE SMXA C320 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"}],"OLT ZTE C620":[{"name":"OLT ZTE C620","pn":"","remark":"Modul","ot":"ISP-110300","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE GFGH C620 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE GFGH C620 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE HFTL C620 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"LINE CARD IO OLT ZTE HFTL C620 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110302","cat":"A","ec":"A"},{"name":"POWER OLT ZTE PRSF C620 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110304","cat":"A","ec":"A"},{"name":"POWER OLT ZTE PRSF C620 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110304","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT ZTE SPUF C620 (1)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"},{"name":"SYS. CONTROLLER OLT ZTE SPUF C620 (2)","pn":"","remark":"Sub-Modul","ot":"ISP-110301","cat":"A","ec":"A"}],"RECTIFIER ELTEK Flatpack 2 (2000) HE RG05-021":[{"name":"RECTIFIER ELTEK Flatpack 2 (2000) HE RG05-021","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier ELTEK Flatpack 2 Master","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER EATON SC200 (NPR48-ES)":[{"name":"RECTIFIER EATON SC200 (NPR48-ES)","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier EATON SC200","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier EATON NPR48-ES (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier EATON NPR48-ES (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier EATON NPR48-ES (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER EATON SC200 (APR48 ES)":[{"name":"RECTIFIER EATON SC200 (APR48 ES)","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier EATON SC200","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier EATON APR 48 ES (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier EATON APR 48 ES (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier EATON APR 48 ES (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER ELTEK Flatpack2":[{"name":"RECTIFIER ELTEK Flatpack2","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier ELTEK Smartpack 2 Master","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier ELTEK FLATPACK2 48/2000 HE (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER DPC Smart SYS DPC SP Series 48V":[{"name":"RECTIFIER DPC Smart SYS DPC SP Series 48V","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier DPC Smart SYS SC503","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER DPC SP48/3000H":[{"name":"RECTIFIER DPC SP48/3000H","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier DPC SC503","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier DPC Smart Power III 48 (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER Eaton SC300":[{"name":"RECTIFIER Eaton SC300","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier Eaton SC300","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier Eaton APR48 (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier Eaton APR48 (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier Eaton APR48 (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}],"RECTIFIER Unipower Guardian48 FMP":[{"name":"RECTIFIER Unipower Guardian48 FMP","pn":"","remark":"Modul","ot":"CME-110800","cat":"A","ec":"A"},{"name":"Sys. Controller Rectifier Unipower Powerone ACC","pn":"","remark":"Sub-Modul","ot":"CME-110802","cat":"A","ec":"A"},{"name":"Module Rectifier Unipower Guardian 48 (1)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier Unipower Guardian 48 (2)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"},{"name":"Module Rectifier Unipower Guardian 48 (3)","pn":"","remark":"Sub-Modul","ot":"CME-110801","cat":"A","ec":"A"}]};
 
+  // ── Flattened MODULE catalog — SEMUA device (Modul + Sub-Modul) sebagai satu list ──
+  // Dipakai KHUSUS di kegiatan Replace, supaya user bisa memilih langsung komponen di dalam
+  // chassis (mis. Line Card / Power / Sys. Controller) sebagai "Device Lama"/"Device Baru",
+  // tidak cuma nama chassis-nya. List device module grup (13 chassis) di New Site/Existing/
+  // Additional/Dismantle TIDAK berubah — tetap pakai _MODULE_CATALOG & _acFilterModule seperti semula.
+  const _MODULE_CATALOG_FLAT = (function() {
+    const out = [];
+    Object.keys(_MODULE_CATALOG).forEach(function(groupKey) {
+      _MODULE_CATALOG[groupKey].forEach(function(item) {
+        out.push({
+          name: item.name, group: groupKey, pn: item.pn || '',
+          ot: item.ot || '', cat: item.cat || '', remark: item.remark || ''
+        });
+      });
+    });
+    return out;
+  })();
+
   // _fetchCatalog tidak diperlukan — data sudah embedded
   async function _fetchCatalog() {
     _renderCatalogStatus('ok', 'Device dan Modul Device tersedia di katalog');
@@ -7964,6 +7987,99 @@ Floor         : ${f.floor || '-'}\n` +
     document.addEventListener('mousedown', _closeModAc);
   }
 
+  // ── Filter dropdown MODULE — versi FLAT khusus kegiatan Replace ──────
+  // Menampilkan SELURUH device (chassis "Modul" + tiap "Sub-Modul" di dalamnya)
+  // sebagai satu list rata, supaya user bisa langsung memilih komponen spesifik
+  // yang diganti (mis. Line Card / Power / Sys. Controller), bukan cuma nama chassis-nya.
+  // Hanya dipakai oleh _renderReplaceBody — list device module grup (New Site/Existing/
+  // Additional/Dismantle) TIDAK terpengaruh dan tetap pakai _acFilterModule di atas.
+  function _acFilterModuleReplace(devId, query, inputEl) {
+    const dd = document.getElementById('ac_' + devId);
+    if (!dd) return;
+    _acFocusIdx[devId] = -1;
+    const q = (query || '').toLowerCase().trim();
+    const results = q.length === 0
+      ? _MODULE_CATALOG_FLAT.slice(0, 60)
+      : _MODULE_CATALOG_FLAT.filter(item =>
+          item.name.toLowerCase().includes(q) || item.group.toLowerCase().includes(q)
+        ).slice(0, 40);
+
+    if (results.length === 0) {
+      dd.innerHTML = '<div class="device-ac-empty">Tidak ada device/module yang cocok</div>';
+    } else {
+      dd.innerHTML = results.map(function(item) {
+        const flatIdx = _MODULE_CATALOG_FLAT.indexOf(item);
+        const badge = item.remark === 'Modul' ? 'Chassis' : 'Sub-Modul';
+        const highlighted = q
+          ? item.name.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'),
+              '<mark style="background:#FDE68A;border-radius:2px;padding:0 1px;">$1</mark>')
+          : item.name;
+        return '<div class="device-ac-item" data-flatidx="' + flatIdx + '" onmousedown="_acSelectModuleReplace(\'' + devId + '\',' + flatIdx + ',event)">' +
+          '<div class="device-ac-name">' + highlighted + '</div>' +
+          '<div class="device-ac-meta"><span class="device-ac-badge">' + badge + '</span>' +
+          (item.group !== item.name ? '<span>' + escHtml(item.group) + '</span>' : '') +
+          (item.pn ? '<span>P/N: ' + escHtml(item.pn) + '</span>' : '') +
+          (item.ot ? '<span style="color:var(--fs-blue);">🏷️ ' + escHtml(item.ot) + '</span>' : '') +
+          '</div></div>';
+      }).join('');
+    }
+    dd.classList.add('show');
+
+    if (_acCloseHandlers[devId]) document.removeEventListener('mousedown', _acCloseHandlers[devId]);
+    _acCloseHandlers[devId] = function(e) {
+      if (!dd.contains(e.target) && e.target !== inputEl) {
+        dd.classList.remove('show');
+        document.removeEventListener('mousedown', _acCloseHandlers[devId]);
+        delete _acCloseHandlers[devId];
+      }
+    };
+    document.addEventListener('mousedown', _acCloseHandlers[devId]);
+  }
+
+  // ── Pilih item dari dropdown MODULE FLAT (khusus Replace) ──────
+  function _acSelectModuleReplace(devId, flatIdx, e) {
+    if (e) e.preventDefault();
+    const dd = document.getElementById('ac_' + devId);
+    if (!dd) return;
+    const item = _MODULE_CATALOG_FLAT[flatIdx];
+    if (!item) return;
+    const name = item.name;
+
+    const isReplaceOld = devId.endsWith('_old');
+    const isReplaceNew = devId.endsWith('_new');
+    const realDevId = (isReplaceOld || isReplaceNew) ? devId.slice(0, -4) : devId;
+
+    const d = devices.find(x => x.id === realDevId);
+    if (d) {
+      if (isReplaceOld) {
+        d.deviceNameOld = name;
+        if (item.pn) {
+          d.pnOld = item.pn;
+          const pnOldEl = document.getElementById('pnold_' + realDevId);
+          if (pnOldEl) pnOldEl.value = item.pn;
+        }
+      } else if (isReplaceNew) {
+        d.deviceNameNew = name;
+        d.deviceName = name;
+        if (item.pn) {
+          d.pnNew = item.pn; d.partNumber = item.pn;
+          const pnNewEl = document.getElementById('pnnew_' + realDevId);
+          if (pnNewEl) pnNewEl.value = item.pn;
+        }
+        if (item.ot) { d.objectType = item.ot; d.equipCategory = item.cat; }
+      }
+    }
+
+    const wrap = dd.closest('.device-ac-wrap');
+    if (wrap) { const inp = wrap.querySelector('input'); if (inp) inp.value = name; }
+    const idx2 = devices.indexOf(d);
+    updateDeviceTitle(realDevId, name, idx2);
+    dd.classList.remove('show');
+    _acFocusIdx[devId] = -1;
+    // Catatan: tidak auto-generate sub-modul di sini — di kegiatan Replace, device
+    // Lama/Baru dicatat sebagai satu entri pengganti, sesuai form Replace yang sudah ada.
+  }
+
   // ── Cek exact-match katalog saat user KETIK MANUAL (bukan klik dropdown) ──
   // Sebelumnya auto-fill Object Type cuma jalan kalau user klik saran dropdown;
   // kalau user ketik lengkap lalu langsung pindah field (blur) tanpa klik saran,
@@ -8005,21 +8121,46 @@ Floor         : ${f.floor || '-'}\n` +
     const clickedItem = e ? e.currentTarget || e.target.closest('.device-ac-item') : null;
     const name = clickedItem ? clickedItem.dataset.key : null;
     if (!name || !_MODULE_CATALOG[name]) return;
-    const d = devices.find(x => x.id === devId);
+
+    // FIX: dukung suffix _old / _new dari _renderReplaceBody, sama seperti _acSelect
+    // (sebelumnya devId dipakai langsung utk devices.find, jadi tidak pernah ketemu
+    // saat dipanggil dari field Nama Device Lama/Baru pada Replace -> pilihan gagal tersimpan).
+    const isReplaceOld = devId.endsWith('_old');
+    const isReplaceNew = devId.endsWith('_new');
+    const realDevId = (isReplaceOld || isReplaceNew) ? devId.slice(0, -4) : devId;
+
+    const d = devices.find(x => x.id === realDevId);
+    const parentEntry = _MODULE_CATALOG[name].find(it => it.remark === 'Modul') || _MODULE_CATALOG[name][0];
     if (d) {
-      d.deviceName = name;
-      const parentEntry = _MODULE_CATALOG[name].find(it => it.remark === 'Modul') || _MODULE_CATALOG[name][0];
-      if (parentEntry && parentEntry.ot) { d.objectType = parentEntry.ot; d.equipCategory = parentEntry.cat; }
+      if (isReplaceOld) {
+        d.deviceNameOld = name;
+        if (parentEntry && parentEntry.pn) {
+          d.pnOld = parentEntry.pn;
+          const pnOldEl = document.getElementById('pnold_' + realDevId);
+          if (pnOldEl) pnOldEl.value = parentEntry.pn;
+        }
+      } else if (isReplaceNew) {
+        d.deviceNameNew = name;
+        d.deviceName = name;
+        if (parentEntry && parentEntry.pn) {
+          d.pnNew = parentEntry.pn; d.partNumber = parentEntry.pn;
+          const pnNewEl = document.getElementById('pnnew_' + realDevId);
+          if (pnNewEl) pnNewEl.value = parentEntry.pn;
+        }
+        if (parentEntry && parentEntry.ot) { d.objectType = parentEntry.ot; d.equipCategory = parentEntry.cat; }
+      } else {
+        d.deviceName = name;
+        if (parentEntry && parentEntry.ot) { d.objectType = parentEntry.ot; d.equipCategory = parentEntry.cat; }
+      }
     }
     const wrap = dd.closest('.device-ac-wrap');
     if (wrap) { const inp = wrap.querySelector('input'); if (inp) inp.value = name; }
-    const d2 = devices.find(x => x.id === devId);
-    const idx2 = devices.indexOf(d2);
-    updateDeviceTitle(devId, name, idx2);
+    const idx2 = devices.indexOf(d);
+    updateDeviceTitle(realDevId, name, idx2);
     dd.classList.remove('show');
     _acFocusIdx[devId] = -1;
-    // Auto-generate sub-modul dari katalog
-    _autoGenerateSubModules(devId, name);
+    // Auto-generate sub-modul dari katalog — hanya utk device baru (non-replace, atau sisi "Baru" saat Replace)
+    if (!isReplaceOld) _autoGenerateSubModules(realDevId, name);
   }
 
   // ── Filter dan render dropdown ─────────────────────────
@@ -8219,10 +8360,15 @@ Floor         : ${f.floor || '-'}\n` +
       e.preventDefault();
       const fi = _acFocusIdx[devId];
       if (fi >= 0 && fi < items.length) {
-        // Dropdown item Device Modul pakai data-key (lihat _acFilterModule), Device Tunggal pakai data-name (_acFilter).
-        // Sebelumnya selalu panggil _acSelect (khusus device tunggal) — akibatnya pemilihan via keyboard
-        // untuk Device Modul (OLT, Rectifier, dst) gagal total: deviceName tidak ke-set, Object Type pun kosong.
-        if (items[fi].hasAttribute('data-key')) {
+        // Dropdown item Device Modul (grup) pakai data-key (_acFilterModule),
+        // Device Modul FLAT khusus Replace pakai data-flatidx (_acFilterModuleReplace),
+        // Device Tunggal pakai data-name (_acFilter). Sebelumnya selalu panggil _acSelect
+        // (khusus device tunggal) — akibatnya pemilihan via keyboard untuk Device Modul
+        // (OLT, Rectifier, dst) gagal total: deviceName tidak ke-set, Object Type pun kosong.
+        if (items[fi].hasAttribute('data-flatidx')) {
+          const flatIdx = parseInt(items[fi].getAttribute('data-flatidx'), 10);
+          _acSelectModuleReplace(devId, flatIdx, { preventDefault(){} });
+        } else if (items[fi].hasAttribute('data-key')) {
           _acSelectModule(devId, fi, { preventDefault(){}, currentTarget: items[fi] });
         } else {
           _acSelect(devId, fi, null);
