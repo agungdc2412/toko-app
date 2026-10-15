@@ -2012,13 +2012,13 @@
         </select>
       </div>
 
-      <!-- Floor — kode 2 karakter (angka/huruf), segmen ke-4 Functional Location -->
+      <!-- Floor — kode 3 karakter (angka/huruf), segmen ke-4 Functional Location -->
       <div class="form-group">
         <label class="form-label">Floor <span style="color:var(--fs-red);font-size:11px;">*</span></label>
-        <input type="text" class="form-input" id="fFloor" placeholder="e.g. 2A" maxlength="2"
+        <input type="text" class="form-input" id="fFloor" placeholder="e.g. L01" maxlength="3" minlength="3" pattern="[A-Z0-9]{3}" inputmode="text" autocomplete="off"
           style="text-transform:uppercase;"
-          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,2);_updateFuncLoc();_autoSave();">
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Maks. 2 karakter, kombinasi angka/huruf (cth: <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">01</code>, <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">2A</code>, <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">GF</code>).</div>
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);_updateFuncLoc();_autoSave();">
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">Wajib tepat 3 karakter, kombinasi angka/huruf (cth: <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">L01</code>, <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">B02</code>, <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">GF1</code>).</div>
       </div>
 
       <!-- Functional Location — auto-generate read-only -->
@@ -2030,7 +2030,7 @@
             style="background:var(--bg-secondary);color:var(--text-secondary);cursor:default;flex:1;">
           <span id="fFuncLocStatus" style="font-size:11px;color:var(--text-secondary);white-space:nowrap;"></span>
         </div>
-        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">📌 Contoh: <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">4091-TNG-TGR003-2A</code> — terisi otomatis setelah Subregion, City Name, Site ID, dan Floor diisi.</div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">📌 Contoh: <code style="background:var(--bg-secondary);padding:1px 5px;border-radius:3px;">4091-TNG-TGR003-L01</code> — terisi otomatis setelah Subregion, City Name, Site ID, dan Floor diisi.</div>
       </div>
 
       <!-- Plant / Maint. Plant / Work Center / Cost Center — auto-derive dari Subregion + City -->
@@ -5290,7 +5290,8 @@ map.on('click',function(e){
     if (!f.plant)       errors.push({ icon: '🏭', msg: 'Plant belum terisi (pilih Subregion terlebih dahulu)', step: 2 });
     if (!f.workCenter || !f.costCenter)
       errors.push({ icon: '🏭', msg: 'Work Center / Cost Center belum terisi', sub: 'Pastikan kombinasi Subregion + City terdaftar di master SAP.', step: 2 });
-    if (!f.floor) errors.push({ icon: '🏢', msg: 'Floor belum diisi', sub: 'Kode 2 karakter (angka/huruf), sejajar dengan City Name.', step: 2 });
+    if (!f.floor) errors.push({ icon: '🏢', msg: 'Floor belum diisi', sub: 'Kode tepat 3 karakter (angka/huruf), sejajar dengan City Name.', step: 2 });
+    else if (String(f.floor).length !== 3) errors.push({ icon: '🏢', msg: 'Floor harus tepat 3 karakter', sub: 'Contoh: L01, B02, GF1. Saat ini: ' + f.floor + ' (' + String(f.floor).length + ' karakter).', step: 2 });
 
     // ── Wajib: Koordinat ──
     if (!f.coordLat || !f.coordLng) {
@@ -5936,13 +5937,13 @@ ${mapLink}
     const latLng   = (f.coordLat && f.coordLng) ? `${f.coordLat}, ${f.coordLng}` : '';
     const actLabel = (ACTIVITY_CONFIG[f.activity] || {}).label || f.activity || '-';
     // Description Functional Location — CAPITAL semua, beda antara Lev3 & Lev4:
-    //   Lev3 : "SITE {NAMA SITE}"              contoh: SITE GRAHA MAMPANG
-    //   Lev4 : "SITE {NAMA SITE} LT.{FLOOR}"    contoh: SITE GRAHA MAMPANG LT.B2
-    const siteNameUpper   = (f.siteName || '').toUpperCase();
-    const descLev3 = siteNameUpper ? `SITE ${siteNameUpper}` : '';
-    const descLev4 = siteNameUpper
-      ? (f.floor ? `SITE ${siteNameUpper} LT.${f.floor.toUpperCase()}` : `SITE ${siteNameUpper}`)
-      : '';
+    //   Lev3 : "{SITE ID}_{NAMA SITE}"            contoh: KYB014_APT BASURA
+    //   Lev4 : "{SITE ID}_{NAMA SITE}_{FLOOR}"    contoh: KYB014_APT BASURA_L01
+    const siteNameUpper = (f.siteName || '').toUpperCase().trim();
+    const siteIdUpper   = (f.siteId   || '').toUpperCase().trim();
+    const floorUpper    = (f.floor    || '').toUpperCase().trim();
+    const descLev3 = (siteIdUpper && siteNameUpper) ? `${siteIdUpper}_${siteNameUpper}` : '';
+    const descLev4 = descLev3 ? (floorUpper ? `${descLev3}_${floorUpper}` : descLev3) : '';
 
     // ── Breakdown Functional Location per level (Lev2/Lev3/Lev4) ──
     // f.funcLoc = Lev4 penuh, contoh: 4091-KYB-KYB071-5A
@@ -6352,7 +6353,7 @@ ${mapLink}
     const fl     = document.getElementById('fFuncLoc');
     const status = document.getElementById('fFuncLocStatus');
     if (!fl) return;
-    if (sub && city && sid && floor) {
+    if (sub && city && sid && floor.length === 3) {
       fl.value = sub + '-' + city + '-' + sid + '-' + floor;
       if (status) { status.textContent = '✅ Terisi'; status.style.color = 'var(--fs-green)'; }
     } else {
@@ -6362,7 +6363,7 @@ ${mapLink}
         if (!sub)   missing.push('Subregion');
         if (!city)  missing.push('City Name');
         if (!sid)   missing.push('Site ID');
-        if (!floor) missing.push('Floor');
+        if (floor.length !== 3) missing.push(floor ? 'Floor (harus 3 karakter)' : 'Floor');
         status.textContent = `⏳ Menunggu: ${missing.join(', ')}`;
         status.style.color = 'var(--text-secondary)';
       }
@@ -9308,8 +9309,8 @@ Floor         : ${f.floor || '-'}\n` +
         <div class="gdl-field-table">
           <div class="gdl-field-row"><div class="gdl-field-name">Site Name / Site ID / Type Site</div><div class="gdl-field-desc">Nama lokasi, ID unik site (cth: <em>KYB032</em>), dan tipe (BDF/BDF PLUS/POP/HUB)</div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Subregion &amp; City Name</div><div class="gdl-field-desc">Kode wilayah + kode kota 3-huruf — dasar Functional Location dan Plant</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Floor</div><div class="gdl-field-desc">Kode 2 karakter (angka/huruf), sejajar City Name · contoh: <em>2A, GF, 01</em> — jadi segmen ke-4 Functional Location</div></div>
-          <div class="gdl-field-row"><div class="gdl-field-name">Functional Location</div><div class="gdl-field-desc"><b>Auto-generate</b>: Subregion-City-SiteID-Floor · contoh <code>4091-TNG-TGR003-2A</code>. Structure Indicator otomatis <code>ZFS03</code></div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Floor</div><div class="gdl-field-desc">Kode tepat 3 karakter (angka/huruf), sejajar City Name · contoh: <em>L01, B02, GF1</em> — jadi segmen ke-4 Functional Location</div></div>
+          <div class="gdl-field-row"><div class="gdl-field-name">Functional Location</div><div class="gdl-field-desc"><b>Auto-generate</b>: Subregion-City-SiteID-Floor · contoh <code>4091-TNG-TGR003-L01</code>. Structure Indicator otomatis <code>ZFS03</code></div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Plant / Maint. Plant</div><div class="gdl-field-desc"><b>Auto-terisi</b> dari kode Subregion, tidak perlu input manual</div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Work Center / Cost Center</div><div class="gdl-field-desc"><b>Auto-terisi</b> dari kombinasi Subregion + City sesuai master SAP</div></div>
           <div class="gdl-field-row"><div class="gdl-field-name">Coordinate Site</div><div class="gdl-field-desc">GPS Otomatis / Input Manual / Klik Peta — lihat detail di bawah</div></div>
